@@ -1,0 +1,26 @@
+# macOS
+.DS_Store
+
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+.pytest_cache/
+.ruff_cache/
+*.egg-info/
+
+# Node
+node_modules/
+dist/
+coverage/
+
+# Rust
+target/
+
+# 本地环境与密钥（不入库）
+.env
+*.local
+
+# IDE
+.idea/
+.vscode/
