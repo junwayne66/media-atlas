@@ -1,0 +1,102 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  checks:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v5
+        with:
+          enable-cache: true
+
+      - name: Python deps
+        run: uv sync --frozen
+
+      - name: Ruff lint
+        run: uv run ruff check .
+
+      - name: Ruff format check
+        run: uv run ruff format --check .
+
+      - name: Pytest
+        run: uv run pytest
+
+      - name: Install pnpm
+        uses: pnpm/action-setup@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+
+      - name: JS deps
+        run: pnpm install --frozen-lockfile
+
+      - name: Typecheck
+        run: pnpm -r typecheck
+
+      - name: Vitest
+        run: pnpm -r test
+
+      - name: Web build
+        run: pnpm --filter @videoforge/web build
+
+  compose-smoke:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Compose config
+        run: docker compose config -q
+
+      - name: Start stack
+        run: docker compose up -d --build
+
+      - name: Wait for API health
+        run: |
+          for i in $(seq 1 60); do
+            if curl -fsS http://localhost:8000/healthz; then exit 0; fi
+            sleep 2
+          done
+          echo "API did not become healthy" >&2
+          docker compose ps
+          docker compose logs api
+          exit 1
+
+      - name: Web reachable
+        run: |
+          for i in $(seq 1 30); do
+            if curl -fsS -o /dev/null http://localhost:5173; then echo "web: ok"; exit 0; fi
+            sleep 2
+          done
+          echo "web did not become reachable" >&2
+          docker compose logs web
+          exit 1
+
+      - name: Temporal server healthy
+        run: |
+          for i in $(seq 1 60); do
+            if curl -fsS http://localhost:8233/api/v1/namespaces > /dev/null; then
+              echo "temporal: ok"; exit 0
+            fi
+            sleep 2
+          done
+          echo "temporal server did not become healthy" >&2
+          docker compose logs --tail 50 temporal
+          exit 1
+
+      - name: Teardown
+        if: always()
+        run: docker compose down -v

@@ -1,0 +1,4 @@
+# Rust 工具链锚点。VF-007 桌面端（Tauri）落地时固定到具体版本，
+# 见 docs/implementation/50-tech-stack.md §9。
+[toolchain]
+channel = "stable"
