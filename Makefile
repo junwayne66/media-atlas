@@ -1,6 +1,6 @@
 COMPOSE ?= docker compose
 
-.PHONY: dev dev-infra down logs api web worker agent lint fmt test ci smoke schemas migrate
+.PHONY: dev dev-infra down logs api web worker agent desktop lint fmt test ci smoke schemas migrate
 
 dev: ## 构建并启动全套本地栈（API/Web/Postgres/Redis/MinIO/Temporal）
 	$(COMPOSE) up -d --build
@@ -27,6 +27,9 @@ worker: ## 本机运行 Temporal Worker（连接 dev 栈 :7233）
 
 agent: ## 本机运行 Edge Agent（连接控制面 :8000）
 	uv run python -m videoforge_edge_agent
+
+desktop: ## 运行桌面壳（Tauri dev；需 rustup 与 pnpm install）
+	pnpm --filter @videoforge/desktop tauri dev
 
 lint:
 	uv run ruff check .

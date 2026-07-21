@@ -121,6 +121,10 @@ javascript:
     license: MIT
     isolation: L0
     used_by: packages/contracts-ts（代码生成，devDependency）
+  - name: "@tauri-apps/api 与 @tauri-apps/cli"
+    license: MIT OR Apache-2.0
+    isolation: L0
+    used_by: apps/desktop
 
 tools:
   - name: uv
@@ -131,6 +135,28 @@ tools:
     license: MIT
     isolation: L0
     used_by: workspace
+  - name: rustup/cargo（工具链）
+    license: MIT OR Apache-2.0
+    isolation: L0
+    used_by: apps/desktop
+
+rust:
+  - name: tauri / tauri-build
+    license: MIT OR Apache-2.0
+    isolation: L0
+    used_by: apps/desktop
+  - name: keyring
+    license: MIT OR Apache-2.0
+    isolation: L0
+    used_by: apps/desktop（macOS Keychain Broker）
+  - name: serde / serde_json
+    license: MIT OR Apache-2.0
+    isolation: L0
+    used_by: apps/desktop
+  - name: libc
+    license: MIT OR Apache-2.0
+    isolation: L0
+    used_by: apps/desktop（kill(2) 探活/SIGTERM）
 
 container_images:
   - name: postgres:16-alpine
