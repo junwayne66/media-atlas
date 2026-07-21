@@ -13,6 +13,7 @@ members = [
     "videoforge-contracts",
     "videoforge-media-core",
     "videoforge-persistence",
+    "videoforge-provider-sdk",
     "videoforge-temporal-worker",
     "videoforge-workflows",
 ]
@@ -1346,6 +1347,7 @@ dependencies = [
     { name = "videoforge-contracts" },
     { name = "videoforge-media-core" },
     { name = "videoforge-persistence" },
+    { name = "videoforge-provider-sdk" },
     { name = "videoforge-temporal-worker" },
     { name = "videoforge-workflows" },
 ]
@@ -1365,6 +1367,7 @@ requires-dist = [
     { name = "videoforge-contracts", editable = "packages/contracts-py" },
     { name = "videoforge-media-core", editable = "packages/media-core" },
     { name = "videoforge-persistence", editable = "packages/persistence" },
+    { name = "videoforge-provider-sdk", editable = "packages/provider-sdk" },
     { name = "videoforge-temporal-worker", editable = "apps/temporal-worker" },
     { name = "videoforge-workflows", editable = "packages/workflows" },
 ]
@@ -1447,6 +1450,21 @@ requires-dist = [
     { name = "alembic", specifier = ">=1.13" },
     { name = "psycopg", extras = ["binary"], specifier = ">=3.2" },
     { name = "sqlalchemy", specifier = ">=2.0" },
+    { name = "videoforge-contracts", editable = "packages/contracts-py" },
+]
+
+[[package]]
+name = "videoforge-provider-sdk"
+version = "0.1.0"
+source = { editable = "packages/provider-sdk" }
+dependencies = [
+    { name = "pyyaml" },
+    { name = "videoforge-contracts" },
+]
+
+[package.metadata]
+requires-dist = [
+    { name = "pyyaml", specifier = ">=6.0" },
     { name = "videoforge-contracts", editable = "packages/contracts-py" },
 ]
 

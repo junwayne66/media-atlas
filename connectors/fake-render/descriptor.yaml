@@ -1,0 +1,10 @@
+# 内置 Fake 渲染 Provider：P0 端到端串联与测试用（FFmpeg 编译器 VF-307 落地）
+name: render.fake
+provider_type: RenderProvider
+version: 0.1.0
+capabilities:
+  - render.compose
+  - render.preview
+execution_location: local
+isolation_level: L0
+license_notes: 仓库内置 Fake，无外部代码

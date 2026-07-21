@@ -1,0 +1,16 @@
+# 内置 Fake 源连接器：P0 端到端串联与测试用（真实平台连接器 VF-102/103 落地）
+name: source.fake
+provider_type: SourceConnector
+version: 0.1.0
+capabilities:
+  - source.discover
+  - source.metadata
+execution_location: local
+languages:
+  - zh-CN
+  - en-US
+platforms:
+  - douyin
+  - tiktok
+isolation_level: L0
+license_notes: 仓库内置 Fake，无外部代码
