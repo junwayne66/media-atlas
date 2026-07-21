@@ -1,0 +1,26 @@
+{
+  "author_id": "dy-author-9",
+  "collector_version": "douyin-collector@0.1.0",
+  "comments": 610,
+  "followers_at_observation": 52000,
+  "hashtag_ids": [
+    "ai",
+    "m5-chip"
+  ],
+  "id": "01J2ZK3AC9V6XW8YQ4R5T6U7X0",
+  "item_id": "dy-7412",
+  "likes": 8400,
+  "locale": "zh-CN",
+  "observed_at": "2026-07-21T08:00:00Z",
+  "platform": "douyin",
+  "published_at": "2026-07-21T08:00:00Z",
+  "rank": 7,
+  "raw_artifact_id": "01J2ZK3AC9V6XW8YQ4R5T6U7X1",
+  "region": "CN",
+  "saves": null,
+  "schema_version": "1",
+  "shares": 1200,
+  "sound_id": "snd-33",
+  "source_confidence": 0.9,
+  "views": 120000
+}

@@ -1,0 +1,272 @@
+{
+  "$defs": {
+    "TrendStage": {
+      "description": "趋势阶段状态机（docs/modules/40-trend-intelligence.md §6）。",
+      "enum": [
+        "EMERGING",
+        "RISING",
+        "PEAK",
+        "SATURATED",
+        "DECAYING",
+        "ARCHIVED"
+      ],
+      "title": "TrendStage",
+      "type": "string"
+    },
+    "TrendSubScores": {
+      "additionalProperties": false,
+      "description": "归一化到 [0,1] 的子分数（40 §5）。velocity/acceleration/engagement/decay\n由快照序列算出；其余由聚类上下文/外部信号提供。",
+      "properties": {
+        "acceleration": {
+          "maximum": 1.0,
+          "minimum": 0.0,
+          "title": "Acceleration",
+          "type": "number"
+        },
+        "cross_platform_score": {
+          "default": 0.0,
+          "maximum": 1.0,
+          "minimum": 0.0,
+          "title": "Cross Platform Score",
+          "type": "number"
+        },
+        "decay": {
+          "default": 0.0,
+          "maximum": 1.0,
+          "minimum": 0.0,
+          "title": "Decay",
+          "type": "number"
+        },
+        "engagement_efficiency": {
+          "maximum": 1.0,
+          "minimum": 0.0,
+          "title": "Engagement Efficiency",
+          "type": "number"
+        },
+        "novelty": {
+          "default": 0.0,
+          "maximum": 1.0,
+          "minimum": 0.0,
+          "title": "Novelty",
+          "type": "number"
+        },
+        "saturation": {
+          "default": 0.0,
+          "maximum": 1.0,
+          "minimum": 0.0,
+          "title": "Saturation",
+          "type": "number"
+        },
+        "schema_version": {
+          "default": "1",
+          "description": "合同 schema 版本；Reader 需兼容当前与前一版本",
+          "title": "Schema Version",
+          "type": "string"
+        },
+        "source_quality": {
+          "default": 0.0,
+          "maximum": 1.0,
+          "minimum": 0.0,
+          "title": "Source Quality",
+          "type": "number"
+        },
+        "topic_fit": {
+          "default": 0.0,
+          "maximum": 1.0,
+          "minimum": 0.0,
+          "title": "Topic Fit",
+          "type": "number"
+        },
+        "velocity": {
+          "maximum": 1.0,
+          "minimum": 0.0,
+          "title": "Velocity",
+          "type": "number"
+        }
+      },
+      "required": [
+        "velocity",
+        "acceleration",
+        "engagement_efficiency"
+      ],
+      "title": "TrendSubScores",
+      "type": "object"
+    }
+  },
+  "$id": "https://videoforge.dev/schemas/trend-cluster.schema.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "description": "跨平台/跨语言同事件信号聚类（docs/architecture/31 §1.1）。\n\n可版本化聚合：人工拆分/合并产生新版本，member_item_ids 与合并理由保留。",
+  "properties": {
+    "canonical_topic": {
+      "minLength": 1,
+      "title": "Canonical Topic",
+      "type": "string"
+    },
+    "created_at": {
+      "format": "date-time",
+      "title": "Created At",
+      "type": "string"
+    },
+    "embedding_ref": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Embedding Ref"
+    },
+    "entities": {
+      "items": {
+        "type": "string"
+      },
+      "title": "Entities",
+      "type": "array"
+    },
+    "first_seen_at": {
+      "format": "date-time",
+      "title": "First Seen At",
+      "type": "string"
+    },
+    "hot_score": {
+      "anyOf": [
+        {
+          "maximum": 1.0,
+          "minimum": 0.0,
+          "type": "number"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Hot Score"
+    },
+    "id": {
+      "minLength": 1,
+      "title": "Id",
+      "type": "string"
+    },
+    "keywords": {
+      "items": {
+        "type": "string"
+      },
+      "title": "Keywords",
+      "type": "array"
+    },
+    "last_seen_at": {
+      "format": "date-time",
+      "title": "Last Seen At",
+      "type": "string"
+    },
+    "member_item_ids": {
+      "description": "成员 item 引用",
+      "items": {
+        "type": "string"
+      },
+      "title": "Member Item Ids",
+      "type": "array"
+    },
+    "reason_codes": {
+      "description": "可解释理由码（40 §10 ≥2）",
+      "items": {
+        "type": "string"
+      },
+      "title": "Reason Codes",
+      "type": "array"
+    },
+    "schema_version": {
+      "default": "1",
+      "description": "合同 schema 版本；Reader 需兼容当前与前一版本",
+      "title": "Schema Version",
+      "type": "string"
+    },
+    "snapshot_ids": {
+      "items": {
+        "type": "string"
+      },
+      "title": "Snapshot Ids",
+      "type": "array"
+    },
+    "source_confidence": {
+      "default": 0.0,
+      "maximum": 1.0,
+      "minimum": 0.0,
+      "title": "Source Confidence",
+      "type": "number"
+    },
+    "stage": {
+      "$ref": "#/$defs/TrendStage",
+      "default": "EMERGING"
+    },
+    "sub_scores": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/TrendSubScores"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null
+    },
+    "title": {
+      "minLength": 1,
+      "title": "Title",
+      "type": "string"
+    },
+    "updated_at": {
+      "format": "date-time",
+      "title": "Updated At",
+      "type": "string"
+    },
+    "version": {
+      "default": 1,
+      "description": "乐观并发；人工拆分/合并后不被无条件覆盖",
+      "minimum": 1,
+      "title": "Version",
+      "type": "integer"
+    },
+    "vertical": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "description": "内容方向，如 ai-tech",
+      "title": "Vertical"
+    },
+    "weights_version": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "description": "算 hot_score 用的权重模板版本",
+      "title": "Weights Version"
+    }
+  },
+  "required": [
+    "id",
+    "title",
+    "canonical_topic",
+    "first_seen_at",
+    "last_seen_at",
+    "created_at",
+    "updated_at"
+  ],
+  "title": "TrendCluster",
+  "type": "object"
+}
