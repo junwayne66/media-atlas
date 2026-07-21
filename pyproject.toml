@@ -7,22 +7,29 @@ dependencies = [
     "videoforge-api",
     "videoforge-contracts",
     "videoforge-persistence",
+    "videoforge-media-core",
 ]
 
 [tool.uv.workspace]
-members = ["apps/api", "packages/contracts-py", "packages/persistence"]
+members = [
+    "apps/api",
+    "packages/contracts-py",
+    "packages/persistence",
+    "packages/media-core",
+]
 
 [tool.uv.sources]
 videoforge-api = { workspace = true }
 videoforge-contracts = { workspace = true }
 videoforge-persistence = { workspace = true }
+videoforge-media-core = { workspace = true }
 
 [dependency-groups]
 dev = [
     "ruff>=0.9",
     "pytest>=8.3",
     "httpx>=0.28",
-    "testcontainers[postgres]>=4.8",
+    "testcontainers[postgres,minio]>=4.8",
 ]
 
 [tool.ruff]
@@ -33,7 +40,17 @@ target-version = "py311"
 select = ["E", "W", "F", "I", "UP", "B"]
 
 [tool.ruff.lint.isort]
-known-first-party = ["videoforge_api", "videoforge_contracts", "videoforge_persistence"]
+known-first-party = [
+    "videoforge_api",
+    "videoforge_contracts",
+    "videoforge_persistence",
+    "videoforge_media_core",
+]
 
 [tool.pytest.ini_options]
-testpaths = ["apps/api/tests", "packages/contracts-py/tests", "packages/persistence/tests"]
+testpaths = [
+    "apps/api/tests",
+    "packages/contracts-py/tests",
+    "packages/persistence/tests",
+    "packages/media-core/tests",
+]
