@@ -6,7 +6,21 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 Design package for **VideoForge** (repo directory: `media-atlas`) — a self-hosted, trend-driven, multilingual short-video re-creation system. First target: Douyin + TikTok, 中文 ↔ English, AI/tech content, macOS pilot. Full loop: trend discovery → video acquisition → AI analysis (`VideoBlueprint`) → two re-creation modes → localization → review → publishing → performance feedback.
 
-**Current state: documentation only.** There is no source code, build system, or test suite yet. `docs/` is the deliverable — written explicitly as a spec for a coder agent to implement phase by phase. The directory is not a git repository.
+**Current state: VF-001 (Bootstrap Monorepo) complete.** The monorepo skeleton is live: uv workspace (`apps/api`, FastAPI), pnpm workspace (`apps/web`, Vue 3), `compose.yaml` seven-service stack (postgres/redis/minio/temporal/temporal-ui/api/web), Makefile entry points, dual-platform CI, `third_party_manifest.yaml`. Git repo with trunk `main`; one task = one branch + `--no-ff` merge. Next roadmap task: VF-002 Contracts First. `docs/` remains the implementation spec.
+
+## Common commands
+
+```bash
+uv sync && corepack pnpm install   # install deps (no global pnpm on this machine — use corepack pnpm)
+make dev          # build + start full stack (docker compose)
+make dev-infra    # infra containers only; then `make api` / `make web` for local hot-reload
+make lint / make fmt / make test / make ci
+make smoke        # health-probe running stack (API :8000, Web :5173, Temporal :8233)
+make down         # stop containers (keeps volumes)
+uv run pytest apps/api/tests/test_health.py::test_healthz_reports_ok   # single test
+```
+
+Local port overrides live in `.env` (gitignored): this machine moves Postgres/Redis/MinIO to 15432/16379/19000/19001 because another compose stack (`botinkit_dev`) owns the defaults. Temporal's `auto-setup` needs explicit `DB_PORT=5432` and binds to the container IP, not localhost (healthcheck probes `$(hostname)`).
 
 All docs are Simplified Chinese; keep new or edited docs in Chinese. Docs follow a numeric naming convention (`00-` master plan, `10-`/`20-` overviews, `30s-` architecture, `40s-` modules, `50s-` implementation, `90-` references).
 
