@@ -1,0 +1,19 @@
+[project]
+name = "videoforge-provider-sdk"
+version = "0.1.0"
+description = "VideoForge Provider/Connector SDK：descriptor 加载、注册表、熔断与可解释路由"
+requires-python = ">=3.11"
+dependencies = [
+    "videoforge-contracts",
+    "pyyaml>=6.0",
+]
+
+[tool.uv.sources]
+videoforge-contracts = { workspace = true }
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/videoforge_provider_sdk"]
