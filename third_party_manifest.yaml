@@ -62,6 +62,14 @@ python:
     license: Apache-2.0
     isolation: L0
     used_by: packages/media-core
+  - name: temporalio（Python SDK）
+    license: MIT
+    isolation: L0
+    used_by: packages/workflows, apps/temporal-worker, apps/api
+  - name: pytest-asyncio
+    license: Apache-2.0
+    isolation: L0
+    used_by: dev
   - name: ffmpeg/ffprobe（系统二进制）
     license: LGPL-2.1+ / GPL-2.0+（视构建选项，Homebrew 构建含 GPL 组件）
     isolation: L3

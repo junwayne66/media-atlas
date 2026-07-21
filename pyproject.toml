@@ -8,14 +8,18 @@ dependencies = [
     "videoforge-contracts",
     "videoforge-persistence",
     "videoforge-media-core",
+    "videoforge-workflows",
+    "videoforge-temporal-worker",
 ]
 
 [tool.uv.workspace]
 members = [
     "apps/api",
+    "apps/temporal-worker",
     "packages/contracts-py",
     "packages/persistence",
     "packages/media-core",
+    "packages/workflows",
 ]
 
 [tool.uv.sources]
@@ -23,6 +27,8 @@ videoforge-api = { workspace = true }
 videoforge-contracts = { workspace = true }
 videoforge-persistence = { workspace = true }
 videoforge-media-core = { workspace = true }
+videoforge-workflows = { workspace = true }
+videoforge-temporal-worker = { workspace = true }
 
 [dependency-groups]
 dev = [
@@ -30,6 +36,7 @@ dev = [
     "pytest>=8.3",
     "httpx>=0.28",
     "testcontainers[postgres,minio]>=4.8",
+    "pytest-asyncio>=0.24",
 ]
 
 [tool.ruff]
@@ -45,6 +52,8 @@ known-first-party = [
     "videoforge_contracts",
     "videoforge_persistence",
     "videoforge_media_core",
+    "videoforge_workflows",
+    "videoforge_temporal_worker",
 ]
 
 [tool.pytest.ini_options]
@@ -53,4 +62,6 @@ testpaths = [
     "packages/contracts-py/tests",
     "packages/persistence/tests",
     "packages/media-core/tests",
+    "packages/workflows/tests",
 ]
+asyncio_mode = "auto"
