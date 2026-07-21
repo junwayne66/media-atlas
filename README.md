@@ -35,6 +35,8 @@ make smoke         # 健康检查
 |---|---|
 | `make dev` | 构建并启动全部容器（API、Web、Postgres、Redis、MinIO、Temporal） |
 | `make dev-infra` | 只启动基础设施容器，配合 `make api` / `make web` 本机热重载 |
+| `make migrate` | 对本地开发库执行 Alembic 迁移（读 .env 端口/凭据） |
+| `make schemas` | 从 Pydantic 真值再生成 schemas/ 与 contracts-ts 类型 |
 | `make lint` / `make fmt` | ruff + vue-tsc 检查 / 自动格式化 |
 | `make test` | pytest + vitest |
 | `make ci` | lint + test（CI 同款入口） |

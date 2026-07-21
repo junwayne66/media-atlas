@@ -1,6 +1,6 @@
 COMPOSE ?= docker compose
 
-.PHONY: dev dev-infra down logs api web lint fmt test ci smoke schemas
+.PHONY: dev dev-infra down logs api web lint fmt test ci smoke schemas migrate
 
 dev: ## 构建并启动全套本地栈（API/Web/Postgres/Redis/MinIO/Temporal）
 	$(COMPOSE) up -d --build
@@ -32,6 +32,11 @@ fmt:
 schemas: ## 从 Pydantic 真值再生成 schemas/ 与 contracts-ts 类型
 	uv run python -m videoforge_contracts.export
 	pnpm --filter @videoforge/contracts generate
+
+migrate: ## 对本地开发库执行 Alembic 迁移（读取 .env 的端口/凭据）
+	@set -a; [ -f .env ] && . ./.env; set +a; \
+	VIDEOFORGE_DATABASE_URL="postgresql+psycopg://$${POSTGRES_USER:-videoforge}:$${POSTGRES_PASSWORD:-videoforge}@localhost:$${POSTGRES_PORT:-5432}/$${POSTGRES_DB:-videoforge}" \
+	uv run alembic upgrade head
 
 test:
 	uv run pytest

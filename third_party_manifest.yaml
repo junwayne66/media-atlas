@@ -37,6 +37,27 @@ python:
     license: MIT
     isolation: L0
     used_by: apps/api（构建后端）
+  - name: sqlalchemy
+    license: MIT
+    isolation: L0
+    used_by: packages/persistence
+  - name: alembic
+    license: MIT
+    isolation: L0
+    used_by: packages/persistence, migrations/
+  - name: psycopg
+    license: LGPL-3.0
+    isolation: L1
+    used_by: packages/persistence
+    note: 仅作为未修改的依赖库 import 使用，不复制/修改其代码
+  - name: uuid6
+    license: MIT
+    isolation: L0
+    used_by: packages/persistence
+  - name: testcontainers
+    license: Apache-2.0
+    isolation: L0
+    used_by: dev（集成测试）
 
 javascript:
   - name: vue
