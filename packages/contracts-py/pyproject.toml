@@ -5,6 +5,7 @@ description = "VideoForge 核心领域合同：Pydantic 编写真值，导出 sc
 requires-python = ">=3.11"
 dependencies = [
     "pydantic>=2.10",
+    "uuid6>=2024.1",
 ]
 
 [build-system]

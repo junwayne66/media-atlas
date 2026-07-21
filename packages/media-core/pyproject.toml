@@ -1,13 +1,11 @@
 [project]
-name = "videoforge-persistence"
+name = "videoforge-media-core"
 version = "0.1.0"
-description = "VideoForge 持久化层：SQLAlchemy 2 表定义、契约映射、乐观锁 repositories、事务性 outbox"
+description = "VideoForge 媒体核心：对象存储 Artifact Store、内容寻址本地缓存、流式哈希、ffprobe 探测"
 requires-python = ">=3.11"
 dependencies = [
     "videoforge-contracts",
-    "sqlalchemy>=2.0",
-    "alembic>=1.13",
-    "psycopg[binary]>=3.2",
+    "boto3>=1.35",
 ]
 
 [tool.uv.sources]
@@ -18,4 +16,4 @@ requires = ["hatchling"]
 build-backend = "hatchling.build"
 
 [tool.hatch.build.targets.wheel]
-packages = ["src/videoforge_persistence"]
+packages = ["src/videoforge_media_core"]

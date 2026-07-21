@@ -58,6 +58,15 @@ python:
     license: Apache-2.0
     isolation: L0
     used_by: dev（集成测试）
+  - name: boto3
+    license: Apache-2.0
+    isolation: L0
+    used_by: packages/media-core
+  - name: ffmpeg/ffprobe（系统二进制）
+    license: LGPL-2.1+ / GPL-2.0+（视构建选项，Homebrew 构建含 GPL 组件）
+    isolation: L3
+    used_by: packages/media-core（仅参数数组子进程调用，不链接不分发）
+    note: ToolchainRegistry 落地后记录实际路径/版本/buildconf（50 §10）
 
 javascript:
   - name: vue
