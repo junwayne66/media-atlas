@@ -1,0 +1,119 @@
+# 第三方依赖与许可证清单（docs/20-open-source-landscape.md §3 的隔离等级）：
+#   L0 宽松许可证可入核心 | L1 代码宽松但模型/资源另核 | L2 特殊商业许可证
+#   L3 GPL/AGPL 独立进程隔离 | L4 非官方接口需熔断
+# 新增外部工具/镜像/模型前先在此登记（docs/implementation/52-repo-structure.md §5）。
+# CI 后续任务补充 SBOM 生成与版本 digest 固定。
+
+python:
+  - name: fastapi
+    license: MIT
+    isolation: L0
+    used_by: apps/api
+  - name: uvicorn
+    license: BSD-3-Clause
+    isolation: L0
+    used_by: apps/api
+  - name: pydantic
+    license: MIT
+    isolation: L0
+    used_by: apps/api
+  - name: pydantic-settings
+    license: MIT
+    isolation: L0
+    used_by: apps/api
+  - name: ruff
+    license: MIT
+    isolation: L0
+    used_by: dev
+  - name: pytest
+    license: MIT
+    isolation: L0
+    used_by: dev
+  - name: httpx
+    license: BSD-3-Clause
+    isolation: L0
+    used_by: dev
+  - name: hatchling
+    license: MIT
+    isolation: L0
+    used_by: apps/api（构建后端）
+
+javascript:
+  - name: vue
+    license: MIT
+    isolation: L0
+    used_by: apps/web
+  - name: vite
+    license: MIT
+    isolation: L0
+    used_by: apps/web
+  - name: vitest
+    license: MIT
+    isolation: L0
+    used_by: apps/web
+  - name: vue-tsc
+    license: MIT
+    isolation: L0
+    used_by: apps/web
+  - name: typescript
+    license: Apache-2.0
+    isolation: L0
+    used_by: apps/web
+  - name: "@vitejs/plugin-vue"
+    license: MIT
+    isolation: L0
+    used_by: apps/web
+  - name: "@vue/test-utils"
+    license: MIT
+    isolation: L0
+    used_by: apps/web
+  - name: jsdom
+    license: MIT
+    isolation: L0
+    used_by: apps/web
+  - name: "@types/node"
+    license: MIT
+    isolation: L0
+    used_by: apps/web
+
+tools:
+  - name: uv
+    license: MIT OR Apache-2.0
+    isolation: L0
+    used_by: workspace
+  - name: pnpm
+    license: MIT
+    isolation: L0
+    used_by: workspace
+
+container_images:
+  - name: postgres:16-alpine
+    license: PostgreSQL License
+    isolation: L0
+    used_by: compose.postgres
+  - name: redis:7.2-alpine
+    license: BSD-3-Clause
+    isolation: L0
+    used_by: compose.redis
+    note: 固定 7.2；redis 7.4+ 改为 RSALv2/SSPLv1，升级前需重新评审
+  - name: minio/minio
+    license: AGPL-3.0
+    isolation: L3
+    used_by: compose.minio
+    note: 仅作为独立容器经 S3 API 使用，不链接、不修改、不分发其代码
+  - name: temporalio/auto-setup
+    license: MIT
+    isolation: L0
+    used_by: compose.temporal
+  - name: temporalio/ui
+    license: MIT
+    isolation: L0
+    used_by: compose.temporal-ui
+  - name: python:3.11-slim
+    license: PSF-2.0（基础镜像含多种组件许可证）
+    isolation: L0
+    used_by: infra/docker/api.Dockerfile
+  - name: node:22-alpine
+    license: MIT（Node.js）
+    isolation: L0
+    used_by: infra/docker/web.Dockerfile
