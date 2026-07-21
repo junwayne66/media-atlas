@@ -1,0 +1,37 @@
+{
+  "items": [
+    {
+      "item_id": "dy-7412",
+      "author_id": "dy-author-9",
+      "published_at": "2026-07-21T14:00:00Z",
+      "observed_at": "2026-07-22T00:00:00Z",
+      "views": 1200000,
+      "likes": 84000,
+      "comments": 6100,
+      "shares": 12000,
+      "saves": null,
+      "followers": 520000,
+      "rank": 1,
+      "hashtags": ["ai", "m5-chip"],
+      "sound_id": "snd-33",
+      "region": "CN",
+      "locale": "zh-CN"
+    },
+    {
+      "item_id": "dy-7419",
+      "author_id": "dy-author-3",
+      "published_at": "2026-07-21T18:30:00Z",
+      "observed_at": "2026-07-22T00:00:00Z",
+      "views": 340000,
+      "likes": 21000,
+      "comments": null,
+      "shares": 3300,
+      "saves": 900,
+      "followers": 12000,
+      "rank": 2,
+      "hashtags": ["ai"],
+      "region": "CN",
+      "locale": "zh-CN"
+    }
+  ]
+}

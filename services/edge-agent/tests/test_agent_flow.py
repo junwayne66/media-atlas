@@ -57,7 +57,8 @@ async def test_provider_failure_releases_then_retry_succeeds(
     control_plane: ControlPlaneClient,
 ) -> None:
     registry = ProviderRegistry()
-    provider = FakeProvider(scan_descriptors(REPO_ROOT / "connectors")[1])  # source.fake
+    descriptors = {d.name: d for d in scan_descriptors(REPO_ROOT / "connectors")}
+    provider = FakeProvider(descriptors["source.fake"])  # 按名选，不依赖扫描顺序
     assert provider.descriptor.name == "source.fake"
     provider.fail_times(1)
     registry.register(provider)

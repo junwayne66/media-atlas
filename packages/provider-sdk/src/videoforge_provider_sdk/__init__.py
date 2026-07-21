@@ -5,6 +5,15 @@ from videoforge_provider_sdk.descriptor import (
     load_descriptor,
     scan_descriptors,
 )
+from videoforge_provider_sdk.discovery import (
+    ConnectorErrorCode,
+    DiscoveryConnector,
+    DiscoveryMode,
+    DiscoveryRequest,
+    DiscoveryResult,
+    DiscoveryStatus,
+    status_for_error,
+)
 from videoforge_provider_sdk.registry import ProviderRegistry, ProviderRuntime
 from videoforge_provider_sdk.routing import (
     WEIGHTS,
@@ -19,7 +28,13 @@ __all__ = [
     "CandidateScore",
     "CircuitBreaker",
     "CircuitState",
+    "ConnectorErrorCode",
     "DescriptorError",
+    "DiscoveryConnector",
+    "DiscoveryMode",
+    "DiscoveryRequest",
+    "DiscoveryResult",
+    "DiscoveryStatus",
     "FakeProvider",
     "NoEligibleProviderError",
     "Provider",
@@ -30,4 +45,5 @@ __all__ = [
     "load_descriptor",
     "route",
     "scan_descriptors",
+    "status_for_error",
 ]
