@@ -159,6 +159,13 @@
       "title": "Updated At",
       "type": "string"
     },
+    "version": {
+      "default": 1,
+      "description": "乐观并发版本；更新需带 If-Match（51 §1）",
+      "minimum": 1,
+      "title": "Version",
+      "type": "integer"
+    },
     "vertical": {
       "description": "内容方向，如 ai-tech",
       "minLength": 1,

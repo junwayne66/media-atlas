@@ -64,6 +64,10 @@ export type Title = string;
 export type TrendClusterId = string | null;
 export type UpdatedAt = string;
 /**
+ * 乐观并发版本；更新需带 If-Match（51 §1）
+ */
+export type Version = number;
+/**
  * 内容方向，如 ai-tech
  */
 export type Vertical = string;
@@ -91,6 +95,7 @@ export interface Project {
   title: Title;
   trend_cluster_id?: TrendClusterId;
   updated_at: UpdatedAt;
+  version?: Version;
   vertical: Vertical;
   workflow_id?: WorkflowId;
 }

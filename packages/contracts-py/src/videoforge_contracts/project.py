@@ -15,6 +15,7 @@ class Project(ContractModel):
     source_language: str = Field(min_length=2, description="BCP-47，如 zh-CN")
     target_languages: list[str] = Field(min_length=1, description="BCP-47 列表")
     creation_mode: CreationMode
+    version: int = Field(default=1, ge=1, description="乐观并发版本；更新需带 If-Match（51 §1）")
     status: ProjectStatus = ProjectStatus.DRAFT
     execution_policy: ExecutionPolicy = ExecutionPolicy.LOCAL_PREFERRED
     trend_cluster_id: str | None = Field(default=None, description="来源热点聚类")
