@@ -5,10 +5,12 @@ description = "VideoForge Temporal Worker 进程：注册核心队列的 Workflo
 requires-python = ">=3.11"
 dependencies = [
     "videoforge-workflows",
+    "videoforge-persistence",
 ]
 
 [tool.uv.sources]
 videoforge-workflows = { workspace = true }
+videoforge-persistence = { workspace = true }
 
 [project.scripts]
 videoforge-temporal-worker = "videoforge_temporal_worker.main:cli"

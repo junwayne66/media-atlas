@@ -126,8 +126,29 @@ class AgentRunner:
             except Exception as exc:  # 心跳失败不终止 agent，下轮重试
                 logger.warning("heartbeat 失败: %r", exc)
 
+    async def _register_with_retry(
+        self, *, attempts: int = 30, backoff_s: float = 2.0, max_backoff_s: float = 30.0
+    ) -> None:
+        """守护进程启动时容忍控制面暂不可达：出站连接失败即指数退避重试。"""
+        for attempt in range(1, attempts + 1):
+            try:
+                await self.register()
+                return
+            except Exception as exc:  # noqa: BLE001 — 网络/HTTP 各类异常统一退避
+                if attempt == attempts:
+                    raise
+                delay = min(backoff_s * 2 ** (attempt - 1), max_backoff_s)
+                logger.warning(
+                    "注册失败（第 %d/%d 次），%.1fs 后重试: %r",
+                    attempt,
+                    attempts,
+                    delay,
+                    exc,
+                )
+                await asyncio.sleep(delay)
+
     async def run_forever(self) -> None:
-        await self.register()
+        await self._register_with_retry()
         heartbeat = asyncio.create_task(self._heartbeat_loop())
         try:
             while True:

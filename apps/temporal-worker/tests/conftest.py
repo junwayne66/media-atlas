@@ -1,0 +1,45 @@
+import os
+import subprocess
+from collections.abc import Iterator
+from pathlib import Path
+
+import pytest
+from alembic import command
+from alembic.config import Config
+from sqlalchemy import Engine, create_engine, text
+
+REPO_ROOT = Path(__file__).parents[3]
+ALL_TABLES = ("worker_tasks", "workers")
+
+os.environ.setdefault("TESTCONTAINERS_RYUK_DISABLED", "true")
+
+
+def _docker_available() -> bool:
+    try:
+        return subprocess.run(["docker", "info"], capture_output=True, timeout=15).returncode == 0
+    except (OSError, subprocess.TimeoutExpired):
+        return False
+
+
+@pytest.fixture(scope="session")
+def migrated_engine() -> Iterator[Engine]:
+    if not _docker_available():
+        pytest.skip("docker 不可用，跳过 dispatch 集成测试")
+    from testcontainers.postgres import PostgresContainer
+
+    with PostgresContainer("postgres:16-alpine", driver="psycopg") as pg:
+        url = pg.get_connection_url()
+        cfg = Config(str(REPO_ROOT / "alembic.ini"))
+        cfg.set_main_option("script_location", str(REPO_ROOT / "migrations"))
+        cfg.set_main_option("sqlalchemy.url", url)
+        command.upgrade(cfg, "head")
+        engine = create_engine(url)
+        yield engine
+        engine.dispose()
+
+
+@pytest.fixture(autouse=True)
+def _clean_tables(migrated_engine: Engine) -> Iterator[None]:
+    yield
+    with migrated_engine.begin() as conn:
+        conn.execute(text(f"TRUNCATE {', '.join(ALL_TABLES)} CASCADE"))

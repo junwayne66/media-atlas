@@ -73,5 +73,6 @@ testpaths = [
     "packages/workflows/tests",
     "packages/provider-sdk/tests",
     "services/edge-agent/tests",
+    "apps/temporal-worker/tests",
 ]
 asyncio_mode = "auto"
