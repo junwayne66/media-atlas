@@ -1495,11 +1495,15 @@ name = "videoforge-temporal-worker"
 version = "0.1.0"
 source = { editable = "apps/temporal-worker" }
 dependencies = [
+    { name = "videoforge-persistence" },
     { name = "videoforge-workflows" },
 ]
 
 [package.metadata]
-requires-dist = [{ name = "videoforge-workflows", editable = "packages/workflows" }]
+requires-dist = [
+    { name = "videoforge-persistence", editable = "packages/persistence" },
+    { name = "videoforge-workflows", editable = "packages/workflows" },
+]
 
 [[package]]
 name = "videoforge-workflows"
