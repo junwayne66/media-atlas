@@ -1,0 +1,41 @@
+{
+  "ahash": null,
+  "audio_fingerprint": null,
+  "created_at": "2026-07-21T08:00:00Z",
+  "filename": "source.mp4",
+  "id": "01J2ZK3AC9V6XW8YQ4R5T6U7W1",
+  "kind": "source_video",
+  "media": {
+    "channels": 2,
+    "codec": null,
+    "duration_s": 58.2,
+    "fps": 30.0,
+    "height": 1920,
+    "schema_version": "1",
+    "time_base": null,
+    "width": 1080
+  },
+  "mime_type": "video/mp4",
+  "phash": null,
+  "produced_by": {
+    "activity": "ingest.download",
+    "model": null,
+    "schema_version": "1",
+    "tool": "yt-dlp",
+    "tool_version": "2026.06.1"
+  },
+  "project_id": "01J2ZK3AC9V6XW8YQ4R5T6U7V8",
+  "retention_policy": null,
+  "schema_version": "1",
+  "sensitivity": null,
+  "sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+  "size_bytes": 10485760,
+  "storage": {
+    "backend": "s3",
+    "bucket": "videoforge",
+    "local_path": null,
+    "object_key": "artifacts/t/p/a/source.mp4",
+    "schema_version": "1"
+  },
+  "upstream_artifact_ids": []
+}
