@@ -11,6 +11,7 @@ dependencies = [
     "videoforge-workflows",
     "videoforge-temporal-worker",
     "videoforge-provider-sdk",
+    "videoforge-edge-agent",
 ]
 
 [tool.uv.workspace]
@@ -22,6 +23,7 @@ members = [
     "packages/media-core",
     "packages/workflows",
     "packages/provider-sdk",
+    "services/edge-agent",
 ]
 
 [tool.uv.sources]
@@ -32,6 +34,7 @@ videoforge-media-core = { workspace = true }
 videoforge-workflows = { workspace = true }
 videoforge-temporal-worker = { workspace = true }
 videoforge-provider-sdk = { workspace = true }
+videoforge-edge-agent = { workspace = true }
 
 [dependency-groups]
 dev = [
@@ -58,6 +61,7 @@ known-first-party = [
     "videoforge_workflows",
     "videoforge_temporal_worker",
     "videoforge_provider_sdk",
+    "videoforge_edge_agent",
 ]
 
 [tool.pytest.ini_options]
@@ -68,5 +72,6 @@ testpaths = [
     "packages/media-core/tests",
     "packages/workflows/tests",
     "packages/provider-sdk/tests",
+    "services/edge-agent/tests",
 ]
 asyncio_mode = "auto"

@@ -9,3 +9,4 @@ class Settings(BaseSettings):
     cors_origins: list[str] = ["http://localhost:5173"]
     temporal_address: str = "localhost:7233"
     temporal_namespace: str = "default"
+    database_url: str = "postgresql+psycopg://videoforge:videoforge@localhost:5432/videoforge"

@@ -14,7 +14,14 @@ from sqlalchemy import Engine, create_engine, text
 from sqlalchemy.orm import Session
 
 REPO_ROOT = Path(__file__).parents[3]
-ALL_TABLES = ("processed_events", "outbox_events", "artifacts", "projects")
+ALL_TABLES = (
+    "processed_events",
+    "outbox_events",
+    "artifacts",
+    "projects",
+    "worker_tasks",
+    "workers",
+)
 
 
 def _docker_available() -> bool:

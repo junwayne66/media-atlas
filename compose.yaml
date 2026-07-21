@@ -86,6 +86,9 @@ services:
     build:
       context: .
       dockerfile: infra/docker/api.Dockerfile
+    environment:
+      VIDEOFORGE_DATABASE_URL: postgresql+psycopg://${POSTGRES_USER:-videoforge}:${POSTGRES_PASSWORD:-videoforge}@postgres:5432/${POSTGRES_DB:-videoforge}
+      VIDEOFORGE_TEMPORAL_ADDRESS: temporal:7233
     command:
       [
         "uv",

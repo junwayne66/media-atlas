@@ -4,6 +4,9 @@ from fastapi.middleware.cors import CORSMiddleware
 from videoforge_api.operations import TemporalOperationsService
 from videoforge_api.operations import router as operations_router
 from videoforge_api.settings import Settings
+from videoforge_api.workers import DbWorkerGateway
+from videoforge_api.workers import router as workers_router
+from videoforge_persistence import create_engine_from_env
 
 
 def create_app(settings: Settings | None = None) -> FastAPI:
@@ -15,11 +18,13 @@ def create_app(settings: Settings | None = None) -> FastAPI:
         allow_methods=["*"],
         allow_headers=["*"],
     )
-    # 懒连接：不触发 /v1/operations 就不会尝试连 Temporal；测试可整体替换
+    # 懒连接：不触发对应路由就不连 Temporal/DB；测试可整体替换 state 上的实现
     app.state.operations_service = TemporalOperationsService(
         settings.temporal_address, settings.temporal_namespace
     )
+    app.state.worker_gateway = DbWorkerGateway(create_engine_from_env(settings.database_url))
     app.include_router(operations_router)
+    app.include_router(workers_router)
 
     @app.get("/healthz")
     def healthz() -> dict[str, str]:

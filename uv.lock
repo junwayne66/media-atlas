@@ -11,6 +11,7 @@ members = [
     "videoforge",
     "videoforge-api",
     "videoforge-contracts",
+    "videoforge-edge-agent",
     "videoforge-media-core",
     "videoforge-persistence",
     "videoforge-provider-sdk",
@@ -1345,6 +1346,7 @@ source = { virtual = "." }
 dependencies = [
     { name = "videoforge-api" },
     { name = "videoforge-contracts" },
+    { name = "videoforge-edge-agent" },
     { name = "videoforge-media-core" },
     { name = "videoforge-persistence" },
     { name = "videoforge-provider-sdk" },
@@ -1365,6 +1367,7 @@ dev = [
 requires-dist = [
     { name = "videoforge-api", editable = "apps/api" },
     { name = "videoforge-contracts", editable = "packages/contracts-py" },
+    { name = "videoforge-edge-agent", editable = "services/edge-agent" },
     { name = "videoforge-media-core", editable = "packages/media-core" },
     { name = "videoforge-persistence", editable = "packages/persistence" },
     { name = "videoforge-provider-sdk", editable = "packages/provider-sdk" },
@@ -1391,6 +1394,7 @@ dependencies = [
     { name = "pydantic-settings" },
     { name = "temporalio" },
     { name = "uvicorn", extra = ["standard"] },
+    { name = "videoforge-persistence" },
     { name = "videoforge-workflows" },
 ]
 
@@ -1401,6 +1405,7 @@ requires-dist = [
     { name = "pydantic-settings", specifier = ">=2.7" },
     { name = "temporalio", specifier = ">=1.8" },
     { name = "uvicorn", extras = ["standard"], specifier = ">=0.32" },
+    { name = "videoforge-persistence", editable = "packages/persistence" },
     { name = "videoforge-workflows", editable = "packages/workflows" },
 ]
 
@@ -1417,6 +1422,23 @@ dependencies = [
 requires-dist = [
     { name = "pydantic", specifier = ">=2.10" },
     { name = "uuid6", specifier = ">=2024.1" },
+]
+
+[[package]]
+name = "videoforge-edge-agent"
+version = "0.1.0"
+source = { editable = "services/edge-agent" }
+dependencies = [
+    { name = "httpx" },
+    { name = "videoforge-contracts" },
+    { name = "videoforge-provider-sdk" },
+]
+
+[package.metadata]
+requires-dist = [
+    { name = "httpx", specifier = ">=0.28" },
+    { name = "videoforge-contracts", editable = "packages/contracts-py" },
+    { name = "videoforge-provider-sdk", editable = "packages/provider-sdk" },
 ]
 
 [[package]]
