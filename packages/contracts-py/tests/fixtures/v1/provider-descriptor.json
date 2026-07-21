@@ -1,0 +1,30 @@
+{
+  "capabilities": [
+    "asr.transcribe"
+  ],
+  "cost_model": {
+    "currency": "USD",
+    "estimated_cost_per_unit": 0.0,
+    "schema_version": "1",
+    "unit": "second"
+  },
+  "execution_location": "local",
+  "health": {
+    "last_error": null,
+    "last_success_at": "2026-07-21T08:00:00Z",
+    "schema_version": "1",
+    "status": "healthy"
+  },
+  "isolation_level": "L0",
+  "languages": [
+    "zh-CN",
+    "en-US"
+  ],
+  "license_notes": null,
+  "name": "asr.whisper-cpp",
+  "platforms": [],
+  "provider_type": "ASRProvider",
+  "required_secrets": [],
+  "schema_version": "1",
+  "version": "0.1.0"
+}

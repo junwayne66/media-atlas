@@ -1,0 +1,15 @@
+{
+  "code": "RATE_LIMITED",
+  "context": {
+    "attempt": 2,
+    "provider": "tiktok.discovery"
+  },
+  "correlation_id": "cor_01J2ZK3AC9",
+  "detail": "tiktok discovery connector 触发限流",
+  "instance": null,
+  "retryable": true,
+  "schema_version": "1",
+  "status": 429,
+  "title": "Connector rate limited",
+  "type": "https://videoforge.dev/problems/connector-rate-limited"
+}

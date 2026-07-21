@@ -50,6 +50,16 @@ jobs:
       - name: Vitest
         run: pnpm -r test
 
+      - name: Regenerate contracts
+        run: |
+          uv run python -m videoforge_contracts.export
+          pnpm --filter @videoforge/contracts generate
+
+      - name: Contracts freshness
+        run: |
+          git add -A schemas packages/contracts-ts/src
+          git diff --cached --exit-code schemas packages/contracts-ts/src
+
       - name: Web build
         run: pnpm --filter @videoforge/web build
 

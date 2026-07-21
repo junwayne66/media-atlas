@@ -6,6 +6,7 @@ requires-python = ">=3.11"
 members = [
     "videoforge",
     "videoforge-api",
+    "videoforge-contracts",
 ]
 
 [[package]]
@@ -547,6 +548,7 @@ version = "0.0.1"
 source = { virtual = "." }
 dependencies = [
     { name = "videoforge-api" },
+    { name = "videoforge-contracts" },
 ]
 
 [package.dev-dependencies]
@@ -557,7 +559,10 @@ dev = [
 ]
 
 [package.metadata]
-requires-dist = [{ name = "videoforge-api", editable = "apps/api" }]
+requires-dist = [
+    { name = "videoforge-api", editable = "apps/api" },
+    { name = "videoforge-contracts", editable = "packages/contracts-py" },
+]
 
 [package.metadata.requires-dev]
 dev = [
@@ -584,6 +589,17 @@ requires-dist = [
     { name = "pydantic-settings", specifier = ">=2.7" },
     { name = "uvicorn", extras = ["standard"], specifier = ">=0.32" },
 ]
+
+[[package]]
+name = "videoforge-contracts"
+version = "0.1.0"
+source = { editable = "packages/contracts-py" }
+dependencies = [
+    { name = "pydantic" },
+]
+
+[package.metadata]
+requires-dist = [{ name = "pydantic", specifier = ">=2.10" }]
 
 [[package]]
 name = "watchfiles"

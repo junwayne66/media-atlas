@@ -1,6 +1,6 @@
 COMPOSE ?= docker compose
 
-.PHONY: dev dev-infra down logs api web lint fmt test ci smoke
+.PHONY: dev dev-infra down logs api web lint fmt test ci smoke schemas
 
 dev: ## 构建并启动全套本地栈（API/Web/Postgres/Redis/MinIO/Temporal）
 	$(COMPOSE) up -d --build
@@ -28,6 +28,10 @@ lint:
 fmt:
 	uv run ruff format .
 	uv run ruff check --fix .
+
+schemas: ## 从 Pydantic 真值再生成 schemas/ 与 contracts-ts 类型
+	uv run python -m videoforge_contracts.export
+	pnpm --filter @videoforge/contracts generate
 
 test:
 	uv run pytest

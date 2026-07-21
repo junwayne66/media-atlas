@@ -6,7 +6,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 Design package for **VideoForge** (repo directory: `media-atlas`) — a self-hosted, trend-driven, multilingual short-video re-creation system. First target: Douyin + TikTok, 中文 ↔ English, AI/tech content, macOS pilot. Full loop: trend discovery → video acquisition → AI analysis (`VideoBlueprint`) → two re-creation modes → localization → review → publishing → performance feedback.
 
-**Current state: VF-001 (Bootstrap Monorepo) complete.** The monorepo skeleton is live: uv workspace (`apps/api`, FastAPI), pnpm workspace (`apps/web`, Vue 3), `compose.yaml` seven-service stack (postgres/redis/minio/temporal/temporal-ui/api/web), Makefile entry points, dual-platform CI, `third_party_manifest.yaml`. Git repo with trunk `main`; one task = one branch + `--no-ff` merge. Next roadmap task: VF-002 Contracts First. `docs/` remains the implementation spec.
+**Current state: VF-002 (Contracts First) complete.** On top of the VF-001 skeleton (uv + pnpm workspaces, seven-service compose stack, CI), the five core contracts now exist: Pydantic truth models in `packages/contracts-py` (`videoforge_contracts`), exported JSON Schema artifacts in `schemas/` (drift-checked by pytest + CI), generated TS types in `packages/contracts-ts` (`@videoforge/contracts`). `make schemas` regenerates both. TaskEnvelope rejects plaintext-credential-looking keys in `params` by segment-matching validator. Compat fixtures live in `packages/contracts-py/tests/fixtures/v<N>/` — never rewrite old versions. Git repo with trunk `main`; one task = one branch + `--no-ff` merge. Next roadmap task: VF-003 Persistence + Outbox. `docs/` remains the implementation spec.
 
 ## Common commands
 

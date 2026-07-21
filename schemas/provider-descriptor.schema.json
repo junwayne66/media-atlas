@@ -1,0 +1,235 @@
+{
+  "$defs": {
+    "CostModel": {
+      "additionalProperties": false,
+      "properties": {
+        "currency": {
+          "default": "USD",
+          "maxLength": 3,
+          "minLength": 3,
+          "title": "Currency",
+          "type": "string"
+        },
+        "estimated_cost_per_unit": {
+          "anyOf": [
+            {
+              "minimum": 0,
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Estimated Cost Per Unit"
+        },
+        "schema_version": {
+          "default": "1",
+          "description": "合同 schema 版本；Reader 需兼容当前与前一版本",
+          "title": "Schema Version",
+          "type": "string"
+        },
+        "unit": {
+          "description": "计费单位，如 second / 1k_tokens / request",
+          "minLength": 1,
+          "title": "Unit",
+          "type": "string"
+        }
+      },
+      "required": [
+        "unit"
+      ],
+      "title": "CostModel",
+      "type": "object"
+    },
+    "HealthState": {
+      "enum": [
+        "healthy",
+        "degraded",
+        "down",
+        "unknown"
+      ],
+      "title": "HealthState",
+      "type": "string"
+    },
+    "IsolationLevel": {
+      "description": "许可证/接口隔离等级（docs/20-open-source-landscape.md §3）。",
+      "enum": [
+        "L0",
+        "L1",
+        "L2",
+        "L3",
+        "L4"
+      ],
+      "title": "IsolationLevel",
+      "type": "string"
+    },
+    "ProviderHealth": {
+      "additionalProperties": false,
+      "properties": {
+        "last_error": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Last Error"
+        },
+        "last_success_at": {
+          "anyOf": [
+            {
+              "format": "date-time",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Last Success At"
+        },
+        "schema_version": {
+          "default": "1",
+          "description": "合同 schema 版本；Reader 需兼容当前与前一版本",
+          "title": "Schema Version",
+          "type": "string"
+        },
+        "status": {
+          "$ref": "#/$defs/HealthState",
+          "default": "unknown"
+        }
+      },
+      "title": "ProviderHealth",
+      "type": "object"
+    },
+    "ProviderType": {
+      "description": "Provider 类型全集（docs/10-module-overview.md §4）。",
+      "enum": [
+        "SourceConnector",
+        "DownloadProvider",
+        "ASRProvider",
+        "OCRProvider",
+        "LLMProvider",
+        "VLMProvider",
+        "TTSProvider",
+        "LipSyncProvider",
+        "StockMediaProvider",
+        "GenerativeMediaProvider",
+        "RenderProvider",
+        "TimelineExporter",
+        "PublishConnector",
+        "MetricsConnector"
+      ],
+      "title": "ProviderType",
+      "type": "string"
+    }
+  },
+  "$id": "https://videoforge.dev/schemas/provider-descriptor.schema.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "description": "Provider 注册描述（docs/10-module-overview.md §4 必声明字段）。",
+  "properties": {
+    "capabilities": {
+      "items": {
+        "type": "string"
+      },
+      "minItems": 1,
+      "title": "Capabilities",
+      "type": "array"
+    },
+    "cost_model": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/CostModel"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null
+    },
+    "execution_location": {
+      "description": "默认执行位置",
+      "pattern": "^(local|cloud|hybrid)$",
+      "title": "Execution Location",
+      "type": "string"
+    },
+    "health": {
+      "$ref": "#/$defs/ProviderHealth"
+    },
+    "isolation_level": {
+      "$ref": "#/$defs/IsolationLevel",
+      "default": "L0"
+    },
+    "languages": {
+      "description": "支持语言，BCP-47",
+      "items": {
+        "type": "string"
+      },
+      "title": "Languages",
+      "type": "array"
+    },
+    "license_notes": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "description": "代码/模型/权重许可证要点；来源 third_party_manifest.yaml",
+      "title": "License Notes"
+    },
+    "name": {
+      "description": "唯一名，如 asr.whisper-cpp",
+      "minLength": 1,
+      "title": "Name",
+      "type": "string"
+    },
+    "platforms": {
+      "description": "适用平台，如 douyin/tiktok",
+      "items": {
+        "type": "string"
+      },
+      "title": "Platforms",
+      "type": "array"
+    },
+    "provider_type": {
+      "$ref": "#/$defs/ProviderType"
+    },
+    "required_secrets": {
+      "description": "所需 Secret 的名称（非值）",
+      "items": {
+        "type": "string"
+      },
+      "title": "Required Secrets",
+      "type": "array"
+    },
+    "schema_version": {
+      "default": "1",
+      "description": "合同 schema 版本；Reader 需兼容当前与前一版本",
+      "title": "Schema Version",
+      "type": "string"
+    },
+    "version": {
+      "minLength": 1,
+      "title": "Version",
+      "type": "string"
+    }
+  },
+  "required": [
+    "name",
+    "provider_type",
+    "version",
+    "capabilities",
+    "execution_location"
+  ],
+  "title": "ProviderDescriptor",
+  "type": "object"
+}

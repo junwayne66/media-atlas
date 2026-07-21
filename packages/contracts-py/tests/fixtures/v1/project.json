@@ -1,0 +1,23 @@
+{
+  "budget_policy": null,
+  "channel_profile_id": null,
+  "created_at": "2026-07-21T08:00:00Z",
+  "creation_mode": "STRUCTURE_REWRITE",
+  "execution_policy": "LOCAL_PREFERRED",
+  "id": "01J2ZK3AC9V6XW8YQ4R5T6U7V8",
+  "schema_version": "1",
+  "source_asset_ids": [
+    "01J2ZK3AC9V6XW8YQ4R5T6U7W1"
+  ],
+  "source_language": "zh-CN",
+  "status": "DRAFT",
+  "target_languages": [
+    "en-US"
+  ],
+  "template_version_id": null,
+  "title": "AI 芯片新品热点二创",
+  "trend_cluster_id": "01J2ZK3AC9V6XW8YQ4R5T6U7W0",
+  "updated_at": "2026-07-21T08:00:00Z",
+  "vertical": "ai-tech",
+  "workflow_id": "create-01J2ZK3AC9"
+}

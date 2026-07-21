@@ -74,7 +74,11 @@ javascript:
   - name: "@types/node"
     license: MIT
     isolation: L0
-    used_by: apps/web
+    used_by: apps/web, packages/contracts-ts
+  - name: json-schema-to-typescript
+    license: MIT
+    isolation: L0
+    used_by: packages/contracts-ts（代码生成，devDependency）
 
 tools:
   - name: uv
