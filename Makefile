@@ -1,6 +1,6 @@
 COMPOSE ?= docker compose
 
-.PHONY: dev dev-infra down logs api web worker lint fmt test ci smoke schemas migrate
+.PHONY: dev dev-infra down logs api web worker agent lint fmt test ci smoke schemas migrate
 
 dev: ## 构建并启动全套本地栈（API/Web/Postgres/Redis/MinIO/Temporal）
 	$(COMPOSE) up -d --build
@@ -14,7 +14,9 @@ down: ## 停止并移除容器（保留数据卷）
 logs:
 	$(COMPOSE) logs -f
 
-api: ## 本机热重载运行 API（先 uv sync）
+api: ## 本机热重载运行 API（读 .env 端口连开发库）
+	@set -a; [ -f .env ] && . ./.env; set +a; \
+	VIDEOFORGE_DATABASE_URL="postgresql+psycopg://$${POSTGRES_USER:-videoforge}:$${POSTGRES_PASSWORD:-videoforge}@localhost:$${POSTGRES_PORT:-5432}/$${POSTGRES_DB:-videoforge}" \
 	uv run uvicorn videoforge_api.main:app --reload --port 8000
 
 web: ## 本机运行 Web dev server（先 pnpm install）
@@ -22,6 +24,9 @@ web: ## 本机运行 Web dev server（先 pnpm install）
 
 worker: ## 本机运行 Temporal Worker（连接 dev 栈 :7233）
 	uv run python -m videoforge_temporal_worker
+
+agent: ## 本机运行 Edge Agent（连接控制面 :8000）
+	uv run python -m videoforge_edge_agent
 
 lint:
 	uv run ruff check .

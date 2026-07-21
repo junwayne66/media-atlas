@@ -1,0 +1,24 @@
+[project]
+name = "videoforge-edge-agent"
+version = "0.1.0"
+description = "VideoForge 桌面边缘 Worker：出站连接控制面，注册/心跳/领取/执行/提交（Task Lease 协议）"
+requires-python = ">=3.11"
+dependencies = [
+    "videoforge-contracts",
+    "videoforge-provider-sdk",
+    "httpx>=0.28",
+]
+
+[tool.uv.sources]
+videoforge-contracts = { workspace = true }
+videoforge-provider-sdk = { workspace = true }
+
+[project.scripts]
+videoforge-edge-agent = "videoforge_edge_agent.main:cli"
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/videoforge_edge_agent"]

@@ -93,3 +93,39 @@ class ProcessedEventRow(Base):
     event_id: Mapped[str] = mapped_column(String(36), primary_key=True)
     consumer: Mapped[str] = mapped_column(String(200), primary_key=True)
     processed_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
+
+
+class WorkerRow(Base):
+    __tablename__ = "workers"
+
+    id: Mapped[str] = mapped_column(String(36), primary_key=True)
+    name: Mapped[str] = mapped_column(String(200), nullable=False)
+    hostname: Mapped[str] = mapped_column(String(200), nullable=False)
+    os: Mapped[str] = mapped_column(String(50), nullable=False)
+    arch: Mapped[str] = mapped_column(String(50), nullable=False)
+    capabilities: Mapped[list] = mapped_column(JSONB, nullable=False)
+    execution_location: Mapped[str] = mapped_column(String(20), nullable=False)
+    toolchain: Mapped[dict] = mapped_column(JSONB, nullable=False, default=dict)
+    registered_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
+    last_heartbeat_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
+
+
+class WorkerTaskRow(Base):
+    __tablename__ = "worker_tasks"
+
+    id: Mapped[str] = mapped_column(String(36), primary_key=True)
+    idempotency_key: Mapped[str] = mapped_column(String(200), nullable=False, unique=True)
+    capability: Mapped[str] = mapped_column(String(200), nullable=False)
+    params: Mapped[dict] = mapped_column(JSONB, nullable=False, default=dict)
+    execution_policy: Mapped[str] = mapped_column(String(40), nullable=False)
+    status: Mapped[str] = mapped_column(String(20), nullable=False, default="PENDING")
+    attempt: Mapped[int] = mapped_column(Integer, nullable=False, default=0)
+    lease_id: Mapped[str | None] = mapped_column(String(36))
+    leased_by: Mapped[str | None] = mapped_column(ForeignKey("workers.id"))
+    lease_expires_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+    output: Mapped[dict | None] = mapped_column(JSONB)
+    output_digest: Mapped[str | None] = mapped_column(String(64))
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
+    updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
+
+    __table_args__ = (Index("ix_worker_tasks_claim", "status", "created_at"),)
