@@ -13,6 +13,7 @@ dependencies = [
     "videoforge-provider-sdk",
     "videoforge-edge-agent",
     "videoforge-domain",
+    "videoforge-connector-douyin",
 ]
 
 [tool.uv.workspace]
@@ -26,6 +27,7 @@ members = [
     "packages/provider-sdk",
     "packages/domain",
     "services/edge-agent",
+    "connectors/sources/douyin",
 ]
 
 [tool.uv.sources]
@@ -38,6 +40,7 @@ videoforge-temporal-worker = { workspace = true }
 videoforge-provider-sdk = { workspace = true }
 videoforge-edge-agent = { workspace = true }
 videoforge-domain = { workspace = true }
+videoforge-connector-douyin = { workspace = true }
 
 [dependency-groups]
 dev = [
@@ -66,6 +69,7 @@ known-first-party = [
     "videoforge_provider_sdk",
     "videoforge_edge_agent",
     "videoforge_domain",
+    "videoforge_connector_douyin",
 ]
 
 [tool.pytest.ini_options]
@@ -79,5 +83,6 @@ testpaths = [
     "services/edge-agent/tests",
     "apps/temporal-worker/tests",
     "packages/domain/tests",
+    "connectors/sources/douyin/tests",
 ]
 asyncio_mode = "auto"

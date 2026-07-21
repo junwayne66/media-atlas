@@ -10,6 +10,7 @@ resolution-markers = [
 members = [
     "videoforge",
     "videoforge-api",
+    "videoforge-connector-douyin",
     "videoforge-contracts",
     "videoforge-domain",
     "videoforge-edge-agent",
@@ -1346,6 +1347,7 @@ version = "0.0.1"
 source = { virtual = "." }
 dependencies = [
     { name = "videoforge-api" },
+    { name = "videoforge-connector-douyin" },
     { name = "videoforge-contracts" },
     { name = "videoforge-domain" },
     { name = "videoforge-edge-agent" },
@@ -1368,6 +1370,7 @@ dev = [
 [package.metadata]
 requires-dist = [
     { name = "videoforge-api", editable = "apps/api" },
+    { name = "videoforge-connector-douyin", editable = "connectors/sources/douyin" },
     { name = "videoforge-contracts", editable = "packages/contracts-py" },
     { name = "videoforge-domain", editable = "packages/domain" },
     { name = "videoforge-edge-agent", editable = "services/edge-agent" },
@@ -1410,6 +1413,21 @@ requires-dist = [
     { name = "uvicorn", extras = ["standard"], specifier = ">=0.32" },
     { name = "videoforge-persistence", editable = "packages/persistence" },
     { name = "videoforge-workflows", editable = "packages/workflows" },
+]
+
+[[package]]
+name = "videoforge-connector-douyin"
+version = "0.1.0"
+source = { editable = "connectors/sources/douyin" }
+dependencies = [
+    { name = "videoforge-contracts" },
+    { name = "videoforge-provider-sdk" },
+]
+
+[package.metadata]
+requires-dist = [
+    { name = "videoforge-contracts", editable = "packages/contracts-py" },
+    { name = "videoforge-provider-sdk", editable = "packages/provider-sdk" },
 ]
 
 [[package]]
