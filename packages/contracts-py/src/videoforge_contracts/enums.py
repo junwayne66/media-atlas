@@ -76,3 +76,14 @@ class HealthState(StrEnum):
 class StorageBackend(StrEnum):
     S3 = "s3"
     LOCAL_CACHE = "local_cache"
+
+
+class TrendStage(StrEnum):
+    """趋势阶段状态机（docs/modules/40-trend-intelligence.md §6）。"""
+
+    EMERGING = "EMERGING"
+    RISING = "RISING"
+    PEAK = "PEAK"
+    SATURATED = "SATURATED"
+    DECAYING = "DECAYING"
+    ARCHIVED = "ARCHIVED"

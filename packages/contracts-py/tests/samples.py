@@ -16,6 +16,10 @@ from videoforge_contracts import (
     ResourceLimits,
     StorageRef,
     TaskEnvelope,
+    TrendCluster,
+    TrendItemSnapshot,
+    TrendStage,
+    TrendSubScores,
 )
 
 _T0 = datetime(2026, 7, 21, 8, 0, 0, tzinfo=UTC)
@@ -95,10 +99,71 @@ def make_problem_detail() -> ProblemDetail:
     )
 
 
+def make_trend_item_snapshot() -> TrendItemSnapshot:
+    return TrendItemSnapshot(
+        id="01J2ZK3AC9V6XW8YQ4R5T6U7X0",
+        observed_at=_T0,
+        platform="douyin",
+        region="CN",
+        locale="zh-CN",
+        item_id="dy-7412",
+        author_id="dy-author-9",
+        published_at=_T0,
+        views=120000,
+        likes=8400,
+        comments=610,
+        shares=1200,
+        saves=None,  # 未采到，保留 null 不填 0
+        followers_at_observation=52000,
+        rank=7,
+        hashtag_ids=["ai", "m5-chip"],
+        sound_id="snd-33",
+        raw_artifact_id="01J2ZK3AC9V6XW8YQ4R5T6U7X1",
+        collector_version="douyin-collector@0.1.0",
+        source_confidence=0.9,
+    )
+
+
+def make_trend_cluster() -> TrendCluster:
+    return TrendCluster(
+        id="01J2ZK3AC9V6XW8YQ4R5T6U7X2",
+        title="新一代 AI 芯片发布",
+        canonical_topic="ai-chip-launch-2026",
+        keywords=["AI 芯片", "M5", "端侧推理"],
+        entities=["Apple", "M5"],
+        member_item_ids=["dy-7412", "tt-9981"],
+        snapshot_ids=["01J2ZK3AC9V6XW8YQ4R5T6U7X0"],
+        first_seen_at=_T0,
+        last_seen_at=_T0,
+        stage=TrendStage.RISING,
+        sub_scores=TrendSubScores(
+            velocity=0.7,
+            acceleration=0.6,
+            engagement_efficiency=0.4,
+            cross_platform_score=0.8,
+            topic_fit=0.9,
+            novelty=0.5,
+            source_quality=0.6,
+            saturation=0.2,
+            decay=0.0,
+        ),
+        hot_score=0.68,
+        weights_version="v1",
+        reason_codes=["HIGH_ACCELERATION", "CROSS_PLATFORM", "STRONG_TOPIC_FIT"],
+        embedding_ref="emb-cluster-1",
+        source_confidence=0.85,
+        vertical="ai-tech",
+        created_at=_T0,
+        updated_at=_T0,
+    )
+
+
 SAMPLES: dict[str, ContractModel] = {
     "project": make_project(),
     "artifact": make_artifact(),
     "task-envelope": make_task_envelope(),
     "provider-descriptor": make_provider_descriptor(),
     "problem-detail": make_problem_detail(),
+    "trend-item-snapshot": make_trend_item_snapshot(),
+    "trend-cluster": make_trend_cluster(),
 }

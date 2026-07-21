@@ -8,11 +8,18 @@ from videoforge_contracts.enums import (
     ProjectStatus,
     ProviderType,
     StorageBackend,
+    TrendStage,
 )
 from videoforge_contracts.problem import ProblemDetail
 from videoforge_contracts.project import Project
 from videoforge_contracts.provider import CostModel, ProviderDescriptor, ProviderHealth
 from videoforge_contracts.task_envelope import ResourceLimits, TaskEnvelope
+from videoforge_contracts.trend import (
+    HotScoreWeights,
+    TrendCluster,
+    TrendItemSnapshot,
+    TrendSubScores,
+)
 
 # schemas/<name>.schema.json 与顶层合同的对应表（导出与漂移检查共用）
 CONTRACTS: dict[str, type[ContractModel]] = {
@@ -21,6 +28,8 @@ CONTRACTS: dict[str, type[ContractModel]] = {
     "task-envelope": TaskEnvelope,
     "provider-descriptor": ProviderDescriptor,
     "problem-detail": ProblemDetail,
+    "trend-item-snapshot": TrendItemSnapshot,
+    "trend-cluster": TrendCluster,
 }
 
 __all__ = [
@@ -32,6 +41,7 @@ __all__ = [
     "CreationMode",
     "ExecutionPolicy",
     "HealthState",
+    "HotScoreWeights",
     "IsolationLevel",
     "MediaProbe",
     "ProblemDetail",
@@ -45,4 +55,8 @@ __all__ = [
     "StorageBackend",
     "StorageRef",
     "TaskEnvelope",
+    "TrendCluster",
+    "TrendItemSnapshot",
+    "TrendStage",
+    "TrendSubScores",
 ]
