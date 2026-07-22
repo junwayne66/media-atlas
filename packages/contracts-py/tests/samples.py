@@ -4,6 +4,7 @@ from datetime import UTC, datetime
 
 from videoforge_contracts import (
     Artifact,
+    BBox,
     ContractModel,
     CostModel,
     CreationMode,
@@ -16,6 +17,10 @@ from videoforge_contracts import (
     ResourceLimits,
     StorageRef,
     TaskEnvelope,
+    TextObservation,
+    TextTrack,
+    TextTrackKind,
+    TextTrackSet,
     Transcript,
     TranscriptModels,
     TranscriptSegment,
@@ -208,6 +213,60 @@ def make_transcript() -> Transcript:
     )
 
 
+def make_text_track_set() -> TextTrackSet:
+    return TextTrackSet(
+        id="01J2ZK3AC9V6XW8YQ4R5T6U7Z0",
+        source_artifact_id="01J2ZK3AC9V6XW8YQ4R5T6U7W1",
+        ocr_provider="ocr.paddle",
+        ocr_version="2.7",
+        tracks=[
+            TextTrack(
+                id="tt-0",
+                kind=TextTrackKind.CAPTION,
+                text="端侧推理很快",
+                start_ms=1200,
+                end_ms=3600,
+                confidence=0.91,
+                motion="STATIC",
+                observations=[
+                    TextObservation(
+                        frame_time_ms=1200,
+                        bbox=BBox(x=0.2, y=0.82, w=0.6, h=0.08),
+                        text="端侧推理很快",
+                        confidence=0.9,
+                    ),
+                    TextObservation(
+                        frame_time_ms=2400,
+                        bbox=BBox(x=0.21, y=0.82, w=0.6, h=0.08),
+                        text="端侧推理很快",
+                        confidence=0.92,
+                    ),
+                ],
+            ),
+            TextTrack(
+                id="tt-1",
+                kind=TextTrackKind.BRAND_MARK,
+                text="@创作者",
+                start_ms=0,
+                end_ms=58000,
+                confidence=0.8,
+                motion="STATIC",
+                style_hint="watermark",
+                observations=[
+                    TextObservation(
+                        frame_time_ms=0,
+                        bbox=BBox(x=0.82, y=0.05, w=0.14, h=0.05),
+                        text="@创作者",
+                        confidence=0.8,
+                        occluded=False,
+                    )
+                ],
+            ),
+        ],
+        created_at=_T0,
+    )
+
+
 SAMPLES: dict[str, ContractModel] = {
     "project": make_project(),
     "artifact": make_artifact(),
@@ -217,4 +276,5 @@ SAMPLES: dict[str, ContractModel] = {
     "trend-item-snapshot": make_trend_item_snapshot(),
     "trend-cluster": make_trend_cluster(),
     "transcript": make_transcript(),
+    "text-track-set": make_text_track_set(),
 }

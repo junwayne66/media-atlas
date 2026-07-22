@@ -63,6 +63,36 @@ INVALID_OVERRIDES: list[tuple[str, str, dict[str, Any]]] = [
             ]
         },
     ),
+    ("text-track-set", "未知字段被拒", {"unexpected_field": 1}),
+    ("text-track-set", "ocr_provider 不能为空", {"ocr_provider": ""}),
+    (
+        "text-track-set",
+        "轨 end_ms 不得早于 start_ms",
+        {"tracks": [{"id": "x", "text": "t", "start_ms": 1000, "end_ms": 500, "confidence": 0.9}]},
+    ),
+    (
+        "text-track-set",
+        "bbox 不得超出画面",
+        {
+            "tracks": [
+                {
+                    "id": "x",
+                    "text": "t",
+                    "start_ms": 0,
+                    "end_ms": 1000,
+                    "confidence": 0.9,
+                    "observations": [
+                        {
+                            "frame_time_ms": 0,
+                            "bbox": {"x": 0.9, "y": 0.1, "w": 0.5, "h": 0.1},
+                            "text": "t",
+                            "confidence": 0.9,
+                        }
+                    ],
+                }
+            ]
+        },
+    ),
 ]
 
 

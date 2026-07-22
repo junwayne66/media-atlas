@@ -31,6 +31,12 @@ from videoforge_domain.staging import (
     can_transition,
     classify_stage,
 )
+from videoforge_domain.texttrack import (
+    classify_kind,
+    iou,
+    track_text_observations,
+    vote_text,
+)
 from videoforge_domain.transcript import (
     low_confidence_spans,
     mark_low_confidence,
@@ -50,6 +56,7 @@ __all__ = [
     "InsufficientSnapshots",
     "assert_transition",
     "can_transition",
+    "classify_kind",
     "classify_stage",
     "compute_sub_scores",
     "decline_from_peak",
@@ -60,6 +67,7 @@ __all__ = [
     "hamming",
     "hamming_similarity",
     "hot_score",
+    "iou",
     "low_confidence_spans",
     "mark_low_confidence",
     "needs_review",
@@ -70,4 +78,6 @@ __all__ = [
     "series_velocity",
     "sigmoid",
     "text_simhash",
+    "track_text_observations",
+    "vote_text",
 ]

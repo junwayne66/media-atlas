@@ -1,0 +1,271 @@
+{
+  "$defs": {
+    "BBox": {
+      "additionalProperties": false,
+      "description": "归一化边界框（原点左上，x 向右、y 向下）。四边形退化为轴对齐框（MVP）。",
+      "properties": {
+        "h": {
+          "exclusiveMinimum": 0.0,
+          "maximum": 1.0,
+          "title": "H",
+          "type": "number"
+        },
+        "schema_version": {
+          "default": "1",
+          "description": "合同 schema 版本；Reader 需兼容当前与前一版本",
+          "title": "Schema Version",
+          "type": "string"
+        },
+        "w": {
+          "exclusiveMinimum": 0.0,
+          "maximum": 1.0,
+          "title": "W",
+          "type": "number"
+        },
+        "x": {
+          "maximum": 1.0,
+          "minimum": 0.0,
+          "title": "X",
+          "type": "number"
+        },
+        "y": {
+          "maximum": 1.0,
+          "minimum": 0.0,
+          "title": "Y",
+          "type": "number"
+        }
+      },
+      "required": [
+        "x",
+        "y",
+        "w",
+        "h"
+      ],
+      "title": "BBox",
+      "type": "object"
+    },
+    "TextObservation": {
+      "additionalProperties": false,
+      "description": "单帧文本检测（OCR 原始输出，也是 TextTrack 的轨迹点）。",
+      "properties": {
+        "bbox": {
+          "$ref": "#/$defs/BBox"
+        },
+        "confidence": {
+          "maximum": 1.0,
+          "minimum": 0.0,
+          "title": "Confidence",
+          "type": "number"
+        },
+        "frame_time_ms": {
+          "minimum": 0,
+          "title": "Frame Time Ms",
+          "type": "integer"
+        },
+        "occluded": {
+          "default": false,
+          "title": "Occluded",
+          "type": "boolean"
+        },
+        "schema_version": {
+          "default": "1",
+          "description": "合同 schema 版本；Reader 需兼容当前与前一版本",
+          "title": "Schema Version",
+          "type": "string"
+        },
+        "text": {
+          "title": "Text",
+          "type": "string"
+        }
+      },
+      "required": [
+        "frame_time_ms",
+        "bbox",
+        "text",
+        "confidence"
+      ],
+      "title": "TextObservation",
+      "type": "object"
+    },
+    "TextTrack": {
+      "additionalProperties": false,
+      "description": "跨帧聚合的稳定文本轨（41 §8.6：时间范围、bbox、遮挡、运动、置信度、样式提示）。",
+      "properties": {
+        "confidence": {
+          "maximum": 1.0,
+          "minimum": 0.0,
+          "title": "Confidence",
+          "type": "number"
+        },
+        "end_ms": {
+          "minimum": 0,
+          "title": "End Ms",
+          "type": "integer"
+        },
+        "id": {
+          "minLength": 1,
+          "title": "Id",
+          "type": "string"
+        },
+        "kind": {
+          "$ref": "#/$defs/TextTrackKind",
+          "default": "UNKNOWN"
+        },
+        "low_confidence": {
+          "default": false,
+          "title": "Low Confidence",
+          "type": "boolean"
+        },
+        "motion": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "STATIC / MOVING",
+          "title": "Motion"
+        },
+        "observations": {
+          "description": "逐帧轨迹",
+          "items": {
+            "$ref": "#/$defs/TextObservation"
+          },
+          "title": "Observations",
+          "type": "array"
+        },
+        "schema_version": {
+          "default": "1",
+          "description": "合同 schema 版本；Reader 需兼容当前与前一版本",
+          "title": "Schema Version",
+          "type": "string"
+        },
+        "source_artifact_id": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Source Artifact Id"
+        },
+        "start_ms": {
+          "minimum": 0,
+          "title": "Start Ms",
+          "type": "integer"
+        },
+        "style_hint": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Style Hint"
+        },
+        "text": {
+          "description": "多帧投票后的规范文本",
+          "title": "Text",
+          "type": "string"
+        }
+      },
+      "required": [
+        "id",
+        "text",
+        "start_ms",
+        "end_ms",
+        "confidence"
+      ],
+      "title": "TextTrack",
+      "type": "object"
+    },
+    "TextTrackKind": {
+      "description": "文本轨类型（docs/modules/41 §8）。区分字幕/标题/UI/品牌水印/场景文字。",
+      "enum": [
+        "CAPTION",
+        "TITLE",
+        "LOWER_THIRD",
+        "UI",
+        "SCENE_TEXT",
+        "BRAND_MARK",
+        "UNKNOWN"
+      ],
+      "title": "TextTrackKind",
+      "type": "string"
+    }
+  },
+  "$id": "https://videoforge.dev/schemas/text-track-set.schema.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "description": "一次 OCR 分析产出的全部文本轨（顶层可持久化/交换合同）。",
+  "properties": {
+    "created_at": {
+      "format": "date-time",
+      "title": "Created At",
+      "type": "string"
+    },
+    "id": {
+      "minLength": 1,
+      "title": "Id",
+      "type": "string"
+    },
+    "ocr_provider": {
+      "minLength": 1,
+      "title": "Ocr Provider",
+      "type": "string"
+    },
+    "ocr_version": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Ocr Version"
+    },
+    "schema_version": {
+      "default": "1",
+      "description": "合同 schema 版本；Reader 需兼容当前与前一版本",
+      "title": "Schema Version",
+      "type": "string"
+    },
+    "source_artifact_id": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Source Artifact Id"
+    },
+    "tracks": {
+      "items": {
+        "$ref": "#/$defs/TextTrack"
+      },
+      "title": "Tracks",
+      "type": "array"
+    }
+  },
+  "required": [
+    "id",
+    "ocr_provider",
+    "created_at"
+  ],
+  "title": "TextTrackSet",
+  "type": "object"
+}

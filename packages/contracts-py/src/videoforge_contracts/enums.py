@@ -87,3 +87,15 @@ class TrendStage(StrEnum):
     SATURATED = "SATURATED"
     DECAYING = "DECAYING"
     ARCHIVED = "ARCHIVED"
+
+
+class TextTrackKind(StrEnum):
+    """文本轨类型（docs/modules/41 §8）。区分字幕/标题/UI/品牌水印/场景文字。"""
+
+    CAPTION = "CAPTION"  # 字幕（底部）
+    TITLE = "TITLE"  # 标题（顶部/大字）
+    LOWER_THIRD = "LOWER_THIRD"  # 下三分区信息条
+    UI = "UI"  # 界面元素（角落/小）
+    SCENE_TEXT = "SCENE_TEXT"  # 场景内文字
+    BRAND_MARK = "BRAND_MARK"  # 品牌标/水印（小、角落、持久）
+    UNKNOWN = "UNKNOWN"
