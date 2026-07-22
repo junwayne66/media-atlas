@@ -12,3 +12,11 @@ class StagedUploadMismatch(ArtifactStoreError):
 
 class ObjectIntegrityError(ArtifactStoreError):
     """下载/缓存内容与 Artifact 记录的 sha256 不符。"""
+
+
+class FfmpegNotAvailable(RuntimeError):
+    """找不到 ffmpeg/ffprobe 二进制；媒体运行时无法执行。"""
+
+
+class MediaRuntimeError(RuntimeError):
+    """媒体操作（转码/抽音/场景检测）执行失败。"""
