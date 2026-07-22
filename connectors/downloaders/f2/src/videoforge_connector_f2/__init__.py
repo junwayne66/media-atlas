@@ -1,20 +1,20 @@
-"""yt-dlp 下载连接器（videoforge-connector-yt-dlp）。
+"""f2 下载连接器（videoforge-connector-f2）。
 
 自包含导入面：re-export 端口侧常用名，连接器用户无需再直接 import provider-sdk。
 """
 
-from videoforge_connector_yt_dlp.connector import (
+from videoforge_connector_f2.connector import (
     CONNECTOR_NAME,
-    YtDlpDownloadConnector,
-    load_yt_dlp_descriptor,
+    F2DownloadConnector,
+    load_f2_descriptor,
 )
-from videoforge_connector_yt_dlp.runner import (
+from videoforge_connector_f2.runner import (
     PINNED_VERSION,
+    F2NotAvailable,
+    F2Runner,
     RunResult,
-    SubprocessYtDlpRunner,
-    UnconfiguredYtDlpRunner,
-    YtDlpNotAvailable,
-    YtDlpRunner,
+    SubprocessF2Runner,
+    UnconfiguredF2Runner,
 )
 from videoforge_provider_sdk import (
     AcquisitionError,
@@ -42,16 +42,16 @@ __all__ = [
     "DownloadRequest",
     "DownloadResult",
     "DownloadStatus",
+    "F2DownloadConnector",
+    "F2NotAvailable",
+    "F2Runner",
     "ResolvedCookies",
     "ResolvedSource",
     "RunResult",
-    "SubprocessYtDlpRunner",
+    "SubprocessF2Runner",
     "UnconfiguredCookieResolver",
-    "UnconfiguredYtDlpRunner",
-    "YtDlpDownloadConnector",
-    "YtDlpNotAvailable",
-    "YtDlpRunner",
-    "load_yt_dlp_descriptor",
+    "UnconfiguredF2Runner",
+    "load_f2_descriptor",
     "resolve",
     "resolve_local_file",
     "resolve_url",

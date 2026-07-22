@@ -1,11 +1,15 @@
-"""yt-dlp 下载连接器：实现 provider-sdk DownloadConnector 端口（docs/modules/41 §3）。
+"""f2 下载连接器：实现 provider-sdk DownloadConnector 端口（docs/modules/41 §2/§3）。
 
-- build_argv：纯构造，注入安全——所有调用方可控值用 `--opt=value` 单 token 形式，
-  URL 前置 `--` 停止选项解析，绝不拼 shell 字符串。
-- download：解析 Cookie handle（不透明）→ 跑 runner → returncode/stderr 映射 §12 →
-  解析 info-dict → 定位产物 → 流式 sha256 → 组可重放 AcquisitionManifest。
-- 验证码/风控 → CHALLENGE（转人工，不绕过）；返回的 raw_metadata 已脱敏（无 Cookie/Token）。
+抖音优先、TikTok 兜底——优先级/回退由 provider-sdk DownloadRouter 编排，本连接器只负责
+「用 f2 下一条」。与 yt-dlp 连接器共享 provider-sdk 的凭据端口、错误映射与下载辅助
+（scrub_metadata / sha256_file / locate_downloaded_media），安全关键逻辑单实现。
+
+- build_argv：纯构造，注入安全——可控值用 `--opt=value` 单 token，无位置参数 URL，绝不拼 shell。
+- 验证码/风控 → CHALLENGE（转人工，不绕过）；raw_metadata 已脱敏；产物约束在 dest_dir。
 - 默认 runner=Unconfigured、cookie_resolver=Unconfigured：不触网、不静默失败。
+
+注：f2 自动选最佳清晰度，不吃 format_selector；manifest 仍如实记录请求的 format
+（作请求身份/Cache Key 一部分）。
 """
 
 from __future__ import annotations
@@ -15,11 +19,7 @@ from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any
 
-from videoforge_connector_yt_dlp.runner import (
-    PINNED_VERSION,
-    UnconfiguredYtDlpRunner,
-    YtDlpRunner,
-)
+from videoforge_connector_f2.runner import PINNED_VERSION, F2Runner, UnconfiguredF2Runner
 from videoforge_contracts import ProviderDescriptor
 from videoforge_provider_sdk import (
     AcquisitionError,
@@ -39,27 +39,30 @@ from videoforge_provider_sdk import (
     status_for_download_error,
 )
 
-CONNECTOR_NAME = "download.yt_dlp"
-_TOOL = "yt-dlp"
+CONNECTOR_NAME = "download.f2"
+_TOOL = "f2"
 _DOWNLOAD_TIMEOUT_S = 1800
 _PROBE_TIMEOUT_S = 120
 
+# f2 平台子命令。仅抖音/TikTok（descriptor.platforms）；其余平台不受支持
+_SUBCOMMAND = {"douyin": "dy", "tiktok": "tk"}
 
-def load_yt_dlp_descriptor() -> ProviderDescriptor:
-    # connector.py → videoforge_connector_yt_dlp → src → yt-dlp（含 descriptor.yaml）
+
+def load_f2_descriptor() -> ProviderDescriptor:
+    # connector.py → videoforge_connector_f2 → src → f2（含 descriptor.yaml）
     return load_descriptor(Path(__file__).resolve().parents[2] / "descriptor.yaml")
 
 
-class YtDlpDownloadConnector:
+class F2DownloadConnector:
     def __init__(
         self,
         descriptor: ProviderDescriptor | None = None,
         *,
-        runner: YtDlpRunner | None = None,
+        runner: F2Runner | None = None,
         cookie_resolver: CookieResolver | None = None,
     ) -> None:
-        self.descriptor = descriptor or load_yt_dlp_descriptor()
-        self._runner: YtDlpRunner = runner or UnconfiguredYtDlpRunner()
+        self.descriptor = descriptor or load_f2_descriptor()
+        self._runner: F2Runner = runner or UnconfiguredF2Runner()
         self._cookies: CookieResolver = cookie_resolver or UnconfiguredCookieResolver()
 
     # —— 纯构造（可独立测试注入安全）——
@@ -79,27 +82,24 @@ class YtDlpDownloadConnector:
             raise AcquisitionError(
                 AcquisitionErrorCode.SOURCE_UNAVAILABLE, "手工导入无需下载（本地已有原片）"
             )
-        # 所有可控值用 --opt=value 单 token：即便 value 以 - 开头也不会被当新选项
+        sub = _SUBCOMMAND.get(src.platform)
+        if sub is None:
+            raise AcquisitionError(
+                AcquisitionErrorCode.SOURCE_UNAVAILABLE, f"f2 不支持平台 {src.platform!r}"
+            )
+        # 可控值一律 --opt=value 单 token（值即便以 - 开头也不会被当新选项）；无位置参数 URL
         argv = [
-            "--no-playlist",  # 只下单条，不误抓整播放列表
-            "--no-progress",
-            "--no-overwrites",  # 幂等：已存在完成文件不重下
-            f"--format={request.format_selector}",
-            "--dump-single-json",  # 输出 info-dict JSON 到 stdout
+            sub,  # dy / tk（固定字典，非用户输入）
+            f"--url={src.canonical_url}",
+            "--mode=one",  # 单个作品
+            f"--path={request.dest_dir}",
+            "--folderize=false",
+            "--json",  # 输出 info JSON 到 stdout
         ]
-        argv.append("--continue" if request.resume else "--no-continue")  # 断点续传
         if cookie_file is not None:
-            argv.append(f"--cookies={cookie_file}")
-        if request.max_filesize_mb is not None:
-            argv.append(f"--max-filesize={request.max_filesize_mb}M")
+            argv.append(f"--cookie-file={cookie_file}")
         if skip_download:
-            argv.append("--skip-download")
-        else:
-            argv.append("--no-simulate")  # --dump-single-json 默认 simulate，下载路径须关掉
-            argv.append(f"--paths=home:{request.dest_dir}")
-            argv.append("--output=%(id)s.%(ext)s")
-        argv.append("--")  # 停止选项解析——其后一律当位置参数（URL）
-        argv.append(src.canonical_url)
+            argv.append("--no-download")  # 仅取元数据
         return argv
 
     def _resolve_cookies(self, request: DownloadRequest) -> Path | None:
@@ -115,16 +115,15 @@ class YtDlpDownloadConnector:
             detail=err.detail or str(err),
         )
 
+    def _run(self, request: DownloadRequest, *, skip_download: bool, timeout_s: int):
+        cookie_file = self._resolve_cookies(request)
+        argv = self.build_argv(request, cookie_file=cookie_file, skip_download=skip_download)
+        return self._runner.run(argv, timeout_s=timeout_s)
+
     def download(self, request: DownloadRequest) -> DownloadResult:
         try:
-            cookie_file = self._resolve_cookies(request)
-            argv = self.build_argv(request, cookie_file=cookie_file)
-        except AcquisitionError as err:
-            return self._error_result(err)
-
-        try:
-            run = self._runner.run(argv, timeout_s=_DOWNLOAD_TIMEOUT_S)
-        except AcquisitionError as err:  # UnconfiguredYtDlpRunner 抛 UNCONFIGURED
+            run = self._run(request, skip_download=False, timeout_s=_DOWNLOAD_TIMEOUT_S)
+        except AcquisitionError as err:  # 未解析源 / 未配置 runner / 无法解析句柄
             return self._error_result(err)
         except Exception as exc:  # 子进程超时/OSError 等
             return self._error_result(map_download_error(exc=exc))
@@ -133,11 +132,9 @@ class YtDlpDownloadConnector:
             return self._error_result(
                 map_download_error(returncode=run.returncode, stderr=run.stderr)
             )
-
         try:
             info = json.loads(run.stdout)
         except json.JSONDecodeError as exc:
-            # 输出不是预期 info-dict：提取路径假设失效 → 熔断信号
             return self._error_result(
                 AcquisitionError(AcquisitionErrorCode.CONNECTOR_SCHEMA_CHANGED, str(exc))
             )
@@ -174,12 +171,7 @@ class YtDlpDownloadConnector:
     def probe(self, request: DownloadRequest) -> DownloadResult:
         """仅取元数据（不下载媒体）。"""
         try:
-            cookie_file = self._resolve_cookies(request)
-            argv = self.build_argv(request, cookie_file=cookie_file, skip_download=True)
-        except AcquisitionError as err:
-            return self._error_result(err)
-        try:
-            run = self._runner.run(argv, timeout_s=_PROBE_TIMEOUT_S)
+            run = self._run(request, skip_download=True, timeout_s=_PROBE_TIMEOUT_S)
         except AcquisitionError as err:
             return self._error_result(err)
         except Exception as exc:

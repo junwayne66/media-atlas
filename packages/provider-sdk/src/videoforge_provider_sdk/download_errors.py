@@ -49,6 +49,13 @@ _AUTH = (
     "use --cookies",
     "cookies are required",
     "account cookies",
+    "需要登录",
+    "请先登录",
+    "登录后再",
+    "登录后查看",
+    "登录失效",
+    "cookie 失效",
+    "cookie已失效",
 )
 _RATE = (
     "429",
@@ -57,6 +64,9 @@ _RATE = (
     "rate limit",
     "temporarily blocked",
     "try again later",
+    "请求过于频繁",
+    "访问过于频繁",
+    "操作过于频繁",
 )
 # 格式/编码不可用——必须早于 unavailable（含 "not available" 子串）
 _CODEC = (
@@ -82,6 +92,13 @@ _UNAVAILABLE = (
     "has been deleted",
     "does not exist",
     "removed by the user",
+    "作品不存在",
+    "内容不存在",
+    "视频不存在",
+    "作品已删除",
+    "视频已删除",
+    "作品已下架",
+    "私密账号",
 )
 # 提取器/连接器假设失效（页面结构变化）——L4 熔断信号
 _SCHEMA = (
@@ -122,13 +139,14 @@ _RULES: tuple[tuple[AcquisitionErrorCode, tuple[str, ...]], ...] = (
 )
 
 
-def map_ytdlp_error(
+def map_download_error(
     *,
     returncode: int | None = None,
     stderr: str = "",
     exc: BaseException | None = None,
 ) -> AcquisitionError:
-    """下载失败签名 → AcquisitionError。stderr/异常文本都参与匹配。"""
+    """下载失败签名 → AcquisitionError。工具无关（yt-dlp / f2 皆可）——stderr/异常文本
+    都参与匹配。任何下载后端的失败文本套本映射。"""
     text = (stderr or "").lower()
     if exc is not None:
         text = f"{text} {exc}".lower()
@@ -138,3 +156,7 @@ def map_ytdlp_error(
             return AcquisitionError(code, detail)
     detail = stderr.strip().splitlines()[-1][:300] if stderr.strip() else f"returncode={returncode}"
     return AcquisitionError(AcquisitionErrorCode.RESULT_UNKNOWN, detail)
+
+
+# 兼容别名（VF-105 以 yt-dlp 命名引入；现为工具无关映射）
+map_ytdlp_error = map_download_error

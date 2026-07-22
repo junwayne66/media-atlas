@@ -16,6 +16,11 @@ from videoforge_provider_sdk.connector_errors import (
     map_http_status,
     map_payload_error,
 )
+from videoforge_provider_sdk.credentials import (
+    CookieResolver,
+    ResolvedCookies,
+    UnconfiguredCookieResolver,
+)
 from videoforge_provider_sdk.descriptor import (
     DescriptorError,
     load_descriptor,
@@ -30,7 +35,22 @@ from videoforge_provider_sdk.discovery import (
     DiscoveryStatus,
     status_for_error,
 )
-from videoforge_provider_sdk.download_errors import AcquisitionError, map_ytdlp_error
+from videoforge_provider_sdk.download_errors import (
+    AcquisitionError,
+    map_download_error,
+    map_ytdlp_error,
+)
+from videoforge_provider_sdk.download_helpers import (
+    locate_downloaded_media,
+    scrub_metadata,
+    sha256_file,
+)
+from videoforge_provider_sdk.download_router import (
+    DOWNLOAD_PRIORITY,
+    DownloadAttempt,
+    DownloadRouter,
+    DownloadRouteResult,
+)
 from videoforge_provider_sdk.fetcher import (
     DiscoveryFetcher,
     FixtureFetcher,
@@ -62,6 +82,7 @@ from videoforge_provider_sdk.url_resolver import (
 
 __all__ = [
     "CANARY_KEYWORD",
+    "DOWNLOAD_PRIORITY",
     "WEIGHTS",
     "AcquisitionError",
     "AcquisitionErrorCode",
@@ -71,6 +92,7 @@ __all__ = [
     "CircuitState",
     "ConnectorError",
     "ConnectorErrorCode",
+    "CookieResolver",
     "DescriptorError",
     "DiscoveryConnector",
     "DiscoveryFetcher",
@@ -78,9 +100,12 @@ __all__ = [
     "DiscoveryRequest",
     "DiscoveryResult",
     "DiscoveryStatus",
+    "DownloadAttempt",
     "DownloadConnector",
     "DownloadRequest",
     "DownloadResult",
+    "DownloadRouteResult",
+    "DownloadRouter",
     "DownloadStatus",
     "FakeProvider",
     "FixtureFetcher",
@@ -92,15 +117,19 @@ __all__ = [
     "ProviderInvokeError",
     "ProviderRegistry",
     "ProviderRuntime",
+    "ResolvedCookies",
     "ResolvedSource",
     "RouteDecision",
     "ShortLinkExpander",
+    "UnconfiguredCookieResolver",
     "UnconfiguredFetcher",
     "UnconfiguredShortLinkExpander",
     "UnresolvableUrl",
     "acquisition_input_digest",
     "extract_url_from_text",
     "load_descriptor",
+    "locate_downloaded_media",
+    "map_download_error",
     "map_http_status",
     "map_payload_error",
     "map_ytdlp_error",
@@ -110,6 +139,8 @@ __all__ = [
     "resolve_url",
     "route",
     "scan_descriptors",
+    "scrub_metadata",
+    "sha256_file",
     "status_for_download_error",
     "status_for_error",
 ]

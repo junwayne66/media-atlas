@@ -1,0 +1,22 @@
+# f2 下载连接器（docs/modules/41 §2，docs/20-open-source-landscape.md §3）
+name: download.f2
+provider_type: DownloadProvider
+version: 0.1.0
+capabilities:
+  - source.download
+  - source.metadata
+execution_location: local
+languages:
+  - zh-CN
+  - en-US
+platforms:
+  - douyin
+  - tiktok
+# L4：借非官方平台接口下载，签名/页面高度易变，须健康探针+熔断+人工回退。
+# 抖音优先级 #2（官方能力之上、yt-dlp 之上）；TikTok 优先级 #3（yt-dlp 之下）。
+isolation_level: L4
+license_notes: >
+  f2 本体为 Apache-2.0，但对平台的抓取属非官方接口用途，按 L4 管理：实时下载默认未启用
+  （需真实 f2 二进制 + 真实资源/账号，53 §10 停止条件），版本锁定 f2==0.0.1.7，
+  Cookie 走不透明 credential_handle（绝不明文），验证码/风控转人工不绕过，手工导入始终可用。
+required_secrets: []

@@ -47,6 +47,31 @@ def test_maps_from_exception_without_stderr() -> None:
     assert err.code == C.AUTH_REQUIRED
 
 
+@pytest.mark.parametrize(
+    ("stderr", "expected"),
+    [
+        ("错误：需要登录后才能访问", C.AUTH_REQUIRED),
+        ("请求过于频繁，请稍后再试", C.RATE_LIMITED),
+        ("作品不存在或已删除", C.SOURCE_UNAVAILABLE),
+        ("检测到滑块验证", C.CHALLENGE_REQUIRED),
+    ],
+)
+def test_chinese_signatures_map(stderr: str, expected: AcquisitionErrorCode) -> None:
+    assert map_ytdlp_error(stderr=stderr).code == expected
+
+
+@pytest.mark.parametrize(
+    "benign",
+    [
+        "警告: 临时文件已删除，清理完成",  # 含「已删除」但非内容不可用
+        "日志频繁写入导致磁盘将满",  # 含「频繁」但非限流
+    ],
+)
+def test_benign_text_not_false_tripped(benign: str) -> None:
+    # 收窄裸中文标记后，无关文本不再误判为 §12 具体码
+    assert map_ytdlp_error(stderr=benign).code is C.RESULT_UNKNOWN
+
+
 def test_detail_is_last_stderr_line_not_full_stack() -> None:
     err = map_ytdlp_error(stderr="Traceback ...\nlots of lines\nERROR: This video is private")
     assert err.code == C.SOURCE_UNAVAILABLE

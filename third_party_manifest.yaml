@@ -87,6 +87,14 @@ python:
       本体 Unlicense 可入核心，但对平台的提取属非官方接口用途按 L4 管理：仅参数数组
       子进程调用（不链接不分发），实时下载默认未启用（需真实二进制+真实资源，停止条件），
       Cookie 走不透明 credential_handle，验证码/风控转人工不绕过。版本升级须重跑连接器契约测试。
+  - name: f2（系统二进制，版本锁定 0.0.1.7）
+    license: Apache-2.0
+    isolation: L4
+    used_by: connectors/downloaders/f2（DownloadProvider，抖音优先/TikTok 兜底）
+    note: >
+      Apache-2.0 但对平台的抓取属非官方接口用途按 L4 管理（同 yt-dlp 处置）：仅参数数组
+      子进程调用（不链接不分发），实时下载默认未启用（停止条件），Cookie 走不透明
+      credential_handle，验证码/风控转人工不绕过，手工导入始终可用。升级须重跑契约测试。
 
 javascript:
   - name: vue

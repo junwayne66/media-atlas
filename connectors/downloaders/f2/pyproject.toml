@@ -1,0 +1,20 @@
+[project]
+name = "videoforge-connector-f2"
+version = "0.1.0"
+description = "f2 下载连接器：抖音/TikTok，版本锁定、Cookie handle（不透明）、错误映射（§12）、实时下载默认未启用"
+requires-python = ">=3.11"
+dependencies = [
+    "videoforge-contracts",
+    "videoforge-provider-sdk",
+]
+
+[tool.uv.sources]
+videoforge-contracts = { workspace = true }
+videoforge-provider-sdk = { workspace = true }
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/videoforge_connector_f2"]
