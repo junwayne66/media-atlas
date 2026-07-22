@@ -1,0 +1,24 @@
+# yt-dlp 下载连接器（docs/modules/41 §2/§3，docs/architecture/50 ADR「yt-dlp Adapter」）
+name: download.yt_dlp
+provider_type: DownloadProvider
+version: 0.1.0
+capabilities:
+  - source.download
+  - source.metadata
+execution_location: local
+languages:
+  - zh-CN
+  - en-US
+platforms:
+  - tiktok
+  - youtube
+  - generic
+# L4：借非官方提取路径下载，平台页面/签名高度易变，须健康探针+熔断+人工回退
+# （docs/20-open-source-landscape.md §3）。TikTok 官方授权导出优先（41 §2）。
+isolation_level: L4
+license_notes: >
+  yt-dlp 本体为 Unlicense（公共领域等价），但对平台的提取属非官方接口用途，按 L4 管理：
+  实时下载默认未启用（需真实 yt-dlp 二进制 + 真实资源/账号，53 §10 停止条件），
+  版本锁定 yt-dlp==2025.01.15，Cookie 走不透明 credential_handle（绝不明文），
+  验证码/风控转人工不绕过，手工导入（resolve_local_file）始终可用。
+required_secrets: []

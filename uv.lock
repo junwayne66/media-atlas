@@ -12,6 +12,7 @@ members = [
     "videoforge-api",
     "videoforge-connector-douyin",
     "videoforge-connector-tiktok",
+    "videoforge-connector-yt-dlp",
     "videoforge-contracts",
     "videoforge-domain",
     "videoforge-edge-agent",
@@ -1350,6 +1351,7 @@ dependencies = [
     { name = "videoforge-api" },
     { name = "videoforge-connector-douyin" },
     { name = "videoforge-connector-tiktok" },
+    { name = "videoforge-connector-yt-dlp" },
     { name = "videoforge-contracts" },
     { name = "videoforge-domain" },
     { name = "videoforge-edge-agent" },
@@ -1374,6 +1376,7 @@ requires-dist = [
     { name = "videoforge-api", editable = "apps/api" },
     { name = "videoforge-connector-douyin", editable = "connectors/sources/douyin" },
     { name = "videoforge-connector-tiktok", editable = "connectors/sources/tiktok" },
+    { name = "videoforge-connector-yt-dlp", editable = "connectors/downloaders/yt-dlp" },
     { name = "videoforge-contracts", editable = "packages/contracts-py" },
     { name = "videoforge-domain", editable = "packages/domain" },
     { name = "videoforge-edge-agent", editable = "services/edge-agent" },
@@ -1439,6 +1442,21 @@ requires-dist = [
 name = "videoforge-connector-tiktok"
 version = "0.1.0"
 source = { editable = "connectors/sources/tiktok" }
+dependencies = [
+    { name = "videoforge-contracts" },
+    { name = "videoforge-provider-sdk" },
+]
+
+[package.metadata]
+requires-dist = [
+    { name = "videoforge-contracts", editable = "packages/contracts-py" },
+    { name = "videoforge-provider-sdk", editable = "packages/provider-sdk" },
+]
+
+[[package]]
+name = "videoforge-connector-yt-dlp"
+version = "0.1.0"
+source = { editable = "connectors/downloaders/yt-dlp" }
 dependencies = [
     { name = "videoforge-contracts" },
     { name = "videoforge-provider-sdk" },
