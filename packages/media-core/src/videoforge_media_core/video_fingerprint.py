@@ -15,6 +15,7 @@ from pathlib import Path
 from typing import Protocol
 
 from videoforge_domain import dhash_from_gray
+from videoforge_media_core.errors import FfmpegNotAvailable
 
 _DEFAULT_HASH_SIZE = 8
 _DEFAULT_EVERY_S = 2.0
@@ -22,10 +23,6 @@ _DEFAULT_EVERY_S = 2.0
 
 class VideoFingerprinter(Protocol):
     def fingerprint(self, path: Path, *, every_s: float = _DEFAULT_EVERY_S) -> tuple[int, ...]: ...
-
-
-class FfmpegNotAvailable(RuntimeError):
-    pass
 
 
 class FfmpegVideoFingerprinter:

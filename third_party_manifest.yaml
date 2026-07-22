@@ -77,8 +77,13 @@ python:
   - name: ffmpeg/ffprobe（系统二进制）
     license: LGPL-2.1+ / GPL-2.0+（视构建选项，Homebrew 构建含 GPL 组件）
     isolation: L3
-    used_by: packages/media-core（仅参数数组子进程调用，不链接不分发）
-    note: ToolchainRegistry 落地后记录实际路径/版本/buildconf（50 §10）
+    used_by: >
+      packages/media-core：ffprobe 探测、视频指纹抽帧（VF-107）、媒体运行时 proxy/audio/
+      scene（VF-201）——全部仅参数数组子进程调用，不链接不分发。
+    note: >
+      工具版本由 FfmpegRuntime 构造时探测并写入每个操作的 JobManifest（可重放）。
+      真实人脸检测模型（OpenCV/DNN）尚未选型，FaceDetector 端口默认 Null/Fake，接入留到 P2 后段。
+      ToolchainRegistry 落地后记录实际路径/版本/buildconf（50 §10）。
   - name: yt-dlp（系统二进制，版本锁定 2025.01.15）
     license: Unlicense（公共领域等价）
     isolation: L4
