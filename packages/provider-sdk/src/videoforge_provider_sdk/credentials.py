@@ -1,6 +1,8 @@
-"""Cookie 解析：credential_handle（不透明 id）→ 短时 Netscape cookie 文件。
+"""凭据解析：credential_handle（不透明 id）→ 短时 Netscape cookie 文件。
 
-安全立场（README §4：UI/日志/TaskEnvelope 无明文平台凭据；macOS 用 Keychain）：
+跨下载连接器共用（yt-dlp / f2 都需要）。安全立场（README §4：UI/日志/TaskEnvelope
+无明文平台凭据；macOS 用 Keychain）：
+
 - 请求里只带不透明句柄，绝不带明文 Cookie。
 - 解析出的 cookie 文件内容绝不进日志；只有文件路径进 argv（路径非机密，内容才是）。
 - 默认 UnconfiguredCookieResolver：未接凭据存储。给了句柄却无法解析 → AUTH_REQUIRED
@@ -13,7 +15,8 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Protocol
 
-from videoforge_provider_sdk import AcquisitionError, AcquisitionErrorCode
+from videoforge_provider_sdk.acquisition import AcquisitionErrorCode
+from videoforge_provider_sdk.download_errors import AcquisitionError
 
 
 @dataclass(frozen=True)

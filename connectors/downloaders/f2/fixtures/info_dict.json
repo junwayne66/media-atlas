@@ -1,0 +1,27 @@
+{
+  "aweme_id": "7412345678901234567",
+  "id": "7412345678901234567",
+  "ext": "mp4",
+  "desc": "三分钟看懂 AI 剪辑工作流 | demo",
+  "author": {
+    "uid": "demo_uid",
+    "nickname": "demo_creator"
+  },
+  "duration": 35.5,
+  "width": 1080,
+  "height": 1920,
+  "vcodec": "h264",
+  "acodec": "aac",
+  "webpage_url": "https://www.douyin.com/video/7412345678901234567",
+  "video": {
+    "play_addr": {
+      "url_list": ["https://neutral.example/play/0"]
+    }
+  },
+  "cookie": "sessionid=SECRET_SHOULD_BE_SCRUBBED; sid_tt=SECRET_TOO",
+  "http_headers": {
+    "User-Agent": "Mozilla/5.0",
+    "Cookie": "sessionid=SECRET_SHOULD_BE_SCRUBBED"
+  },
+  "token": "SECRET_TOKEN_SHOULD_BE_SCRUBBED"
+}
