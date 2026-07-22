@@ -8,6 +8,8 @@ from videoforge_contracts import (
     ContractModel,
     CostModel,
     CreationMode,
+    FrameAnalysis,
+    FrameSampleReason,
     MediaProbe,
     ProblemDetail,
     ProducedBy,
@@ -29,6 +31,7 @@ from videoforge_contracts import (
     TrendItemSnapshot,
     TrendStage,
     TrendSubScores,
+    VisualAnalysis,
 )
 
 _T0 = datetime(2026, 7, 21, 8, 0, 0, tzinfo=UTC)
@@ -267,6 +270,39 @@ def make_text_track_set() -> TextTrackSet:
     )
 
 
+def make_visual_analysis() -> VisualAnalysis:
+    return VisualAnalysis(
+        id="01J2ZK3AC9V6XW8YQ4R5T6U7ZA",
+        source_artifact_id="01J2ZK3AC9V6XW8YQ4R5T6U7W1",
+        sampling_policy="representative@v1",
+        vlm_provider="vlm.qwen_vl",
+        vlm_version="max-0809",
+        frames=[
+            FrameAnalysis(
+                frame_time_ms=0,
+                reasons=[FrameSampleReason.KEYFRAME],
+                caption="创作者出镜，桌面摆放芯片开发板",
+                labels=["person", "product", "desk"],
+                confidence=0.9,
+            ),
+            FrameAnalysis(
+                frame_time_ms=3000,
+                reasons=[FrameSampleReason.SCENE_CUT, FrameSampleReason.TEXT_CHANGE],
+                caption="屏幕录制：跑分图表",
+                labels=["screen_record", "chart"],
+                confidence=0.86,
+            ),
+            FrameAnalysis(
+                frame_time_ms=8000,
+                reasons=[FrameSampleReason.LOW_CONFIDENCE],
+                caption=None,  # 已选中，尚未分析
+                labels=[],
+            ),
+        ],
+        created_at=_T0,
+    )
+
+
 SAMPLES: dict[str, ContractModel] = {
     "project": make_project(),
     "artifact": make_artifact(),
@@ -277,4 +313,5 @@ SAMPLES: dict[str, ContractModel] = {
     "trend-cluster": make_trend_cluster(),
     "transcript": make_transcript(),
     "text-track-set": make_text_track_set(),
+    "visual-analysis": make_visual_analysis(),
 }

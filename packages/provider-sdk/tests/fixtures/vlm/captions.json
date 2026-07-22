@@ -1,0 +1,5 @@
+{
+  "0": {"caption": "创作者出镜，桌面有芯片开发板", "labels": ["person", "product", "desk"], "confidence": 0.9},
+  "3000": {"caption": "屏幕录制：跑分图表", "labels": ["screen_record", "chart"], "confidence": 0.86},
+  "10000": {"caption": "产品特写", "labels": ["product", "closeup"], "confidence": 0.82}
+}

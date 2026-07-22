@@ -99,3 +99,14 @@ class TextTrackKind(StrEnum):
     SCENE_TEXT = "SCENE_TEXT"  # 场景内文字
     BRAND_MARK = "BRAND_MARK"  # 品牌标/水印（小、角落、持久）
     UNKNOWN = "UNKNOWN"
+
+
+class FrameSampleReason(StrEnum):
+    """代表帧被选中的原因（docs/modules/41 §9）。VLM 只分析代表帧，禁逐帧。"""
+
+    KEYFRAME = "KEYFRAME"  # 起始/关键帧，保底覆盖
+    SCENE_CUT = "SCENE_CUT"  # 场景切换（内容变化）
+    TEXT_CHANGE = "TEXT_CHANGE"  # 新文本轨出现
+    SPEAKER_CHANGE = "SPEAKER_CHANGE"  # 说话人切换
+    LOW_CONFIDENCE = "LOW_CONFIDENCE"  # 上游 OCR/ASR 低置信，需 VLM 消歧
+    PERIODIC = "PERIODIC"  # 长静止段的周期性采样，保证覆盖

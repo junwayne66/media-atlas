@@ -3,6 +3,7 @@ from videoforge_contracts.base import CONTRACT_SCHEMA_VERSION, ContractModel
 from videoforge_contracts.enums import (
     CreationMode,
     ExecutionPolicy,
+    FrameSampleReason,
     HealthState,
     IsolationLevel,
     ProjectStatus,
@@ -33,6 +34,7 @@ from videoforge_contracts.trend import (
     TrendItemSnapshot,
     TrendSubScores,
 )
+from videoforge_contracts.vlm import FrameAnalysis, VisualAnalysis
 
 # schemas/<name>.schema.json 与顶层合同的对应表（导出与漂移检查共用）
 CONTRACTS: dict[str, type[ContractModel]] = {
@@ -45,6 +47,7 @@ CONTRACTS: dict[str, type[ContractModel]] = {
     "trend-cluster": TrendCluster,
     "transcript": Transcript,
     "text-track-set": TextTrackSet,
+    "visual-analysis": VisualAnalysis,
 }
 
 __all__ = [
@@ -56,6 +59,8 @@ __all__ = [
     "CostModel",
     "CreationMode",
     "ExecutionPolicy",
+    "FrameAnalysis",
+    "FrameSampleReason",
     "HealthState",
     "HotScoreWeights",
     "IsolationLevel",
@@ -83,4 +88,5 @@ __all__ = [
     "TrendItemSnapshot",
     "TrendStage",
     "TrendSubScores",
+    "VisualAnalysis",
 ]

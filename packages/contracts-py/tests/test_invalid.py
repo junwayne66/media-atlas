@@ -93,6 +93,18 @@ INVALID_OVERRIDES: list[tuple[str, str, dict[str, Any]]] = [
             ]
         },
     ),
+    ("visual-analysis", "未知字段被拒", {"unexpected_field": 1}),
+    ("visual-analysis", "sampling_policy 不能为空", {"sampling_policy": ""}),
+    (
+        "visual-analysis",
+        "帧 reasons 不能为空",
+        {"frames": [{"frame_time_ms": 0, "reasons": []}]},
+    ),
+    (
+        "visual-analysis",
+        "帧时间不能为负",
+        {"frames": [{"frame_time_ms": -1, "reasons": ["KEYFRAME"]}]},
+    ),
 ]
 
 

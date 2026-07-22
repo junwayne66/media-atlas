@@ -104,6 +104,15 @@ from videoforge_provider_sdk.url_resolver import (
     resolve_local_file,
     resolve_url,
 )
+from videoforge_provider_sdk.vlm import (
+    FakeVLMProvider,
+    UnconfiguredVLMProvider,
+    VLMErrorCode,
+    VLMProvider,
+    VLMRequest,
+    VLMResult,
+    VLMStatus,
+)
 
 __all__ = [
     "CANARY_KEYWORD",
@@ -144,6 +153,7 @@ __all__ = [
     "FakeLanguageSegmenter",
     "FakeOCRProvider",
     "FakeProvider",
+    "FakeVLMProvider",
     "FixtureFetcher",
     "FixtureShortLinkExpander",
     "LanguageSegmenter",
@@ -170,7 +180,13 @@ __all__ = [
     "UnconfiguredLanguageSegmenter",
     "UnconfiguredOCRProvider",
     "UnconfiguredShortLinkExpander",
+    "UnconfiguredVLMProvider",
     "UnresolvableUrl",
+    "VLMErrorCode",
+    "VLMProvider",
+    "VLMRequest",
+    "VLMResult",
+    "VLMStatus",
     "acquisition_input_digest",
     "extract_url_from_text",
     "load_descriptor",
