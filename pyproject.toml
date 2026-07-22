@@ -99,5 +99,6 @@ testpaths = [
     "connectors/sources/tiktok/tests",
     "connectors/downloaders/yt-dlp/tests",
     "connectors/downloaders/f2/tests",
+    "tests/acceptance",
 ]
 asyncio_mode = "auto"
