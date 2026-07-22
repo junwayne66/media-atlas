@@ -1,0 +1,37 @@
+{
+  "items": [
+    {
+      "item_id": "tt-9981",
+      "author_id": "tt-creator-2",
+      "published_at": "2026-07-21T15:00:00Z",
+      "observed_at": "2026-07-22T00:00:00Z",
+      "views": 2400000,
+      "likes": 190000,
+      "comments": 14000,
+      "shares": 31000,
+      "saves": 22000,
+      "followers": 880000,
+      "rank": 1,
+      "hashtags": ["ai", "ondevice"],
+      "sound_id": "tt-snd-88",
+      "region": "US",
+      "locale": "en-US"
+    },
+    {
+      "item_id": "tt-9990",
+      "author_id": "tt-creator-9",
+      "published_at": "2026-07-21T20:00:00Z",
+      "observed_at": "2026-07-22T00:00:00Z",
+      "views": 510000,
+      "likes": 33000,
+      "comments": null,
+      "shares": 4100,
+      "saves": null,
+      "followers": 6400,
+      "rank": 2,
+      "hashtags": ["ai"],
+      "region": "US",
+      "locale": "en-US"
+    }
+  ]
+}

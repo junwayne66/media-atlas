@@ -1,11 +1,11 @@
-"""外部错误 → 统一连接器错误码（docs/implementation/51 §12）。
+"""外部错误 → 统一连接器错误码（docs/implementation/51 §12）。平台无关，可复用。
 
 纯函数，无副作用；原始脱敏响应由调用方另存为诊断 Artifact（51 §12）。
 """
 
 from typing import Any
 
-from videoforge_provider_sdk import ConnectorErrorCode
+from videoforge_provider_sdk.discovery import ConnectorErrorCode
 
 
 class ConnectorError(Exception):
@@ -16,7 +16,7 @@ class ConnectorError(Exception):
 
 
 def map_http_status(status_code: int, payload: dict[str, Any] | None = None) -> ConnectorError:
-    """HTTP 状态码 + 可选响应体 → ConnectorError。"""
+    """HTTP 状态码 + 可选响应体 → ConnectorError。响应体里的挑战优先于状态码。"""
     if payload is not None:
         payload_err = map_payload_error(payload)
         if payload_err is not None:
@@ -40,13 +40,16 @@ _MESSAGE_FIELDS = ("error_message", "message", "prompt", "description", "hint", 
 
 def map_payload_error(payload: dict[str, Any]) -> ConnectorError | None:
     """从平台响应体识别错误；无错误返回 None。"""
+    # 中性格式里成功采集恒带 items 列表，错误/挑战响应不带——有 items 即数据响应，
+    # 直接放行，避免业务字段名（如 risk_level）误触发挑战检测。
+    if isinstance(payload.get("items"), list):
+        return None
     # 挑战检测的搜索域：顶层键名 + 提示类字段的值（不含 items 等业务数据）
     parts = list(payload.keys())
     parts.extend(str(payload[f]) for f in _MESSAGE_FIELDS if isinstance(payload.get(f), str))
     haystack = " ".join(parts).lower()
     if any(marker in haystack for marker in _CHALLENGE_MARKERS):
         return ConnectorError(ConnectorErrorCode.CHALLENGE_REQUIRED, "平台要求人机验证")
-    # 平台业务错误码（中性字段名，非抖音私有结构）
     code = payload.get("error_code") or payload.get("status_code")
     if code in (None, 0, "0", "success"):
         return None

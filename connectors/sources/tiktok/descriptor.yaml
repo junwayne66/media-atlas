@@ -1,0 +1,24 @@
+# TikTok 发现连接器（docs/architecture/30 §9，docs/modules/40 §2.2）
+name: source.tiktok
+provider_type: SourceConnector
+version: 0.1.0
+capabilities:
+  - source.discover
+  - source.metadata
+execution_location: local
+languages:
+  - en-US
+  - zh-CN
+platforms:
+  - tiktok
+# L4：实时路径依赖非官方公开信号（TikTok-Api 等），签名/页面高度易变，须健康探针+
+# 熔断+人工回退（docs/20-open-source-landscape.md §3）。官方 Research/Display API
+# 能力优先但需凭据+App 审核。
+isolation_level: L4
+license_notes: >
+  官方 API（Research/Display，需 client_key/secret 与 App 审核）优先；公开信号
+  适配器为 L4，实时抓取未启用；手工导入始终可用。候选实时适配器 TikTok-Api（MIT）
+  待授权后接入，遇 Cookie/签名变化易失效，空结果必须可诊断。
+required_secrets:
+  - tiktok_open_api_client_key
+  - tiktok_open_api_client_secret

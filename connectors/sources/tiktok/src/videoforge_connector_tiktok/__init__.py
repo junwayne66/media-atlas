@@ -1,9 +1,8 @@
-"""抖音发现连接器公共 API。解析/错误映射/fetcher 复用 provider-sdk 的发现 kit，
-此处 re-export 以保持连接器自包含的导入面。"""
+"""TikTok 发现连接器公共 API。解析/错误映射/fetcher 复用 provider-sdk 发现 kit。"""
 
-from videoforge_connector_douyin.connector import (
-    DouyinDiscoveryConnector,
-    load_douyin_descriptor,
+from videoforge_connector_tiktok.connector import (
+    TikTokDiscoveryConnector,
+    load_tiktok_descriptor,
 )
 from videoforge_provider_sdk import (
     CANARY_KEYWORD,
@@ -17,18 +16,17 @@ from videoforge_provider_sdk import (
     parse_items,
 )
 
-# 平台惯用别名
-DouyinFetcher = DiscoveryFetcher
+TikTokFetcher = DiscoveryFetcher
 
 __all__ = [
     "CANARY_KEYWORD",
     "ConnectorError",
-    "DouyinDiscoveryConnector",
-    "DouyinFetcher",
     "FixtureFetcher",
     "ParseError",
+    "TikTokDiscoveryConnector",
+    "TikTokFetcher",
     "UnconfiguredFetcher",
-    "load_douyin_descriptor",
+    "load_tiktok_descriptor",
     "map_http_status",
     "map_payload_error",
     "parse_items",
