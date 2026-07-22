@@ -107,6 +107,14 @@ python:
     note: >
       本机未安装，音频指纹层暂缺（VF-107 只落地视频 pHash + 文本 SimHash + 文件 SHA）；
       落地时仅参数数组子进程调用（不链接不分发）。去重引擎已预留 AUDIO 层，接入即生效。
+  - name: whisper.cpp / faster-whisper / WhisperX / FunASR（ASR 引擎与模型）
+    license: MIT / MIT / BSD-2-Clause / MIT（模型权重许可另计）
+    isolation: L1
+    used_by: 计划——ASR Provider（docs/modules/41 §7）
+    note: >
+      VF-202 只落地统一词级 Transcript 合同 + ASR 端口 + Fake/路由（录制 fixture 回放）；
+      真实引擎需下载模型权重（停止条件，权重许可另核），默认 UnconfiguredASRProvider 返回
+      UNCONFIGURED 不静默假装。接入时代码宽松许可可入核心，模型权重按 L1 单独评审。
 
 javascript:
   - name: vue

@@ -31,6 +31,11 @@ from videoforge_domain.staging import (
     can_transition,
     classify_stage,
 )
+from videoforge_domain.transcript import (
+    low_confidence_spans,
+    mark_low_confidence,
+    needs_review,
+)
 
 __all__ = [
     "ENGAGEMENT_METRICS",
@@ -55,6 +60,9 @@ __all__ = [
     "hamming",
     "hamming_similarity",
     "hot_score",
+    "low_confidence_spans",
+    "mark_low_confidence",
+    "needs_review",
     "normalize_rate",
     "phash_sequence_similarity",
     "rescore_cluster",
