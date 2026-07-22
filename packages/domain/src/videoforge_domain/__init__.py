@@ -1,5 +1,20 @@
 from videoforge_domain.cluster_scoring import compute_sub_scores, rescore_cluster
+from videoforge_domain.dedup import (
+    AssetFingerprint,
+    DedupConfig,
+    DuplicateGroup,
+    DuplicateLayer,
+    DuplicateMatch,
+    find_duplicate_groups,
+)
 from videoforge_domain.errors import DomainError, InsufficientSnapshots
+from videoforge_domain.fingerprints import (
+    dhash_from_gray,
+    hamming,
+    hamming_similarity,
+    phash_sequence_similarity,
+    text_simhash,
+)
 from videoforge_domain.kinematics import (
     ENGAGEMENT_METRICS,
     decline_from_peak,
@@ -20,7 +35,12 @@ from videoforge_domain.staging import (
 __all__ = [
     "ENGAGEMENT_METRICS",
     "STAGE_TRANSITIONS",
+    "AssetFingerprint",
+    "DedupConfig",
     "DomainError",
+    "DuplicateGroup",
+    "DuplicateLayer",
+    "DuplicateMatch",
     "IllegalStageTransition",
     "InsufficientSnapshots",
     "assert_transition",
@@ -29,11 +49,17 @@ __all__ = [
     "compute_sub_scores",
     "decline_from_peak",
     "derive_reason_codes",
+    "dhash_from_gray",
     "engagement_efficiency",
+    "find_duplicate_groups",
+    "hamming",
+    "hamming_similarity",
     "hot_score",
     "normalize_rate",
+    "phash_sequence_similarity",
     "rescore_cluster",
     "series_acceleration",
     "series_velocity",
     "sigmoid",
+    "text_simhash",
 ]

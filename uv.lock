@@ -1536,12 +1536,14 @@ source = { editable = "packages/media-core" }
 dependencies = [
     { name = "boto3" },
     { name = "videoforge-contracts" },
+    { name = "videoforge-domain" },
 ]
 
 [package.metadata]
 requires-dist = [
     { name = "boto3", specifier = ">=1.35" },
     { name = "videoforge-contracts", editable = "packages/contracts-py" },
+    { name = "videoforge-domain", editable = "packages/domain" },
 ]
 
 [[package]]
