@@ -5,11 +5,13 @@ description = "VideoForge 媒体核心：对象存储 Artifact Store、内容寻
 requires-python = ">=3.11"
 dependencies = [
     "videoforge-contracts",
+    "videoforge-domain",
     "boto3>=1.35",
 ]
 
 [tool.uv.sources]
 videoforge-contracts = { workspace = true }
+videoforge-domain = { workspace = true }
 
 [build-system]
 requires = ["hatchling"]

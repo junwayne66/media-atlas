@@ -13,10 +13,17 @@ from videoforge_media_core.probe import (
     FfprobeProbeProvider,
     ProbeProvider,
 )
+from videoforge_media_core.video_fingerprint import (
+    FfmpegNotAvailable,
+    FfmpegVideoFingerprinter,
+    VideoFingerprinter,
+)
 
 __all__ = [
     "ArtifactStore",
     "ArtifactStoreError",
+    "FfmpegNotAvailable",
+    "FfmpegVideoFingerprinter",
     "FfprobeNotAvailable",
     "FfprobeProbeProvider",
     "LocalArtifactCache",
@@ -27,6 +34,7 @@ __all__ = [
     "StagedUpload",
     "StagedUploadMismatch",
     "StagedUploadNotFound",
+    "VideoFingerprinter",
     "sha256_file",
     "sha256_stream",
 ]
