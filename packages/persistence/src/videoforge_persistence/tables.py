@@ -9,7 +9,17 @@
 
 from datetime import datetime
 
-from sqlalchemy import BigInteger, DateTime, ForeignKey, Index, Integer, String, Text, text
+from sqlalchemy import (
+    BigInteger,
+    DateTime,
+    Float,
+    ForeignKey,
+    Index,
+    Integer,
+    String,
+    Text,
+    text,
+)
 from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column
 
@@ -93,6 +103,64 @@ class ProcessedEventRow(Base):
     event_id: Mapped[str] = mapped_column(String(36), primary_key=True)
     consumer: Mapped[str] = mapped_column(String(200), primary_key=True)
     processed_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
+
+
+class TrendItemSnapshotRow(Base):
+    """周期采集的不可变观测（docs/modules/40 §3.1）。只增，热度靠序列算。"""
+
+    __tablename__ = "trend_item_snapshots"
+
+    id: Mapped[str] = mapped_column(String(36), primary_key=True)
+    schema_version: Mapped[str] = mapped_column(String(8), nullable=False)
+    observed_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
+    platform: Mapped[str] = mapped_column(String(50), nullable=False)
+    region: Mapped[str | None] = mapped_column(String(20))
+    locale: Mapped[str | None] = mapped_column(String(20))
+    item_id: Mapped[str] = mapped_column(String(200), nullable=False)
+    author_id: Mapped[str | None] = mapped_column(String(200))
+    published_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+    views: Mapped[int | None] = mapped_column(BigInteger)
+    likes: Mapped[int | None] = mapped_column(BigInteger)
+    comments: Mapped[int | None] = mapped_column(BigInteger)
+    shares: Mapped[int | None] = mapped_column(BigInteger)
+    saves: Mapped[int | None] = mapped_column(BigInteger)
+    followers_at_observation: Mapped[int | None] = mapped_column(BigInteger)
+    rank: Mapped[int | None] = mapped_column(Integer)
+    hashtag_ids: Mapped[list] = mapped_column(JSONB, nullable=False, default=list)
+    sound_id: Mapped[str | None] = mapped_column(String(200))
+    raw_artifact_id: Mapped[str | None] = mapped_column(String(36))
+    collector_version: Mapped[str] = mapped_column(String(100), nullable=False)
+    source_confidence: Mapped[float] = mapped_column(Float, nullable=False)
+
+    __table_args__ = (Index("ix_trend_snapshots_item", "platform", "item_id", "observed_at"),)
+
+
+class TrendClusterRow(Base):
+    """跨平台/跨语言同事件信号聚类（docs/architecture/31 §1.1）。可版本化聚合。"""
+
+    __tablename__ = "trend_clusters"
+
+    id: Mapped[str] = mapped_column(String(36), primary_key=True)
+    schema_version: Mapped[str] = mapped_column(String(8), nullable=False)
+    version: Mapped[int] = mapped_column(Integer, nullable=False, default=1)
+    title: Mapped[str] = mapped_column(Text, nullable=False)
+    canonical_topic: Mapped[str] = mapped_column(String(300), nullable=False)
+    keywords: Mapped[list] = mapped_column(JSONB, nullable=False, default=list)
+    entities: Mapped[list] = mapped_column(JSONB, nullable=False, default=list)
+    member_item_ids: Mapped[list] = mapped_column(JSONB, nullable=False, default=list)
+    snapshot_ids: Mapped[list] = mapped_column(JSONB, nullable=False, default=list)
+    first_seen_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
+    last_seen_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
+    stage: Mapped[str] = mapped_column(String(20), nullable=False, index=True)
+    sub_scores: Mapped[dict | None] = mapped_column(JSONB)
+    hot_score: Mapped[float | None] = mapped_column(Float, index=True)
+    weights_version: Mapped[str | None] = mapped_column(String(50))
+    reason_codes: Mapped[list] = mapped_column(JSONB, nullable=False, default=list)
+    embedding_ref: Mapped[str | None] = mapped_column(String(200))
+    source_confidence: Mapped[float] = mapped_column(Float, nullable=False, default=0.0)
+    vertical: Mapped[str | None] = mapped_column(String(100), index=True)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
+    updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
 
 
 class WorkerRow(Base):

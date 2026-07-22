@@ -4,6 +4,8 @@ from fastapi.middleware.cors import CORSMiddleware
 from videoforge_api.operations import TemporalOperationsService
 from videoforge_api.operations import router as operations_router
 from videoforge_api.settings import Settings
+from videoforge_api.trends import DbTrendGateway
+from videoforge_api.trends import router as trends_router
 from videoforge_api.workers import DbWorkerGateway
 from videoforge_api.workers import router as workers_router
 from videoforge_persistence import create_engine_from_env
@@ -22,9 +24,12 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     app.state.operations_service = TemporalOperationsService(
         settings.temporal_address, settings.temporal_namespace
     )
-    app.state.worker_gateway = DbWorkerGateway(create_engine_from_env(settings.database_url))
+    engine = create_engine_from_env(settings.database_url)
+    app.state.worker_gateway = DbWorkerGateway(engine)
+    app.state.trend_gateway = DbTrendGateway(engine)
     app.include_router(operations_router)
     app.include_router(workers_router)
+    app.include_router(trends_router)
 
     @app.get("/healthz")
     def healthz() -> dict[str, str]:
