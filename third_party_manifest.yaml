@@ -115,6 +115,14 @@ python:
       VF-202 只落地统一词级 Transcript 合同 + ASR 端口 + Fake/路由（录制 fixture 回放）；
       真实引擎需下载模型权重（停止条件，权重许可另核），默认 UnconfiguredASRProvider 返回
       UNCONFIGURED 不静默假装。接入时代码宽松许可可入核心，模型权重按 L1 单独评审。
+  - name: PaddleOCR / RapidOCR（OCR 引擎与中英识别模型）
+    license: Apache-2.0（模型权重许可另计）
+    isolation: L1
+    used_by: 计划——OCR Provider（docs/modules/41 §8）
+    note: >
+      VF-203 只落地 TextTrack 合同 + OCR 端口 + Fake（录制检测回放）+ domain 跟踪/多帧投票/
+      类型分类（纯）；真实引擎需模型权重（停止条件），默认 UnconfiguredOCRProvider 返回
+      UNCONFIGURED 不静默假装。接入时代码宽松许可可入核心，模型权重按 L1 单独评审。
 
 javascript:
   - name: vue

@@ -77,6 +77,15 @@ from videoforge_provider_sdk.neutral_connector import (
     NeutralDiscoveryConnector,
 )
 from videoforge_provider_sdk.neutral_parser import ParseError, parse_items
+from videoforge_provider_sdk.ocr import (
+    FakeOCRProvider,
+    OCRErrorCode,
+    OCRProvider,
+    OCRRequest,
+    OCRResult,
+    OCRStatus,
+    UnconfiguredOCRProvider,
+)
 from videoforge_provider_sdk.registry import ProviderRegistry, ProviderRuntime
 from videoforge_provider_sdk.routing import (
     WEIGHTS,
@@ -133,6 +142,7 @@ __all__ = [
     "DownloadStatus",
     "FakeASRProvider",
     "FakeLanguageSegmenter",
+    "FakeOCRProvider",
     "FakeProvider",
     "FixtureFetcher",
     "FixtureShortLinkExpander",
@@ -140,6 +150,11 @@ __all__ = [
     "LanguageSpan",
     "NeutralDiscoveryConnector",
     "NoEligibleProviderError",
+    "OCRErrorCode",
+    "OCRProvider",
+    "OCRRequest",
+    "OCRResult",
+    "OCRStatus",
     "ParseError",
     "Provider",
     "ProviderInvokeError",
@@ -153,6 +168,7 @@ __all__ = [
     "UnconfiguredCookieResolver",
     "UnconfiguredFetcher",
     "UnconfiguredLanguageSegmenter",
+    "UnconfiguredOCRProvider",
     "UnconfiguredShortLinkExpander",
     "UnresolvableUrl",
     "acquisition_input_digest",

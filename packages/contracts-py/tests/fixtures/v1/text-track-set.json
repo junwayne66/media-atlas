@@ -1,0 +1,82 @@
+{
+  "created_at": "2026-07-21T08:00:00Z",
+  "id": "01J2ZK3AC9V6XW8YQ4R5T6U7Z0",
+  "ocr_provider": "ocr.paddle",
+  "ocr_version": "2.7",
+  "schema_version": "1",
+  "source_artifact_id": "01J2ZK3AC9V6XW8YQ4R5T6U7W1",
+  "tracks": [
+    {
+      "confidence": 0.91,
+      "end_ms": 3600,
+      "id": "tt-0",
+      "kind": "CAPTION",
+      "low_confidence": false,
+      "motion": "STATIC",
+      "observations": [
+        {
+          "bbox": {
+            "h": 0.08,
+            "schema_version": "1",
+            "w": 0.6,
+            "x": 0.2,
+            "y": 0.82
+          },
+          "confidence": 0.9,
+          "frame_time_ms": 1200,
+          "occluded": false,
+          "schema_version": "1",
+          "text": "端侧推理很快"
+        },
+        {
+          "bbox": {
+            "h": 0.08,
+            "schema_version": "1",
+            "w": 0.6,
+            "x": 0.21,
+            "y": 0.82
+          },
+          "confidence": 0.92,
+          "frame_time_ms": 2400,
+          "occluded": false,
+          "schema_version": "1",
+          "text": "端侧推理很快"
+        }
+      ],
+      "schema_version": "1",
+      "source_artifact_id": null,
+      "start_ms": 1200,
+      "style_hint": null,
+      "text": "端侧推理很快"
+    },
+    {
+      "confidence": 0.8,
+      "end_ms": 58000,
+      "id": "tt-1",
+      "kind": "BRAND_MARK",
+      "low_confidence": false,
+      "motion": "STATIC",
+      "observations": [
+        {
+          "bbox": {
+            "h": 0.05,
+            "schema_version": "1",
+            "w": 0.14,
+            "x": 0.82,
+            "y": 0.05
+          },
+          "confidence": 0.8,
+          "frame_time_ms": 0,
+          "occluded": false,
+          "schema_version": "1",
+          "text": "@创作者"
+        }
+      ],
+      "schema_version": "1",
+      "source_artifact_id": null,
+      "start_ms": 0,
+      "style_hint": "watermark",
+      "text": "@创作者"
+    }
+  ]
+}

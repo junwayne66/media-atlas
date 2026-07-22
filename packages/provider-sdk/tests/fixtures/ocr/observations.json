@@ -1,0 +1,100 @@
+[
+  {
+    "schema_version": "1",
+    "frame_time_ms": 1200,
+    "bbox": {
+      "schema_version": "1",
+      "x": 0.2,
+      "y": 0.82,
+      "w": 0.6,
+      "h": 0.08
+    },
+    "text": "端侧推理很快",
+    "confidence": 0.9,
+    "occluded": false
+  },
+  {
+    "schema_version": "1",
+    "frame_time_ms": 1600,
+    "bbox": {
+      "schema_version": "1",
+      "x": 0.203,
+      "y": 0.82,
+      "w": 0.6,
+      "h": 0.08
+    },
+    "text": "端测推理很快",
+    "confidence": 0.5,
+    "occluded": false
+  },
+  {
+    "schema_version": "1",
+    "frame_time_ms": 2000,
+    "bbox": {
+      "schema_version": "1",
+      "x": 0.20600000000000002,
+      "y": 0.82,
+      "w": 0.6,
+      "h": 0.08
+    },
+    "text": "端侧推理很快",
+    "confidence": 0.9,
+    "occluded": false
+  },
+  {
+    "schema_version": "1",
+    "frame_time_ms": 2400,
+    "bbox": {
+      "schema_version": "1",
+      "x": 0.20900000000000002,
+      "y": 0.82,
+      "w": 0.6,
+      "h": 0.08
+    },
+    "text": "端侧推理很快",
+    "confidence": 0.9,
+    "occluded": false
+  },
+  {
+    "schema_version": "1",
+    "frame_time_ms": 0,
+    "bbox": {
+      "schema_version": "1",
+      "x": 0.85,
+      "y": 0.05,
+      "w": 0.12,
+      "h": 0.05
+    },
+    "text": "@创作者",
+    "confidence": 0.82,
+    "occluded": false
+  },
+  {
+    "schema_version": "1",
+    "frame_time_ms": 20000,
+    "bbox": {
+      "schema_version": "1",
+      "x": 0.85,
+      "y": 0.05,
+      "w": 0.12,
+      "h": 0.05
+    },
+    "text": "@创作者",
+    "confidence": 0.82,
+    "occluded": false
+  },
+  {
+    "schema_version": "1",
+    "frame_time_ms": 50000,
+    "bbox": {
+      "schema_version": "1",
+      "x": 0.85,
+      "y": 0.05,
+      "w": 0.12,
+      "h": 0.05
+    },
+    "text": "@创作者",
+    "confidence": 0.82,
+    "occluded": false
+  }
+]

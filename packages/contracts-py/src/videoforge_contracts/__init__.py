@@ -8,12 +8,19 @@ from videoforge_contracts.enums import (
     ProjectStatus,
     ProviderType,
     StorageBackend,
+    TextTrackKind,
     TrendStage,
 )
 from videoforge_contracts.problem import ProblemDetail
 from videoforge_contracts.project import Project
 from videoforge_contracts.provider import CostModel, ProviderDescriptor, ProviderHealth
 from videoforge_contracts.task_envelope import ResourceLimits, TaskEnvelope
+from videoforge_contracts.texttrack import (
+    BBox,
+    TextObservation,
+    TextTrack,
+    TextTrackSet,
+)
 from videoforge_contracts.transcript import (
     Transcript,
     TranscriptModels,
@@ -37,12 +44,14 @@ CONTRACTS: dict[str, type[ContractModel]] = {
     "trend-item-snapshot": TrendItemSnapshot,
     "trend-cluster": TrendCluster,
     "transcript": Transcript,
+    "text-track-set": TextTrackSet,
 }
 
 __all__ = [
     "CONTRACT_SCHEMA_VERSION",
     "CONTRACTS",
     "Artifact",
+    "BBox",
     "ContractModel",
     "CostModel",
     "CreationMode",
@@ -62,6 +71,10 @@ __all__ = [
     "StorageBackend",
     "StorageRef",
     "TaskEnvelope",
+    "TextObservation",
+    "TextTrack",
+    "TextTrackKind",
+    "TextTrackSet",
     "Transcript",
     "TranscriptModels",
     "TranscriptSegment",
