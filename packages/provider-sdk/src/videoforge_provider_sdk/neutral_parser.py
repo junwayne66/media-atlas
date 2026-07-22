@@ -1,17 +1,17 @@
-"""平台中性采集响应 → TrendItemSnapshot（docs/modules/40 §3.1）。
+"""平台中性采集响应 → TrendItemSnapshot（docs/modules/40 §3.1）。平台无关。
 
-输入是本仓库自有的归一化格式（非抖音私有 API 结构），手工导入与 fixture 回放共用。
-缺失指标保留 null，绝不填 0（40 §3.2）。响应结构不符（如缺 item_id）判为 Schema
-漂移（SELECTOR_CHANGED），不静默丢弃。
+输入是本仓库自有的归一化格式（非任何平台私有 API 结构），手工导入与 fixture
+回放共用。缺失指标保留 null，绝不填 0（40 §3.2）。响应结构不符（如缺 item_id）
+判为 Schema 漂移（SELECTOR_CHANGED），不静默丢弃。
 """
 
 from datetime import UTC, datetime
 from typing import Any
 
-from videoforge_connector_douyin.error_mapping import ConnectorError
 from videoforge_contracts import TrendItemSnapshot
 from videoforge_contracts.ids import new_id
-from videoforge_provider_sdk import ConnectorErrorCode
+from videoforge_provider_sdk.connector_errors import ConnectorError
+from videoforge_provider_sdk.discovery import ConnectorErrorCode
 
 _METRICS = ("views", "likes", "comments", "shares", "saves")
 

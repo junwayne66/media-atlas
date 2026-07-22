@@ -49,7 +49,7 @@ class ConnectorErrorCode(StrEnum):
 class DiscoveryRequest:
     mode: DiscoveryMode
     query: str  # keyword / account id / board id；MANUAL 时可为标识
-    platform: str = "douyin"
+    platform: str = ""  # 可选提示；连接器以自身平台为准解析（见 NeutralDiscoveryConnector）
     region: str | None = None
     locale: str | None = None
     limit: int = 20

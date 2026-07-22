@@ -14,6 +14,7 @@ dependencies = [
     "videoforge-edge-agent",
     "videoforge-domain",
     "videoforge-connector-douyin",
+    "videoforge-connector-tiktok",
 ]
 
 [tool.uv.workspace]
@@ -28,6 +29,7 @@ members = [
     "packages/domain",
     "services/edge-agent",
     "connectors/sources/douyin",
+    "connectors/sources/tiktok",
 ]
 
 [tool.uv.sources]
@@ -41,6 +43,7 @@ videoforge-provider-sdk = { workspace = true }
 videoforge-edge-agent = { workspace = true }
 videoforge-domain = { workspace = true }
 videoforge-connector-douyin = { workspace = true }
+videoforge-connector-tiktok = { workspace = true }
 
 [dependency-groups]
 dev = [
@@ -70,6 +73,7 @@ known-first-party = [
     "videoforge_edge_agent",
     "videoforge_domain",
     "videoforge_connector_douyin",
+    "videoforge_connector_tiktok",
 ]
 
 [tool.pytest.ini_options]
@@ -84,5 +88,6 @@ testpaths = [
     "apps/temporal-worker/tests",
     "packages/domain/tests",
     "connectors/sources/douyin/tests",
+    "connectors/sources/tiktok/tests",
 ]
 asyncio_mode = "auto"

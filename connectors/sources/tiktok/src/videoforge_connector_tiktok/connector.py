@@ -1,7 +1,7 @@
-"""抖音发现连接器：薄接入 provider-sdk 的 NeutralDiscoveryConnector。
+"""TikTok 发现连接器：薄接入 provider-sdk 的 NeutralDiscoveryConnector。
 
-平台差异仅在配置（名字、collector 版本、来源可信度、descriptor）。编排/解析/
-错误映射/熔断/canary 全部复用 kit。真实抓取未实现（停止条件）。
+与 douyin 同构，仅平台配置不同。编排/解析/错误映射/熔断/canary 全部复用 kit。
+真实抓取未实现（停止条件）。
 """
 
 from pathlib import Path
@@ -15,10 +15,9 @@ from videoforge_provider_sdk import (
     load_descriptor,
 )
 
-CONNECTOR_NAME = "source.douyin"
-COLLECTOR_VERSION = "douyin-collector@0.1.0"
+CONNECTOR_NAME = "source.tiktok"
+COLLECTOR_VERSION = "tiktok-collector@0.1.0"
 
-# 每模式来源可信度（40 §3.2）：手工人工收集 vs 公开信号抓取
 _SOURCE_CONFIDENCE = {
     DiscoveryMode.MANUAL: 0.75,
     DiscoveryMode.KEYWORD: 0.6,
@@ -27,12 +26,11 @@ _SOURCE_CONFIDENCE = {
 }
 
 
-def load_douyin_descriptor() -> ProviderDescriptor:
-    # connector.py → videoforge_connector_douyin → src → douyin（含 descriptor.yaml）
+def load_tiktok_descriptor() -> ProviderDescriptor:
     return load_descriptor(Path(__file__).resolve().parents[2] / "descriptor.yaml")
 
 
-class DouyinDiscoveryConnector(NeutralDiscoveryConnector):
+class TikTokDiscoveryConnector(NeutralDiscoveryConnector):
     def __init__(
         self,
         descriptor: ProviderDescriptor | None = None,
@@ -41,9 +39,9 @@ class DouyinDiscoveryConnector(NeutralDiscoveryConnector):
         breaker: CircuitBreaker | None = None,
     ) -> None:
         super().__init__(
-            descriptor=descriptor or load_douyin_descriptor(),
+            descriptor=descriptor or load_tiktok_descriptor(),
             connector_name=CONNECTOR_NAME,
-            platform="douyin",
+            platform="tiktok",
             collector_version=COLLECTOR_VERSION,
             source_confidence=_SOURCE_CONFIDENCE,
             fetcher=fetcher,
