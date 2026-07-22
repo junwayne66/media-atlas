@@ -10,12 +10,14 @@ dependencies = [
     "pydantic-settings>=2.7",
     "videoforge-workflows",
     "videoforge-persistence",
+    "videoforge-domain",
     "temporalio>=1.8",
 ]
 
 [tool.uv.sources]
 videoforge-workflows = { workspace = true }
 videoforge-persistence = { workspace = true }
+videoforge-domain = { workspace = true }
 
 [build-system]
 requires = ["hatchling"]

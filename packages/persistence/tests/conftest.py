@@ -21,6 +21,8 @@ ALL_TABLES = (
     "projects",
     "worker_tasks",
     "workers",
+    "trend_clusters",
+    "trend_item_snapshots",
 )
 
 

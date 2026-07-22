@@ -1403,6 +1403,7 @@ dependencies = [
     { name = "pydantic-settings" },
     { name = "temporalio" },
     { name = "uvicorn", extra = ["standard"] },
+    { name = "videoforge-domain" },
     { name = "videoforge-persistence" },
     { name = "videoforge-workflows" },
 ]
@@ -1414,6 +1415,7 @@ requires-dist = [
     { name = "pydantic-settings", specifier = ">=2.7" },
     { name = "temporalio", specifier = ">=1.8" },
     { name = "uvicorn", extras = ["standard"], specifier = ">=0.32" },
+    { name = "videoforge-domain", editable = "packages/domain" },
     { name = "videoforge-persistence", editable = "packages/persistence" },
     { name = "videoforge-workflows", editable = "packages/workflows" },
 ]

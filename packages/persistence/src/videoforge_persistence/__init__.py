@@ -17,6 +17,10 @@ from videoforge_persistence.outbox import (
     try_claim_event,
 )
 from videoforge_persistence.repositories import ArtifactRepository, ProjectRepository
+from videoforge_persistence.trend import (
+    TrendClusterRepository,
+    TrendItemSnapshotRepository,
+)
 
 __all__ = [
     "ArtifactRepository",
@@ -26,6 +30,8 @@ __all__ = [
     "OutboxEvent",
     "OutboxRepository",
     "ProjectRepository",
+    "TrendClusterRepository",
+    "TrendItemSnapshotRepository",
     "VersionConflictError",
     "WorkerRepository",
     "WorkerTaskRepository",
