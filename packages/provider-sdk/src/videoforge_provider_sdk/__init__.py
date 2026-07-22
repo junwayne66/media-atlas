@@ -1,3 +1,14 @@
+from videoforge_provider_sdk.acquisition import (
+    AcquisitionErrorCode,
+    AcquisitionManifest,
+    DownloadConnector,
+    DownloadRequest,
+    DownloadResult,
+    DownloadStatus,
+    ResolvedSource,
+    acquisition_input_digest,
+    status_for_download_error,
+)
 from videoforge_provider_sdk.base import FakeProvider, Provider, ProviderInvokeError
 from videoforge_provider_sdk.circuit import CircuitBreaker, CircuitState
 from videoforge_provider_sdk.connector_errors import (
@@ -19,6 +30,7 @@ from videoforge_provider_sdk.discovery import (
     DiscoveryStatus,
     status_for_error,
 )
+from videoforge_provider_sdk.download_errors import AcquisitionError, map_ytdlp_error
 from videoforge_provider_sdk.fetcher import (
     DiscoveryFetcher,
     FixtureFetcher,
@@ -37,10 +49,23 @@ from videoforge_provider_sdk.routing import (
     RouteDecision,
     route,
 )
+from videoforge_provider_sdk.url_resolver import (
+    FixtureShortLinkExpander,
+    ShortLinkExpander,
+    UnconfiguredShortLinkExpander,
+    UnresolvableUrl,
+    extract_url_from_text,
+    resolve,
+    resolve_local_file,
+    resolve_url,
+)
 
 __all__ = [
     "CANARY_KEYWORD",
     "WEIGHTS",
+    "AcquisitionError",
+    "AcquisitionErrorCode",
+    "AcquisitionManifest",
     "CandidateScore",
     "CircuitBreaker",
     "CircuitState",
@@ -53,8 +78,13 @@ __all__ = [
     "DiscoveryRequest",
     "DiscoveryResult",
     "DiscoveryStatus",
+    "DownloadConnector",
+    "DownloadRequest",
+    "DownloadResult",
+    "DownloadStatus",
     "FakeProvider",
     "FixtureFetcher",
+    "FixtureShortLinkExpander",
     "NeutralDiscoveryConnector",
     "NoEligibleProviderError",
     "ParseError",
@@ -62,13 +92,24 @@ __all__ = [
     "ProviderInvokeError",
     "ProviderRegistry",
     "ProviderRuntime",
+    "ResolvedSource",
     "RouteDecision",
+    "ShortLinkExpander",
     "UnconfiguredFetcher",
+    "UnconfiguredShortLinkExpander",
+    "UnresolvableUrl",
+    "acquisition_input_digest",
+    "extract_url_from_text",
     "load_descriptor",
     "map_http_status",
     "map_payload_error",
+    "map_ytdlp_error",
     "parse_items",
+    "resolve",
+    "resolve_local_file",
+    "resolve_url",
     "route",
     "scan_descriptors",
+    "status_for_download_error",
     "status_for_error",
 ]

@@ -1,0 +1,31 @@
+{
+  "id": "7298765432109876543",
+  "ext": "mp4",
+  "title": "AI 工具三分钟拆解 | demo clip",
+  "duration": 42.0,
+  "uploader": "demo_creator",
+  "uploader_id": "demo_creator",
+  "webpage_url": "https://www.tiktok.com/@demo_creator/video/7298765432109876543",
+  "extractor": "TikTok",
+  "width": 1080,
+  "height": 1920,
+  "fps": 30,
+  "vcodec": "h264",
+  "acodec": "aac",
+  "format_id": "download",
+  "filesize_approx": 9,
+  "http_headers": {
+    "User-Agent": "Mozilla/5.0",
+    "Cookie": "sessionid=SECRET_SHOULD_BE_SCRUBBED; sid_tt=SECRET_TOO",
+    "Authorization": "Bearer SECRET_TOKEN_SHOULD_BE_SCRUBBED"
+  },
+  "requested_downloads": [
+    {
+      "format_id": "download",
+      "ext": "mp4",
+      "http_headers": {
+        "Cookie": "sessionid=SECRET_SHOULD_BE_SCRUBBED"
+      }
+    }
+  ]
+}
