@@ -1,0 +1,163 @@
+{
+  "$defs": {
+    "FrameAnalysis": {
+      "additionalProperties": false,
+      "description": "一帧代表帧：为何被选 + （分析后的）VLM 输出。",
+      "properties": {
+        "caption": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "VLM 描述；null=尚未分析",
+          "title": "Caption"
+        },
+        "confidence": {
+          "anyOf": [
+            {
+              "maximum": 1.0,
+              "minimum": 0.0,
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Confidence"
+        },
+        "frame_time_ms": {
+          "minimum": 0,
+          "title": "Frame Time Ms",
+          "type": "integer"
+        },
+        "labels": {
+          "description": "VLM 标签：人物/屏录/产品/图卡等",
+          "items": {
+            "type": "string"
+          },
+          "title": "Labels",
+          "type": "array"
+        },
+        "reasons": {
+          "description": "被选中的原因（可多个）",
+          "items": {
+            "$ref": "#/$defs/FrameSampleReason"
+          },
+          "minItems": 1,
+          "title": "Reasons",
+          "type": "array"
+        },
+        "schema_version": {
+          "default": "1",
+          "description": "合同 schema 版本；Reader 需兼容当前与前一版本",
+          "title": "Schema Version",
+          "type": "string"
+        }
+      },
+      "required": [
+        "frame_time_ms",
+        "reasons"
+      ],
+      "title": "FrameAnalysis",
+      "type": "object"
+    },
+    "FrameSampleReason": {
+      "description": "代表帧被选中的原因（docs/modules/41 §9）。VLM 只分析代表帧，禁逐帧。",
+      "enum": [
+        "KEYFRAME",
+        "SCENE_CUT",
+        "TEXT_CHANGE",
+        "SPEAKER_CHANGE",
+        "LOW_CONFIDENCE",
+        "PERIODIC"
+      ],
+      "title": "FrameSampleReason",
+      "type": "string"
+    }
+  },
+  "$id": "https://videoforge.dev/schemas/visual-analysis.schema.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "description": "一次视觉分析：代表帧集 + （可选）VLM provider/版本 + 采样策略。可重放。",
+  "properties": {
+    "created_at": {
+      "format": "date-time",
+      "title": "Created At",
+      "type": "string"
+    },
+    "frames": {
+      "items": {
+        "$ref": "#/$defs/FrameAnalysis"
+      },
+      "title": "Frames",
+      "type": "array"
+    },
+    "id": {
+      "minLength": 1,
+      "title": "Id",
+      "type": "string"
+    },
+    "sampling_policy": {
+      "description": "选帧策略标识，如 representative@v1",
+      "minLength": 1,
+      "title": "Sampling Policy",
+      "type": "string"
+    },
+    "schema_version": {
+      "default": "1",
+      "description": "合同 schema 版本；Reader 需兼容当前与前一版本",
+      "title": "Schema Version",
+      "type": "string"
+    },
+    "source_artifact_id": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Source Artifact Id"
+    },
+    "vlm_provider": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "description": "null=仅选帧未分析",
+      "title": "Vlm Provider"
+    },
+    "vlm_version": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Vlm Version"
+    }
+  },
+  "required": [
+    "id",
+    "sampling_policy",
+    "created_at"
+  ],
+  "title": "VisualAnalysis",
+  "type": "object"
+}

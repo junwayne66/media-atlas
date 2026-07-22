@@ -15,6 +15,7 @@ from videoforge_domain.fingerprints import (
     phash_sequence_similarity,
     text_simhash,
 )
+from videoforge_domain.frame_sampling import SAMPLING_POLICY, select_representative_frames
 from videoforge_domain.kinematics import (
     ENGAGEMENT_METRICS,
     decline_from_peak,
@@ -45,6 +46,7 @@ from videoforge_domain.transcript import (
 
 __all__ = [
     "ENGAGEMENT_METRICS",
+    "SAMPLING_POLICY",
     "STAGE_TRANSITIONS",
     "AssetFingerprint",
     "DedupConfig",
@@ -74,6 +76,7 @@ __all__ = [
     "normalize_rate",
     "phash_sequence_similarity",
     "rescore_cluster",
+    "select_representative_frames",
     "series_acceleration",
     "series_velocity",
     "sigmoid",

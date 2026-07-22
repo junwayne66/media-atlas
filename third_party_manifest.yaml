@@ -123,6 +123,15 @@ python:
       VF-203 只落地 TextTrack 合同 + OCR 端口 + Fake（录制检测回放）+ domain 跟踪/多帧投票/
       类型分类（纯）；真实引擎需模型权重（停止条件），默认 UnconfiguredOCRProvider 返回
       UNCONFIGURED 不静默假装。接入时代码宽松许可可入核心，模型权重按 L1 单独评审。
+  - name: VLM（Qwen-VL / Claude 视觉 API 或本地 VLM）
+    license: 视具体引擎/API（模型权重与 API 条款另核）
+    isolation: L2
+    used_by: 计划——VLM Provider（docs/modules/41 §9）
+    note: >
+      VF-204 只落地 VisualAnalysis 合同 + 代表帧选择（纯域，选帧数封顶 max_frames）+ VLM 端口
+      + Fake（录制 caption 回放，批量一次调用）。真实引擎需模型/付费 API（停止条件），默认
+      UnconfiguredVLMProvider 返回 UNCONFIGURED。成本红线：VLM 只批量分析代表帧，**绝不逐帧
+      云调用**——端口 analyze 接整批帧、缓存用 VF-201 activity_cache_key 去重。接入前须评审费用。
 
 javascript:
   - name: vue
