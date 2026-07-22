@@ -16,6 +16,10 @@ from videoforge_contracts import (
     ResourceLimits,
     StorageRef,
     TaskEnvelope,
+    Transcript,
+    TranscriptModels,
+    TranscriptSegment,
+    TranscriptWord,
     TrendCluster,
     TrendItemSnapshot,
     TrendStage,
@@ -158,6 +162,52 @@ def make_trend_cluster() -> TrendCluster:
     )
 
 
+def make_transcript() -> Transcript:
+    return Transcript(
+        id="01J2ZK3AC9V6XW8YQ4R5T6U7Y0",
+        source_artifact_id="01J2ZK3AC9V6XW8YQ4R5T6U7W1",
+        language="zh-CN",
+        segments=[
+            TranscriptSegment(
+                id="seg-0",
+                start_ms=120,
+                end_ms=2480,
+                speaker_id="spk_0",
+                language="zh-CN",
+                text="今天带大家拆解这款 AI 芯片",
+                confidence=0.93,
+                words=[
+                    TranscriptWord(text="今天", start_ms=120, end_ms=520, confidence=0.95),
+                    TranscriptWord(text="AI", start_ms=1400, end_ms=1720, confidence=0.55,
+                                   low_confidence=True),
+                    TranscriptWord(text="芯片", start_ms=1720, end_ms=2480, confidence=0.9),
+                ],
+            ),
+            TranscriptSegment(
+                id="seg-1",
+                start_ms=2600,
+                end_ms=4200,
+                speaker_id="spk_0",
+                language="en-US",
+                text="on device inference",
+                confidence=0.88,
+                words=[],
+            ),
+        ],
+        models=TranscriptModels(
+            asr_provider="asr.whisperx",
+            asr_model="large-v3",
+            asr_version="3.1.1",
+            vad_version="silero-4.0",
+            align_version="wav2vec2-zh",
+            speaker_version="pyannote-3.1",
+        ),
+        hotwords=["M5", "端侧推理"],
+        duration_ms=58200,
+        created_at=_T0,
+    )
+
+
 SAMPLES: dict[str, ContractModel] = {
     "project": make_project(),
     "artifact": make_artifact(),
@@ -166,4 +216,5 @@ SAMPLES: dict[str, ContractModel] = {
     "problem-detail": make_problem_detail(),
     "trend-item-snapshot": make_trend_item_snapshot(),
     "trend-cluster": make_trend_cluster(),
+    "transcript": make_transcript(),
 }

@@ -14,6 +14,12 @@ from videoforge_contracts.problem import ProblemDetail
 from videoforge_contracts.project import Project
 from videoforge_contracts.provider import CostModel, ProviderDescriptor, ProviderHealth
 from videoforge_contracts.task_envelope import ResourceLimits, TaskEnvelope
+from videoforge_contracts.transcript import (
+    Transcript,
+    TranscriptModels,
+    TranscriptSegment,
+    TranscriptWord,
+)
 from videoforge_contracts.trend import (
     HotScoreWeights,
     TrendCluster,
@@ -30,6 +36,7 @@ CONTRACTS: dict[str, type[ContractModel]] = {
     "problem-detail": ProblemDetail,
     "trend-item-snapshot": TrendItemSnapshot,
     "trend-cluster": TrendCluster,
+    "transcript": Transcript,
 }
 
 __all__ = [
@@ -55,6 +62,10 @@ __all__ = [
     "StorageBackend",
     "StorageRef",
     "TaskEnvelope",
+    "Transcript",
+    "TranscriptModels",
+    "TranscriptSegment",
+    "TranscriptWord",
     "TrendCluster",
     "TrendItemSnapshot",
     "TrendStage",

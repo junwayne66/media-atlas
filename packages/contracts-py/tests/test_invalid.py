@@ -27,6 +27,42 @@ INVALID_OVERRIDES: list[tuple[str, str, dict[str, Any]]] = [
     ("provider-descriptor", "隔离等级受枚举约束", {"isolation_level": "L9"}),
     ("problem-detail", "status 必须是合法 HTTP 码", {"status": 42}),
     ("problem-detail", "title 不能为空", {"title": ""}),
+    ("transcript", "未知字段被拒", {"unexpected_field": 1}),
+    ("transcript", "主语言不能为空", {"language": ""}),
+    ("transcript", "duration_ms 不能为负", {"duration_ms": -1}),
+    (
+        "transcript",
+        "段 end_ms 不得早于 start_ms",
+        {
+            "segments": [
+                {
+                    "id": "bad",
+                    "start_ms": 1000,
+                    "end_ms": 500,
+                    "language": "zh-CN",
+                    "text": "x",
+                    "confidence": 0.9,
+                }
+            ]
+        },
+    ),
+    (
+        "transcript",
+        "词 end_ms 不得早于 start_ms",
+        {
+            "segments": [
+                {
+                    "id": "s",
+                    "start_ms": 0,
+                    "end_ms": 2000,
+                    "language": "zh-CN",
+                    "text": "x",
+                    "confidence": 0.9,
+                    "words": [{"text": "w", "start_ms": 900, "end_ms": 800, "confidence": 0.9}],
+                }
+            ]
+        },
+    ),
 ]
 
 

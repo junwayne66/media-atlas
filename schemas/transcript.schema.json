@@ -1,0 +1,292 @@
+{
+  "$defs": {
+    "TranscriptModels": {
+      "additionalProperties": false,
+      "description": "可重放：ASR/VAD/对齐/说话人模型与版本（41 §7.2「保存 VAD、对齐和说话人模型版本」）。",
+      "properties": {
+        "align_version": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Align Version"
+        },
+        "asr_model": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "如 medium / large-v3",
+          "title": "Asr Model"
+        },
+        "asr_provider": {
+          "description": "如 asr.whisper_cpp / asr.whisperx",
+          "minLength": 1,
+          "title": "Asr Provider",
+          "type": "string"
+        },
+        "asr_version": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Asr Version"
+        },
+        "schema_version": {
+          "default": "1",
+          "description": "合同 schema 版本；Reader 需兼容当前与前一版本",
+          "title": "Schema Version",
+          "type": "string"
+        },
+        "speaker_version": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Speaker Version"
+        },
+        "vad_version": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Vad Version"
+        }
+      },
+      "required": [
+        "asr_provider"
+      ],
+      "title": "TranscriptModels",
+      "type": "object"
+    },
+    "TranscriptSegment": {
+      "additionalProperties": false,
+      "description": "段级转录（一个说话片段）。混语时按段带各自 language（41 §7.1）。",
+      "properties": {
+        "confidence": {
+          "maximum": 1.0,
+          "minimum": 0.0,
+          "title": "Confidence",
+          "type": "number"
+        },
+        "end_ms": {
+          "minimum": 0,
+          "title": "End Ms",
+          "type": "integer"
+        },
+        "id": {
+          "minLength": 1,
+          "title": "Id",
+          "type": "string"
+        },
+        "language": {
+          "description": "BCP-47，如 zh-CN / en-US",
+          "minLength": 1,
+          "title": "Language",
+          "type": "string"
+        },
+        "low_confidence": {
+          "default": false,
+          "title": "Low Confidence",
+          "type": "boolean"
+        },
+        "schema_version": {
+          "default": "1",
+          "description": "合同 schema 版本；Reader 需兼容当前与前一版本",
+          "title": "Schema Version",
+          "type": "string"
+        },
+        "speaker_id": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "说话人聚类 id，如 spk_0",
+          "title": "Speaker Id"
+        },
+        "start_ms": {
+          "minimum": 0,
+          "title": "Start Ms",
+          "type": "integer"
+        },
+        "text": {
+          "title": "Text",
+          "type": "string"
+        },
+        "words": {
+          "items": {
+            "$ref": "#/$defs/TranscriptWord"
+          },
+          "title": "Words",
+          "type": "array"
+        }
+      },
+      "required": [
+        "id",
+        "start_ms",
+        "end_ms",
+        "language",
+        "text",
+        "confidence"
+      ],
+      "title": "TranscriptSegment",
+      "type": "object"
+    },
+    "TranscriptWord": {
+      "additionalProperties": false,
+      "description": "词级时间与置信度。低置信词进入审核标记（41 §7.2）。",
+      "properties": {
+        "confidence": {
+          "maximum": 1.0,
+          "minimum": 0.0,
+          "title": "Confidence",
+          "type": "number"
+        },
+        "end_ms": {
+          "minimum": 0,
+          "title": "End Ms",
+          "type": "integer"
+        },
+        "low_confidence": {
+          "default": false,
+          "title": "Low Confidence",
+          "type": "boolean"
+        },
+        "schema_version": {
+          "default": "1",
+          "description": "合同 schema 版本；Reader 需兼容当前与前一版本",
+          "title": "Schema Version",
+          "type": "string"
+        },
+        "start_ms": {
+          "minimum": 0,
+          "title": "Start Ms",
+          "type": "integer"
+        },
+        "text": {
+          "minLength": 1,
+          "title": "Text",
+          "type": "string"
+        }
+      },
+      "required": [
+        "text",
+        "start_ms",
+        "end_ms",
+        "confidence"
+      ],
+      "title": "TranscriptWord",
+      "type": "object"
+    }
+  },
+  "$id": "https://videoforge.dev/schemas/transcript.schema.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "description": "一次转录的统一产出（词级合同）。段内可含不同语言（混语）。",
+  "properties": {
+    "created_at": {
+      "format": "date-time",
+      "title": "Created At",
+      "type": "string"
+    },
+    "duration_ms": {
+      "anyOf": [
+        {
+          "minimum": 0,
+          "type": "integer"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Duration Ms"
+    },
+    "hotwords": {
+      "description": "注入的热词（产品名/人名），用于中文热点词偏置",
+      "items": {
+        "type": "string"
+      },
+      "title": "Hotwords",
+      "type": "array"
+    },
+    "id": {
+      "minLength": 1,
+      "title": "Id",
+      "type": "string"
+    },
+    "language": {
+      "description": "主语言；混语时各段带自身 language",
+      "minLength": 1,
+      "title": "Language",
+      "type": "string"
+    },
+    "models": {
+      "$ref": "#/$defs/TranscriptModels"
+    },
+    "schema_version": {
+      "default": "1",
+      "description": "合同 schema 版本；Reader 需兼容当前与前一版本",
+      "title": "Schema Version",
+      "type": "string"
+    },
+    "segments": {
+      "items": {
+        "$ref": "#/$defs/TranscriptSegment"
+      },
+      "title": "Segments",
+      "type": "array"
+    },
+    "source_artifact_id": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "description": "源音频/视频 Artifact",
+      "title": "Source Artifact Id"
+    }
+  },
+  "required": [
+    "id",
+    "language",
+    "models",
+    "created_at"
+  ],
+  "title": "Transcript",
+  "type": "object"
+}

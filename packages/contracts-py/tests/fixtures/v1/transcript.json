@@ -1,0 +1,72 @@
+{
+  "created_at": "2026-07-21T08:00:00Z",
+  "duration_ms": 58200,
+  "hotwords": [
+    "M5",
+    "端侧推理"
+  ],
+  "id": "01J2ZK3AC9V6XW8YQ4R5T6U7Y0",
+  "language": "zh-CN",
+  "models": {
+    "align_version": "wav2vec2-zh",
+    "asr_model": "large-v3",
+    "asr_provider": "asr.whisperx",
+    "asr_version": "3.1.1",
+    "schema_version": "1",
+    "speaker_version": "pyannote-3.1",
+    "vad_version": "silero-4.0"
+  },
+  "schema_version": "1",
+  "segments": [
+    {
+      "confidence": 0.93,
+      "end_ms": 2480,
+      "id": "seg-0",
+      "language": "zh-CN",
+      "low_confidence": false,
+      "schema_version": "1",
+      "speaker_id": "spk_0",
+      "start_ms": 120,
+      "text": "今天带大家拆解这款 AI 芯片",
+      "words": [
+        {
+          "confidence": 0.95,
+          "end_ms": 520,
+          "low_confidence": false,
+          "schema_version": "1",
+          "start_ms": 120,
+          "text": "今天"
+        },
+        {
+          "confidence": 0.55,
+          "end_ms": 1720,
+          "low_confidence": true,
+          "schema_version": "1",
+          "start_ms": 1400,
+          "text": "AI"
+        },
+        {
+          "confidence": 0.9,
+          "end_ms": 2480,
+          "low_confidence": false,
+          "schema_version": "1",
+          "start_ms": 1720,
+          "text": "芯片"
+        }
+      ]
+    },
+    {
+      "confidence": 0.88,
+      "end_ms": 4200,
+      "id": "seg-1",
+      "language": "en-US",
+      "low_confidence": false,
+      "schema_version": "1",
+      "speaker_id": "spk_0",
+      "start_ms": 2600,
+      "text": "on device inference",
+      "words": []
+    }
+  ],
+  "source_artifact_id": "01J2ZK3AC9V6XW8YQ4R5T6U7W1"
+}
