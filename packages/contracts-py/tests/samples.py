@@ -5,11 +5,16 @@ from datetime import UTC, datetime
 from videoforge_contracts import (
     Artifact,
     BBox,
+    BriefHook,
     Claim,
     ClaimSourceStatus,
+    ClaimTable,
+    ClaimTableEntry,
     ContractModel,
     CostModel,
     CreationMode,
+    CreativeBrief,
+    CreativeOpportunity,
     EvidenceSpan,
     FrameAnalysis,
     FrameSampleReason,
@@ -40,6 +45,7 @@ from videoforge_contracts import (
     VisualAnalysis,
     VisualBeat,
     VisualBeatKind,
+    VisualMix,
 )
 
 _T0 = datetime(2026, 7, 21, 8, 0, 0, tzinfo=UTC)
@@ -357,6 +363,64 @@ def make_video_blueprint() -> VideoBlueprint:
     )
 
 
+def make_creative_opportunity() -> CreativeOpportunity:
+    return CreativeOpportunity(
+        id="01J2ZK3AC9V6XW8YQ4R5T6U7ZC",
+        trend_cluster_id="01J2ZK3AC9V6XW8YQ4R5T6U7X2",
+        blueprint_id="01J2ZK3AC9V6XW8YQ4R5T6U7ZB",
+        source_asset_ids=["01J2ZK3AC9V6XW8YQ4R5T6U7W1"],
+        vertical="ai-tech",
+        rationale="跨平台热度上升且现有内容缺少实测成本角度",
+        target_platform="douyin",
+        target_language="zh-CN",
+        created_at=_T0,
+    )
+
+
+def make_creative_brief() -> CreativeBrief:
+    return CreativeBrief(
+        id="01J2ZK3AC9V6XW8YQ4R5T6U7ZD",
+        opportunity_id="01J2ZK3AC9V6XW8YQ4R5T6U7ZC",
+        blueprint_id="01J2ZK3AC9V6XW8YQ4R5T6U7ZB",
+        claim_table_id="01J2ZK3AC9V6XW8YQ4R5T6U7ZE",
+        objective="45 秒讲清这款 AI 芯片更新对普通用户的真实影响",
+        audience="中文 AI 工具用户",
+        platform="douyin",
+        target_language="zh-CN",
+        duration_target_ms=45000,
+        creation_mode=CreationMode.STRUCTURE_REWRITE,
+        angle="实测成本与局限",
+        hook=BriefHook(type="counter_intuitive_claim", promise="一个参数表没说的限制"),
+        must_cover_claim_ids=["claim-0"],
+        avoid=["照抄原标题", "未经证实的性能结论"],
+        visual_mix=VisualMix(talking_head=0.25, screen_demo=0.35, broll=0.2, info_card=0.2),
+        cta="评论区说你最想测试的场景",
+        created_at=_T0,
+    )
+
+
+def make_claim_table() -> ClaimTable:
+    return ClaimTable(
+        id="01J2ZK3AC9V6XW8YQ4R5T6U7ZE",
+        source_blueprint_id="01J2ZK3AC9V6XW8YQ4R5T6U7ZB",
+        entries=[
+            ClaimTableEntry(
+                claim_id="claim-0",
+                text="这款芯片端侧推理速度是上代的两倍",
+                fact_status=ClaimSourceStatus.UNVERIFIED,
+                evidence=[
+                    EvidenceSpan(kind="transcript", ref_id="seg-0", start_ms=1400, end_ms=2480)
+                ],
+                confidence=0.6,
+                recency="as_of_2026-07",
+                allowed_phrasings=["官方称速度约为上代两倍（未独立验证）"],
+                usable_in_rewrite=True,
+            )
+        ],
+        created_at=_T0,
+    )
+
+
 SAMPLES: dict[str, ContractModel] = {
     "project": make_project(),
     "artifact": make_artifact(),
@@ -369,4 +433,7 @@ SAMPLES: dict[str, ContractModel] = {
     "text-track-set": make_text_track_set(),
     "visual-analysis": make_visual_analysis(),
     "video-blueprint": make_video_blueprint(),
+    "creative-opportunity": make_creative_opportunity(),
+    "creative-brief": make_creative_brief(),
+    "claim-table": make_claim_table(),
 }

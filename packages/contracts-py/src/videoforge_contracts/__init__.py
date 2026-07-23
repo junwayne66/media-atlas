@@ -7,6 +7,14 @@ from videoforge_contracts.blueprint import (
     VideoBlueprint,
     VisualBeat,
 )
+from videoforge_contracts.brief import (
+    BriefHook,
+    ClaimTable,
+    ClaimTableEntry,
+    CreativeBrief,
+    CreativeOpportunity,
+    VisualMix,
+)
 from videoforge_contracts.enums import (
     ClaimSourceStatus,
     CreationMode,
@@ -59,6 +67,9 @@ CONTRACTS: dict[str, type[ContractModel]] = {
     "text-track-set": TextTrackSet,
     "visual-analysis": VisualAnalysis,
     "video-blueprint": VideoBlueprint,
+    "creative-opportunity": CreativeOpportunity,
+    "creative-brief": CreativeBrief,
+    "claim-table": ClaimTable,
 }
 
 __all__ = [
@@ -66,11 +77,16 @@ __all__ = [
     "CONTRACTS",
     "Artifact",
     "BBox",
+    "BriefHook",
     "Claim",
     "ClaimSourceStatus",
+    "ClaimTable",
+    "ClaimTableEntry",
     "ContractModel",
     "CostModel",
     "CreationMode",
+    "CreativeBrief",
+    "CreativeOpportunity",
     "EvidenceSpan",
     "ExecutionPolicy",
     "FrameAnalysis",
@@ -108,4 +124,5 @@ __all__ = [
     "VisualAnalysis",
     "VisualBeat",
     "VisualBeatKind",
+    "VisualMix",
 ]

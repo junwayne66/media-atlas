@@ -1,0 +1,29 @@
+{
+  "created_at": "2026-07-21T08:00:00Z",
+  "entries": [
+    {
+      "allowed_phrasings": [
+        "官方称速度约为上代两倍（未独立验证）"
+      ],
+      "claim_id": "claim-0",
+      "confidence": 0.6,
+      "evidence": [
+        {
+          "end_ms": 2480,
+          "kind": "transcript",
+          "ref_id": "seg-0",
+          "schema_version": "1",
+          "start_ms": 1400
+        }
+      ],
+      "fact_status": "UNVERIFIED",
+      "recency": "as_of_2026-07",
+      "schema_version": "1",
+      "text": "这款芯片端侧推理速度是上代的两倍",
+      "usable_in_rewrite": true
+    }
+  ],
+  "id": "01J2ZK3AC9V6XW8YQ4R5T6U7ZE",
+  "schema_version": "1",
+  "source_blueprint_id": "01J2ZK3AC9V6XW8YQ4R5T6U7ZB"
+}
