@@ -230,3 +230,19 @@ class AssetLicenseType(StrEnum):
     PUBLIC_DOMAIN = "PUBLIC_DOMAIN"
     GENERATED_MODEL = "GENERATED_MODEL"  # 生成式模型输出
     PLACEHOLDER = "PLACEHOLDER"  # 占位（未来替换）
+
+
+class TrackKind(StrEnum):
+    """时间线轨道类型（docs/modules/42 §8.1）。V0..V5 视频层 / A0..A3 音频层 / M0 语义标记。"""
+
+    V0_BACKGROUND = "V0_BACKGROUND"
+    V1_PRIMARY_VIDEO = "V1_PRIMARY_VIDEO"
+    V2_BROLL_SCREEN = "V2_BROLL_SCREEN"  # B-roll / Screen Demo
+    V3_INFO_CARDS = "V3_INFO_CARDS"  # Info Cards / Generated Visuals
+    V4_CAPTIONS = "V4_CAPTIONS"  # 字幕 / 屏幕文字
+    V5_OVERLAYS = "V5_OVERLAYS"  # Brand overlay
+    A0_ORIGINAL = "A0_ORIGINAL"  # 原声对白
+    A1_DUB = "A1_DUB"  # 配音
+    A2_MUSIC = "A2_MUSIC"
+    A3_SFX = "A3_SFX"  # SFX / Ambience
+    M0_MARKERS = "M0_MARKERS"  # 语义标记 / Claims / Review Notes

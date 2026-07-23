@@ -213,6 +213,22 @@ INVALID_OVERRIDES: list[tuple[str, str, dict[str, Any]]] = [
         "license": {"type": "PIRATED", "holder": "h"},
         "query": "q", "usage_start_ms": 0, "usage_end_ms": 1000, "match_score": 0.5,
     }]}),
+    ("creative-timeline", "未知字段被拒", {"unexpected_field": 1}),
+    ("creative-timeline", "rate 必须 > 0", {"rate": 0}),
+    ("creative-timeline", "duration.rate 与 timeline.rate 必须一致",
+     {"duration": {"value": 100, "rate": 25}}),  # sample rate=30
+    ("creative-timeline", "非法 TrackKind 被拒", {"tracks": [{
+        "id": "t", "kind": "NOT_A_TRACK", "segments": [],
+    }]}),
+    ("creative-timeline", "RationalTimeRange start/duration rate 不一致",
+     {"tracks": [{"id": "t", "kind": "V1_PRIMARY_VIDEO", "segments": [{
+         "id": "s", "time_range": {
+             "start": {"value": 0, "rate": 30},
+             "duration": {"value": 100, "rate": 25},
+         },
+     }]}]}),
+    ("creative-timeline", "RationalTime value 不能为负",
+     {"duration": {"value": -1, "rate": 30}}),
 ]
 
 

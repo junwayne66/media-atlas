@@ -151,6 +151,15 @@ python:
       返回 UNCONFIGURED。护栏（domain.validate_script 强制）：只依据节拍功能 + 经核验 Claim 生成
       中性语义脚本，绝不复用原句（text_simhash 比对源转录判抄袭），引用的事实必须在 ClaimTable 且
       非 DISPUTED/不可用，DISPUTED 事实即便 must_cover 也绝不自动引用，总时长≈预算，禁用词过滤。
+  - name: OpenTimelineIO
+    license: Apache-2.0
+    isolation: L0
+    used_by: 计划——TimelineExporter/OTIO Exchange（docs/modules/42 §8/§10、ADR-003）
+    note: >
+      VF-306 只落地 CreativeTimeline 合同 + 纯字典 OTIO 映射（domain.to_otio_mapping / from_otio_
+      mapping），**不引 opentimelineio pip 包**，避免运行时依赖蔓延。OtioDictExporter 通过注入
+      domain 映射函数产出内存 OTIO dict，写 .otio 文件的具体 Exporter 层延后（VF-310）。
+      ADR-003：CreativeTimeline 是**领域真值**——OTIO 不保存媒体、不覆盖所有高级动效，只做交换。
   - name: 素材源（自有库语义向量 / 商业 Stock / AI 生成 / 数字人）
     license: 视具体来源与 API（商业 stock 各家条款；生成模型另核）
     isolation: L2
