@@ -1,0 +1,35 @@
+{
+  "angle": "实测成本与局限",
+  "audience": "中文 AI 工具用户",
+  "avoid": [
+    "照抄原标题",
+    "未经证实的性能结论"
+  ],
+  "blueprint_id": "01J2ZK3AC9V6XW8YQ4R5T6U7ZB",
+  "claim_table_id": "01J2ZK3AC9V6XW8YQ4R5T6U7ZE",
+  "created_at": "2026-07-21T08:00:00Z",
+  "creation_mode": "STRUCTURE_REWRITE",
+  "cta": "评论区说你最想测试的场景",
+  "duration_target_ms": 45000,
+  "hook": {
+    "promise": "一个参数表没说的限制",
+    "schema_version": "1",
+    "type": "counter_intuitive_claim"
+  },
+  "id": "01J2ZK3AC9V6XW8YQ4R5T6U7ZD",
+  "must_cover_claim_ids": [
+    "claim-0"
+  ],
+  "objective": "45 秒讲清这款 AI 芯片更新对普通用户的真实影响",
+  "opportunity_id": "01J2ZK3AC9V6XW8YQ4R5T6U7ZC",
+  "platform": "douyin",
+  "schema_version": "1",
+  "target_language": "zh-CN",
+  "visual_mix": {
+    "broll": 0.2,
+    "info_card": 0.2,
+    "schema_version": "1",
+    "screen_demo": 0.35,
+    "talking_head": 0.25
+  }
+}

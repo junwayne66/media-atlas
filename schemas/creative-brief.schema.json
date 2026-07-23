@@ -1,0 +1,239 @@
+{
+  "$defs": {
+    "BriefHook": {
+      "additionalProperties": false,
+      "description": "开场钩子。",
+      "properties": {
+        "promise": {
+          "description": "给观众的承诺",
+          "minLength": 1,
+          "title": "Promise",
+          "type": "string"
+        },
+        "schema_version": {
+          "default": "1",
+          "description": "合同 schema 版本；Reader 需兼容当前与前一版本",
+          "title": "Schema Version",
+          "type": "string"
+        },
+        "type": {
+          "description": "如 counter_intuitive_claim",
+          "minLength": 1,
+          "title": "Type",
+          "type": "string"
+        }
+      },
+      "required": [
+        "type",
+        "promise"
+      ],
+      "title": "BriefHook",
+      "type": "object"
+    },
+    "CreationMode": {
+      "description": "两种二创模式（docs/architecture/31 §5）。",
+      "enum": [
+        "STRUCTURE_REWRITE",
+        "SOURCE_REEDIT"
+      ],
+      "title": "CreationMode",
+      "type": "string"
+    },
+    "VisualMix": {
+      "additionalProperties": false,
+      "description": "视觉配比（docs/modules/42 §2）。四类占比之和应 ≈ 1。",
+      "properties": {
+        "broll": {
+          "default": 0.0,
+          "maximum": 1.0,
+          "minimum": 0.0,
+          "title": "Broll",
+          "type": "number"
+        },
+        "info_card": {
+          "default": 0.0,
+          "maximum": 1.0,
+          "minimum": 0.0,
+          "title": "Info Card",
+          "type": "number"
+        },
+        "schema_version": {
+          "default": "1",
+          "description": "合同 schema 版本；Reader 需兼容当前与前一版本",
+          "title": "Schema Version",
+          "type": "string"
+        },
+        "screen_demo": {
+          "default": 0.0,
+          "maximum": 1.0,
+          "minimum": 0.0,
+          "title": "Screen Demo",
+          "type": "number"
+        },
+        "talking_head": {
+          "default": 0.0,
+          "maximum": 1.0,
+          "minimum": 0.0,
+          "title": "Talking Head",
+          "type": "number"
+        }
+      },
+      "title": "VisualMix",
+      "type": "object"
+    }
+  },
+  "$id": "https://videoforge.dev/schemas/creative-brief.schema.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "description": "创意简报（docs/modules/42 §2）。必须引用热点证据/Claims。",
+  "properties": {
+    "angle": {
+      "minLength": 1,
+      "title": "Angle",
+      "type": "string"
+    },
+    "audience": {
+      "minLength": 1,
+      "title": "Audience",
+      "type": "string"
+    },
+    "avoid": {
+      "description": "禁用：照抄标题/未证实结论等",
+      "items": {
+        "type": "string"
+      },
+      "title": "Avoid",
+      "type": "array"
+    },
+    "blueprint_id": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Blueprint Id"
+    },
+    "claim_table_id": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Claim Table Id"
+    },
+    "created_at": {
+      "format": "date-time",
+      "title": "Created At",
+      "type": "string"
+    },
+    "creation_mode": {
+      "$ref": "#/$defs/CreationMode"
+    },
+    "cta": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Cta"
+    },
+    "duration_target_ms": {
+      "exclusiveMinimum": 0,
+      "title": "Duration Target Ms",
+      "type": "integer"
+    },
+    "hook": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/BriefHook"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null
+    },
+    "id": {
+      "minLength": 1,
+      "title": "Id",
+      "type": "string"
+    },
+    "must_cover_claim_ids": {
+      "description": "必须覆盖的 Claim",
+      "items": {
+        "type": "string"
+      },
+      "title": "Must Cover Claim Ids",
+      "type": "array"
+    },
+    "objective": {
+      "minLength": 1,
+      "title": "Objective",
+      "type": "string"
+    },
+    "opportunity_id": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Opportunity Id"
+    },
+    "platform": {
+      "minLength": 1,
+      "title": "Platform",
+      "type": "string"
+    },
+    "schema_version": {
+      "default": "1",
+      "description": "合同 schema 版本；Reader 需兼容当前与前一版本",
+      "title": "Schema Version",
+      "type": "string"
+    },
+    "target_language": {
+      "minLength": 1,
+      "title": "Target Language",
+      "type": "string"
+    },
+    "visual_mix": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/VisualMix"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null
+    }
+  },
+  "required": [
+    "id",
+    "objective",
+    "audience",
+    "platform",
+    "target_language",
+    "duration_target_ms",
+    "creation_mode",
+    "angle",
+    "created_at"
+  ],
+  "title": "CreativeBrief",
+  "type": "object"
+}

@@ -117,6 +117,22 @@ INVALID_OVERRIDES: list[tuple[str, str, dict[str, Any]]] = [
         "节拍 end_ms 不得早于 start_ms",
         {"rhetorical_beats": [{"id": "r", "kind": "HOOK", "start_ms": 1000, "end_ms": 500}]},
     ),
+    ("creative-opportunity", "未知字段被拒", {"unexpected_field": 1}),
+    ("creative-opportunity", "rationale 不能为空", {"rationale": ""}),
+    ("creative-brief", "未知字段被拒", {"unexpected_field": 1}),
+    ("creative-brief", "duration_target_ms 必须 > 0", {"duration_target_ms": 0}),
+    ("creative-brief", "angle 不能为空", {"angle": ""}),
+    (
+        "creative-brief",
+        "visual_mix 四类之和须 ≈ 1",
+        {"visual_mix": {"talking_head": 0.5, "screen_demo": 0.5, "broll": 0.5, "info_card": 0.5}},
+    ),
+    ("claim-table", "未知字段被拒", {"unexpected_field": 1}),
+    (
+        "claim-table",
+        "条目证据不能为空",
+        {"entries": [{"claim_id": "c", "text": "x", "evidence": []}]},
+    ),
 ]
 
 

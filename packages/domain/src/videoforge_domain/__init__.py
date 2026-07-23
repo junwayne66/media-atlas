@@ -7,6 +7,14 @@ from videoforge_domain.blueprint import (
     is_valid_blueprint,
     validate_blueprint,
 )
+from videoforge_domain.brief import (
+    BriefIssue,
+    BriefIssueKind,
+    build_claim_table,
+    build_creative_brief,
+    is_valid_brief,
+    validate_brief,
+)
 from videoforge_domain.cluster_scoring import compute_sub_scores, rescore_cluster
 from videoforge_domain.dedup import (
     AssetFingerprint,
@@ -60,6 +68,8 @@ __all__ = [
     "AssetFingerprint",
     "BlueprintIssue",
     "BlueprintIssueKind",
+    "BriefIssue",
+    "BriefIssueKind",
     "DedupConfig",
     "DomainError",
     "DuplicateGroup",
@@ -69,6 +79,8 @@ __all__ = [
     "InsufficientSnapshots",
     "assert_transition",
     "build_candidate_rhetorical_beats",
+    "build_claim_table",
+    "build_creative_brief",
     "build_visual_beats",
     "can_transition",
     "classify_kind",
@@ -85,6 +97,7 @@ __all__ = [
     "hot_score",
     "iou",
     "is_valid_blueprint",
+    "is_valid_brief",
     "low_confidence_spans",
     "mark_low_confidence",
     "needs_review",
@@ -98,5 +111,6 @@ __all__ = [
     "text_simhash",
     "track_text_observations",
     "validate_blueprint",
+    "validate_brief",
     "vote_text",
 ]

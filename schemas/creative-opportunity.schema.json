@@ -1,0 +1,93 @@
+{
+  "$id": "https://videoforge.dev/schemas/creative-opportunity.schema.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "description": "一次二创机会：热点聚类 + 源蓝图 + 为何值得做（M04 输入）。",
+  "properties": {
+    "blueprint_id": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "description": "参考视频的 VideoBlueprint",
+      "title": "Blueprint Id"
+    },
+    "created_at": {
+      "format": "date-time",
+      "title": "Created At",
+      "type": "string"
+    },
+    "id": {
+      "minLength": 1,
+      "title": "Id",
+      "type": "string"
+    },
+    "rationale": {
+      "description": "为何是机会（热点证据/角度空白等）",
+      "minLength": 1,
+      "title": "Rationale",
+      "type": "string"
+    },
+    "schema_version": {
+      "default": "1",
+      "description": "合同 schema 版本；Reader 需兼容当前与前一版本",
+      "title": "Schema Version",
+      "type": "string"
+    },
+    "source_asset_ids": {
+      "items": {
+        "type": "string"
+      },
+      "title": "Source Asset Ids",
+      "type": "array"
+    },
+    "target_language": {
+      "minLength": 1,
+      "title": "Target Language",
+      "type": "string"
+    },
+    "target_platform": {
+      "minLength": 1,
+      "title": "Target Platform",
+      "type": "string"
+    },
+    "trend_cluster_id": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Trend Cluster Id"
+    },
+    "vertical": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Vertical"
+    }
+  },
+  "required": [
+    "id",
+    "rationale",
+    "target_platform",
+    "target_language",
+    "created_at"
+  ],
+  "title": "CreativeOpportunity",
+  "type": "object"
+}
