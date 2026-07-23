@@ -39,6 +39,7 @@ from videoforge_contracts.enums import (
     ProjectStatus,
     ProviderType,
     ReframeFollow,
+    RemotionComposition,
     RenderStage,
     RenderTargetKind,
     RhetoricalBeatKind,
@@ -63,6 +64,11 @@ from videoforge_contracts.reedit import (
     ReeditPlan,
     ReframeHint,
     SegmentJudgment,
+)
+from videoforge_contracts.remotion import (
+    RemotionProp,
+    RemotionRenderManifest,
+    RemotionRenderRequest,
 )
 from videoforge_contracts.render import (
     FfmpegRenderGraph,
@@ -130,6 +136,7 @@ CONTRACTS: dict[str, type[ContractModel]] = {
     "asset-plan": AssetPlan,
     "creative-timeline": CreativeTimeline,
     "render-manifest": RenderManifest,
+    "remotion-render-manifest": RemotionRenderManifest,
 }
 
 __all__ = [
@@ -191,6 +198,10 @@ __all__ = [
     "ReeditPlan",
     "ReframeFollow",
     "ReframeHint",
+    "RemotionComposition",
+    "RemotionProp",
+    "RemotionRenderManifest",
+    "RemotionRenderRequest",
     "RenderInput",
     "RenderManifest",
     "RenderStage",

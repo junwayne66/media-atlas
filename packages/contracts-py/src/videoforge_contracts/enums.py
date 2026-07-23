@@ -248,6 +248,16 @@ class RenderTargetKind(StrEnum):
     WEBM_VP9 = "WEBM_VP9"
 
 
+class RemotionComposition(StrEnum):
+    """Remotion 组件类型（docs/modules/42 §8.3）。每个映射到 packages 中一个 React 组件路径。"""
+
+    CAPTIONS = "CAPTIONS"  # 动态字幕（V4）
+    INFO_CARD = "INFO_CARD"  # 信息卡片（V3）
+    DATA_CHART = "DATA_CHART"  # 数据图形（V3）
+    BRAND_ANIMATION = "BRAND_ANIMATION"  # 品牌动效（V5）
+    LOWER_THIRD = "LOWER_THIRD"  # 第三部字幕/标题条
+
+
 class TrackKind(StrEnum):
     """时间线轨道类型（docs/modules/42 §8.1）。V0..V5 视频层 / A0..A3 音频层 / M0 语义标记。"""
 

@@ -51,6 +51,10 @@ from videoforge_contracts import (
     ReeditPlan,
     ReframeFollow,
     ReframeHint,
+    RemotionComposition,
+    RemotionProp,
+    RemotionRenderManifest,
+    RemotionRenderRequest,
     RenderInput,
     RenderManifest,
     RenderStage,
@@ -683,6 +687,38 @@ def make_render_manifest() -> RenderManifest:
     )
 
 
+def make_remotion_render_manifest() -> RemotionRenderManifest:
+    request = RemotionRenderRequest(
+        id="01J2ZK3AC9V6XW8YQ4R5T6U7ZQ",
+        timeline_id="01J2ZK3AC9V6XW8YQ4R5T6U7ZN",
+        composition=RemotionComposition.CAPTIONS,
+        props=[
+            RemotionProp(key="segments", value=[
+                {"text": "大家好", "start_ms": 0, "end_ms": 1500},
+                {"text": "今天带大家拆解", "start_ms": 1500, "end_ms": 4500},
+            ]),
+            RemotionProp(key="font_family", value="Noto Sans CJK SC"),
+            RemotionProp(key="font_size_px", value=48),
+            RemotionProp(key="show_background", value=True),
+        ],
+        duration_ms=45000,
+        fps=30,
+        width=1080,
+        height=1920,
+        entry_component_path="/staging/remotion/Root.tsx",
+        output_path="/output/captions.mp4",
+        tool_version="remotion-4.0.240",
+    )
+    return RemotionRenderManifest(
+        id="01J2ZK3AC9V6XW8YQ4R5T6U7ZR",
+        request=request,
+        input_digests={"01J2ZK3AC9V6XW8YQ4R5T6U7ZA": "a" * 64},
+        output_digest="c" * 64,
+        tool_version="remotion-4.0.240",
+        created_at=_T0,
+    )
+
+
 SAMPLES: dict[str, ContractModel] = {
     "project": make_project(),
     "artifact": make_artifact(),
@@ -705,4 +741,5 @@ SAMPLES: dict[str, ContractModel] = {
     "asset-plan": make_asset_plan(),
     "creative-timeline": make_creative_timeline(),
     "render-manifest": make_render_manifest(),
+    "remotion-render-manifest": make_remotion_render_manifest(),
 }
