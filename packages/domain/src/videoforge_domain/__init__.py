@@ -33,6 +33,14 @@ from videoforge_domain.fingerprints import (
     text_simhash,
 )
 from videoforge_domain.frame_sampling import SAMPLING_POLICY, select_representative_frames
+from videoforge_domain.highlight import (
+    CandidateWindow,
+    build_candidate_windows,
+    derive_highlight_reasons,
+    highlight_score,
+    overlap_ratio,
+    rank_highlights,
+)
 from videoforge_domain.kinematics import (
     ENGAGEMENT_METRICS,
     decline_from_peak,
@@ -78,6 +86,7 @@ __all__ = [
     "BlueprintIssueKind",
     "BriefIssue",
     "BriefIssueKind",
+    "CandidateWindow",
     "DedupConfig",
     "ScriptIssue",
     "ScriptIssueKind",
@@ -90,6 +99,7 @@ __all__ = [
     "assert_transition",
     "build_beat_template",
     "build_candidate_rhetorical_beats",
+    "build_candidate_windows",
     "build_claim_table",
     "build_creative_brief",
     "build_visual_beats",
@@ -99,6 +109,7 @@ __all__ = [
     "compute_sub_scores",
     "coverage_ratio",
     "decline_from_peak",
+    "derive_highlight_reasons",
     "derive_reason_codes",
     "dhash_from_gray",
     "engagement_efficiency",
@@ -106,6 +117,7 @@ __all__ = [
     "find_duplicate_groups",
     "hamming",
     "hamming_similarity",
+    "highlight_score",
     "hot_score",
     "iou",
     "is_valid_blueprint",
@@ -115,7 +127,9 @@ __all__ = [
     "mark_low_confidence",
     "needs_review",
     "normalize_rate",
+    "overlap_ratio",
     "phash_sequence_similarity",
+    "rank_highlights",
     "rescore_cluster",
     "select_representative_frames",
     "series_acceleration",

@@ -151,6 +151,16 @@ python:
       返回 UNCONFIGURED。护栏（domain.validate_script 强制）：只依据节拍功能 + 经核验 Claim 生成
       中性语义脚本，绝不复用原句（text_simhash 比对源转录判抄袭），引用的事实必须在 ClaimTable 且
       非 DISPUTED/不可用，DISPUTED 事实即便 must_cover 也绝不自动引用，总时长≈预算，禁用词过滤。
+  - name: VLM/LLM（热门片段特征评分，Qwen-VL / Claude 等或训练模型）
+    license: 视具体引擎/API（另核）
+    isolation: L2
+    used_by: 计划——HighlightFeatureProvider（docs/modules/42 §5.2）
+    note: >
+      VF-303 只落地 HighlightCandidate/HighlightWeights 合同 + 候选窗口/加权评分/去重/MMR（纯域）
+      + 特征端口 + Fake。11 项特征子分（hook_strength/surprise/emotional_energy…）是模型判断，
+      真实实现需 VLM/LLM 或训练模型（停止条件），默认 UnconfiguredHighlightFeatureProvider 返回
+      UNCONFIGURED。评分聚合/去重/MMR 是纯域确定性逻辑；predicted_retention 无训练数据时保持 null
+      不伪装。候选窗口在句子边界生成，绝不切句。
 
 javascript:
   - name: vue

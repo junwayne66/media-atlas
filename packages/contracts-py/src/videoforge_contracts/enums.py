@@ -143,3 +143,26 @@ class ClaimSourceStatus(StrEnum):
     UNVERIFIED = "UNVERIFIED"
     DISPUTED = "DISPUTED"
     OPINION = "OPINION"
+
+
+class HighlightReason(StrEnum):
+    """热门片段候选的理由码（docs/modules/42 §5.3）。正向亮点 + 谨慎项。"""
+
+    HOOK_QUOTE = "HOOK_QUOTE"  # 开场钩子强
+    CLEAR_PAYOFF = "CLEAR_PAYOFF"  # 结尾有回报/结论清晰
+    HIGH_INFO_DENSITY = "HIGH_INFO_DENSITY"  # 信息密度高
+    SURPRISE = "SURPRISE"  # 意外/冲突
+    EMOTIONAL_PEAK = "EMOTIONAL_PEAK"  # 情绪能量高
+    SELF_CONTAINED = "SELF_CONTAINED"  # 自足，脱离上下文可懂
+    STRONG_TOPIC = "STRONG_TOPIC"  # 主题相关性强
+    VISUAL_ACTION = "VISUAL_ACTION"  # 画面有动作/变化
+    CONTEXT_DEPENDENT = "CONTEXT_DEPENDENT"  # 谨慎：强依赖上下文
+    TECHNICAL_DEFECT = "TECHNICAL_DEFECT"  # 谨慎：存在技术瑕疵
+
+
+class HighlightLabel(StrEnum):
+    """人工对候选的处置（docs/modules/42 §5.3）。选中/放弃原因成为训练标签。"""
+
+    UNREVIEWED = "UNREVIEWED"  # 未审
+    SELECTED = "SELECTED"  # 人工选中
+    REJECTED = "REJECTED"  # 人工放弃

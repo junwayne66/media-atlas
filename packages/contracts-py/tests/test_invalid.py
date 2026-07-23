@@ -6,6 +6,21 @@ from samples import SAMPLES
 
 from videoforge_contracts import CONTRACTS
 
+# highlight 候选的合法 11 项特征，用于构造嵌套负例
+_HL_FEAT = {
+    "hook_strength": 0.5, "self_containedness": 0.5, "information_density": 0.5,
+    "surprise_or_conflict": 0.5, "emotional_energy": 0.5, "topic_relevance": 0.5,
+    "visual_activity": 0.5, "speaker_prominence": 0.5, "ending_payoff": 0.5,
+    "context_dependency": 0.2, "technical_defect": 0.1,
+}
+
+
+def _hl_candidate(**over: Any) -> dict[str, Any]:
+    base = {"id": "hl", "start_ms": 0, "end_ms": 1000, "score": 0.1, "features": dict(_HL_FEAT)}
+    base.update(over)
+    return base
+
+
 # (合同名, 字段覆写) —— 每条都必须被拒绝
 INVALID_OVERRIDES: list[tuple[str, str, dict[str, Any]]] = [
     ("project", "未知字段被拒（extra=forbid）", {"unexpected_field": 1}),
@@ -148,6 +163,16 @@ INVALID_OVERRIDES: list[tuple[str, str, dict[str, Any]]] = [
         {"sentences": [{"id": "s", "beat_slot_id": "slot-0", "role": "HOOK", "text": "",
                         "target_duration_ms": 100, "language": "zh-CN"}]},
     ),
+    ("highlight-set", "未知字段被拒", {"unexpected_field": 1}),
+    ("highlight-set", "id 不能为空", {"id": ""}),
+    ("highlight-set", "candidate end<start 被拒",
+     {"candidates": [_hl_candidate(start_ms=5000, end_ms=1000)]}),
+    ("highlight-set", "特征子分越界被拒",
+     {"candidates": [_hl_candidate(features={**_HL_FEAT, "hook_strength": 1.5})]}),
+    ("highlight-set", "predicted_retention 越界被拒",
+     {"candidates": [_hl_candidate(predicted_retention=1.5)]}),
+    ("highlight-set", "非法理由码被拒",
+     {"candidates": [_hl_candidate(reason_codes=["NOT_A_REASON"])]}),
 ]
 
 
