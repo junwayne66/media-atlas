@@ -41,6 +41,14 @@ from videoforge_domain.kinematics import (
     series_velocity,
 )
 from videoforge_domain.reason_codes import derive_reason_codes
+from videoforge_domain.rewrite import (
+    ScriptIssue,
+    ScriptIssueKind,
+    build_beat_template,
+    estimate_duration_ms,
+    is_valid_script,
+    validate_script,
+)
 from videoforge_domain.scoring import hot_score, normalize_rate, sigmoid
 from videoforge_domain.staging import (
     STAGE_TRANSITIONS,
@@ -71,6 +79,8 @@ __all__ = [
     "BriefIssue",
     "BriefIssueKind",
     "DedupConfig",
+    "ScriptIssue",
+    "ScriptIssueKind",
     "DomainError",
     "DuplicateGroup",
     "DuplicateLayer",
@@ -78,6 +88,7 @@ __all__ = [
     "IllegalStageTransition",
     "InsufficientSnapshots",
     "assert_transition",
+    "build_beat_template",
     "build_candidate_rhetorical_beats",
     "build_claim_table",
     "build_creative_brief",
@@ -91,6 +102,7 @@ __all__ = [
     "derive_reason_codes",
     "dhash_from_gray",
     "engagement_efficiency",
+    "estimate_duration_ms",
     "find_duplicate_groups",
     "hamming",
     "hamming_similarity",
@@ -98,6 +110,7 @@ __all__ = [
     "iou",
     "is_valid_blueprint",
     "is_valid_brief",
+    "is_valid_script",
     "low_confidence_spans",
     "mark_low_confidence",
     "needs_review",
@@ -112,5 +125,6 @@ __all__ = [
     "track_text_observations",
     "validate_blueprint",
     "validate_brief",
+    "validate_script",
     "vote_text",
 ]

@@ -133,6 +133,21 @@ INVALID_OVERRIDES: list[tuple[str, str, dict[str, Any]]] = [
         "条目证据不能为空",
         {"entries": [{"claim_id": "c", "text": "x", "evidence": []}]},
     ),
+    ("beat-template", "未知字段被拒", {"unexpected_field": 1}),
+    ("beat-template", "duration_target_ms 必须 > 0", {"duration_target_ms": 0}),
+    (
+        "beat-template",
+        "槽位 end_ms 不得早于 start_ms",
+        {"slots": [{"id": "s", "role": "HOOK", "start_ms": 1000, "end_ms": 500,
+                    "target_duration_ms": 0}]},
+    ),
+    ("script-version", "未知字段被拒", {"unexpected_field": 1}),
+    (
+        "script-version",
+        "句子 text 不能为空",
+        {"sentences": [{"id": "s", "beat_slot_id": "slot-0", "role": "HOOK", "text": "",
+                        "target_duration_ms": 100, "language": "zh-CN"}]},
+    ),
 ]
 
 

@@ -33,6 +33,12 @@ from videoforge_contracts.enums import (
 from videoforge_contracts.problem import ProblemDetail
 from videoforge_contracts.project import Project
 from videoforge_contracts.provider import CostModel, ProviderDescriptor, ProviderHealth
+from videoforge_contracts.rewrite import (
+    BeatSlot,
+    BeatTemplate,
+    ScriptSentence,
+    ScriptVersion,
+)
 from videoforge_contracts.task_envelope import ResourceLimits, TaskEnvelope
 from videoforge_contracts.texttrack import (
     BBox,
@@ -70,6 +76,8 @@ CONTRACTS: dict[str, type[ContractModel]] = {
     "creative-opportunity": CreativeOpportunity,
     "creative-brief": CreativeBrief,
     "claim-table": ClaimTable,
+    "beat-template": BeatTemplate,
+    "script-version": ScriptVersion,
 }
 
 __all__ = [
@@ -77,6 +85,8 @@ __all__ = [
     "CONTRACTS",
     "Artifact",
     "BBox",
+    "BeatSlot",
+    "BeatTemplate",
     "BriefHook",
     "Claim",
     "ClaimSourceStatus",
@@ -105,6 +115,8 @@ __all__ = [
     "ResourceLimits",
     "RhetoricalBeat",
     "RhetoricalBeatKind",
+    "ScriptSentence",
+    "ScriptVersion",
     "StorageBackend",
     "StorageRef",
     "TaskEnvelope",

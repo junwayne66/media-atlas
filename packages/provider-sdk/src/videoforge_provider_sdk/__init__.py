@@ -96,6 +96,15 @@ from videoforge_provider_sdk.ocr import (
     UnconfiguredOCRProvider,
 )
 from videoforge_provider_sdk.registry import ProviderRegistry, ProviderRuntime
+from videoforge_provider_sdk.rewrite import (
+    FakeStructureRewriteProvider,
+    RewriteErrorCode,
+    RewriteRequest,
+    RewriteResult,
+    RewriteStatus,
+    StructureRewriteProvider,
+    UnconfiguredStructureRewriteProvider,
+)
 from videoforge_provider_sdk.routing import (
     WEIGHTS,
     CandidateScore,
@@ -168,6 +177,7 @@ __all__ = [
     "FakeLanguageSegmenter",
     "FakeOCRProvider",
     "FakeProvider",
+    "FakeStructureRewriteProvider",
     "FakeVLMProvider",
     "FixtureFetcher",
     "FixtureShortLinkExpander",
@@ -187,8 +197,13 @@ __all__ = [
     "ProviderRuntime",
     "ResolvedCookies",
     "ResolvedSource",
+    "RewriteErrorCode",
+    "RewriteRequest",
+    "RewriteResult",
+    "RewriteStatus",
     "RouteDecision",
     "ShortLinkExpander",
+    "StructureRewriteProvider",
     "UnconfiguredASRProvider",
     "UnconfiguredBlueprintFusionProvider",
     "UnconfiguredCookieResolver",
@@ -196,6 +211,7 @@ __all__ = [
     "UnconfiguredLanguageSegmenter",
     "UnconfiguredOCRProvider",
     "UnconfiguredShortLinkExpander",
+    "UnconfiguredStructureRewriteProvider",
     "UnconfiguredVLMProvider",
     "UnresolvableUrl",
     "VLMErrorCode",
