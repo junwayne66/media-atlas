@@ -1,0 +1,283 @@
+{
+  "$defs": {
+    "ContinuityNote": {
+      "additionalProperties": false,
+      "description": "连续性处理说明（docs/modules/42 §4.2）。",
+      "properties": {
+        "at_ms": {
+          "description": "发生位置（源时间）",
+          "minimum": 0,
+          "title": "At Ms",
+          "type": "integer"
+        },
+        "detail": {
+          "minLength": 1,
+          "title": "Detail",
+          "type": "string"
+        },
+        "kind": {
+          "$ref": "#/$defs/ContinuityRuleKind"
+        },
+        "schema_version": {
+          "default": "1",
+          "description": "合同 schema 版本；Reader 需兼容当前与前一版本",
+          "title": "Schema Version",
+          "type": "string"
+        }
+      },
+      "required": [
+        "kind",
+        "at_ms",
+        "detail"
+      ],
+      "title": "ContinuityNote",
+      "type": "object"
+    },
+    "ContinuityRuleKind": {
+      "description": "连续性处理（docs/modules/42 §4.2）。",
+      "enum": [
+        "J_CUT",
+        "L_CUT",
+        "INSERT_BROLL",
+        "JUMPCUT_SMOOTH",
+        "BEAT_ALIGN"
+      ],
+      "title": "ContinuityRuleKind",
+      "type": "string"
+    },
+    "EditOp": {
+      "additionalProperties": false,
+      "description": "一次重剪操作，作用于源时间区间（docs/modules/42 §4.1）。",
+      "properties": {
+        "id": {
+          "minLength": 1,
+          "title": "Id",
+          "type": "string"
+        },
+        "op": {
+          "$ref": "#/$defs/EditOpKind"
+        },
+        "output_order": {
+          "anyOf": [
+            {
+              "minimum": 0,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "KEEP 在输出中的次序（重排）",
+          "title": "Output Order"
+        },
+        "reason": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "DELETE 原因，如 silence/filler/repeat",
+          "title": "Reason"
+        },
+        "reframe": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/ReframeHint"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "schema_version": {
+          "default": "1",
+          "description": "合同 schema 版本；Reader 需兼容当前与前一版本",
+          "title": "Schema Version",
+          "type": "string"
+        },
+        "segment_ids": {
+          "description": "覆盖的源转录句段",
+          "items": {
+            "type": "string"
+          },
+          "title": "Segment Ids",
+          "type": "array"
+        },
+        "source_end_ms": {
+          "minimum": 0,
+          "title": "Source End Ms",
+          "type": "integer"
+        },
+        "source_start_ms": {
+          "minimum": 0,
+          "title": "Source Start Ms",
+          "type": "integer"
+        },
+        "speed": {
+          "anyOf": [
+            {
+              "exclusiveMinimum": 0.0,
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "SPEED 倍率",
+          "title": "Speed"
+        }
+      },
+      "required": [
+        "id",
+        "op",
+        "source_start_ms",
+        "source_end_ms"
+      ],
+      "title": "EditOp",
+      "type": "object"
+    },
+    "EditOpKind": {
+      "description": "原片重剪操作（docs/modules/42 §4.1）。",
+      "enum": [
+        "KEEP",
+        "DELETE",
+        "MUTE",
+        "SPEED",
+        "REFRAME"
+      ],
+      "title": "EditOpKind",
+      "type": "string"
+    },
+    "ReframeFollow": {
+      "description": "重构图跟随目标（docs/modules/42 §4.1）。",
+      "enum": [
+        "SPEAKER",
+        "PRODUCT",
+        "UI",
+        "FACE",
+        "CENTER"
+      ],
+      "title": "ReframeFollow",
+      "type": "string"
+    },
+    "ReframeHint": {
+      "additionalProperties": false,
+      "description": "重构图建议（docs/modules/42 §4.1）。",
+      "properties": {
+        "follow": {
+          "$ref": "#/$defs/ReframeFollow",
+          "default": "CENTER"
+        },
+        "safe_area": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Safe Area"
+        },
+        "schema_version": {
+          "default": "1",
+          "description": "合同 schema 版本；Reader 需兼容当前与前一版本",
+          "title": "Schema Version",
+          "type": "string"
+        },
+        "target_aspect_ratio": {
+          "description": "如 9:16",
+          "minLength": 1,
+          "title": "Target Aspect Ratio",
+          "type": "string"
+        }
+      },
+      "required": [
+        "target_aspect_ratio"
+      ],
+      "title": "ReframeHint",
+      "type": "object"
+    }
+  },
+  "$id": "https://videoforge.dev/schemas/reedit-plan.schema.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "description": "原片重剪计划（docs/modules/42 §4）：有序操作 + 连续性说明 + 输出总时长。",
+  "properties": {
+    "continuity": {
+      "items": {
+        "$ref": "#/$defs/ContinuityNote"
+      },
+      "title": "Continuity",
+      "type": "array"
+    },
+    "created_at": {
+      "format": "date-time",
+      "title": "Created At",
+      "type": "string"
+    },
+    "id": {
+      "minLength": 1,
+      "title": "Id",
+      "type": "string"
+    },
+    "kept_duration_ms": {
+      "description": "保留段总时长（输出时长）",
+      "minimum": 0,
+      "title": "Kept Duration Ms",
+      "type": "integer"
+    },
+    "ops": {
+      "items": {
+        "$ref": "#/$defs/EditOp"
+      },
+      "title": "Ops",
+      "type": "array"
+    },
+    "schema_version": {
+      "default": "1",
+      "description": "合同 schema 版本；Reader 需兼容当前与前一版本",
+      "title": "Schema Version",
+      "type": "string"
+    },
+    "source_asset_id": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Source Asset Id"
+    },
+    "source_transcript_id": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Source Transcript Id"
+    }
+  },
+  "required": [
+    "id",
+    "kept_duration_ms",
+    "created_at"
+  ],
+  "title": "ReeditPlan",
+  "type": "object"
+}

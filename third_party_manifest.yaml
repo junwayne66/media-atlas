@@ -161,6 +161,16 @@ python:
       真实实现需 VLM/LLM 或训练模型（停止条件），默认 UnconfiguredHighlightFeatureProvider 返回
       UNCONFIGURED。评分聚合/去重/MMR 是纯域确定性逻辑；predicted_retention 无训练数据时保持 null
       不伪装。候选窗口在句子边界生成，绝不切句。
+  - name: 文本分析/VLM（原片重剪句段判定，或训练模型）
+    license: 视具体引擎/API（另核）
+    isolation: L2
+    used_by: 计划——SegmentJudgeProvider（docs/modules/42 §4.1）
+    note: >
+      VF-304 只落地 ReeditPlan/EditOp 合同 + 重剪规划器/连续性/不切句/变速护栏（纯域）+ 句段判定
+      端口 + Fake。判定"哪些句段该删（静音/口头禅/重复/低信息）"是模型判断，真实实现需 ASR 文本
+      分析/VLM 或训练模型（停止条件），默认 UnconfiguredSegmentJudgeProvider 返回 UNCONFIGURED。
+      计划生成/护栏是纯域确定性逻辑：操作边界不切句、KEEP 不重叠、变速仅在允许区间、每处 jump cut
+      都须有连续性处理。
 
 javascript:
   - name: vue

@@ -166,3 +166,33 @@ class HighlightLabel(StrEnum):
     UNREVIEWED = "UNREVIEWED"  # 未审
     SELECTED = "SELECTED"  # 人工选中
     REJECTED = "REJECTED"  # 人工放弃
+
+
+class EditOpKind(StrEnum):
+    """原片重剪操作（docs/modules/42 §4.1）。"""
+
+    KEEP = "KEEP"  # 保留源片段到输出
+    DELETE = "DELETE"  # 删除（静音/口头禅/重复/低信息）
+    MUTE = "MUTE"  # 静音但保画面
+    SPEED = "SPEED"  # 变速（仅允许区间）
+    REFRAME = "REFRAME"  # 重构图建议（16:9→9:16 跟随）
+
+
+class ReframeFollow(StrEnum):
+    """重构图跟随目标（docs/modules/42 §4.1）。"""
+
+    SPEAKER = "SPEAKER"
+    PRODUCT = "PRODUCT"
+    UI = "UI"
+    FACE = "FACE"
+    CENTER = "CENTER"
+
+
+class ContinuityRuleKind(StrEnum):
+    """连续性处理（docs/modules/42 §4.2）。"""
+
+    J_CUT = "J_CUT"  # 声音先入
+    L_CUT = "L_CUT"  # 声音后出
+    INSERT_BROLL = "INSERT_BROLL"  # 朝向/视线冲突插空镜/图卡
+    JUMPCUT_SMOOTH = "JUMPCUT_SMOOTH"  # jump cut 用推拉/构图变化平滑
+    BEAT_ALIGN = "BEAT_ALIGN"  # 音乐按 Beat Grid 对齐（不破句）

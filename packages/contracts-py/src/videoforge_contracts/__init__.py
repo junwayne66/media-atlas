@@ -17,7 +17,9 @@ from videoforge_contracts.brief import (
 )
 from videoforge_contracts.enums import (
     ClaimSourceStatus,
+    ContinuityRuleKind,
     CreationMode,
+    EditOpKind,
     ExecutionPolicy,
     FrameSampleReason,
     HealthState,
@@ -26,6 +28,7 @@ from videoforge_contracts.enums import (
     IsolationLevel,
     ProjectStatus,
     ProviderType,
+    ReframeFollow,
     RhetoricalBeatKind,
     StorageBackend,
     TextTrackKind,
@@ -41,6 +44,13 @@ from videoforge_contracts.highlight import (
 from videoforge_contracts.problem import ProblemDetail
 from videoforge_contracts.project import Project
 from videoforge_contracts.provider import CostModel, ProviderDescriptor, ProviderHealth
+from videoforge_contracts.reedit import (
+    ContinuityNote,
+    EditOp,
+    ReeditPlan,
+    ReframeHint,
+    SegmentJudgment,
+)
 from videoforge_contracts.rewrite import (
     BeatSlot,
     BeatTemplate,
@@ -87,6 +97,7 @@ CONTRACTS: dict[str, type[ContractModel]] = {
     "beat-template": BeatTemplate,
     "script-version": ScriptVersion,
     "highlight-set": HighlightSet,
+    "reedit-plan": ReeditPlan,
 }
 
 __all__ = [
@@ -101,11 +112,15 @@ __all__ = [
     "ClaimSourceStatus",
     "ClaimTable",
     "ClaimTableEntry",
+    "ContinuityNote",
+    "ContinuityRuleKind",
     "ContractModel",
     "CostModel",
     "CreationMode",
     "CreativeBrief",
     "CreativeOpportunity",
+    "EditOp",
+    "EditOpKind",
     "EvidenceSpan",
     "ExecutionPolicy",
     "FrameAnalysis",
@@ -127,11 +142,15 @@ __all__ = [
     "ProviderDescriptor",
     "ProviderHealth",
     "ProviderType",
+    "ReeditPlan",
+    "ReframeFollow",
+    "ReframeHint",
     "ResourceLimits",
     "RhetoricalBeat",
     "RhetoricalBeatKind",
     "ScriptSentence",
     "ScriptVersion",
+    "SegmentJudgment",
     "StorageBackend",
     "StorageRef",
     "TaskEnvelope",

@@ -21,6 +21,12 @@ def _hl_candidate(**over: Any) -> dict[str, Any]:
     return base
 
 
+def _edit_op(**over: Any) -> dict[str, Any]:
+    base = {"id": "op", "op": "KEEP", "source_start_ms": 0, "source_end_ms": 1000}
+    base.update(over)
+    return base
+
+
 # (合同名, 字段覆写) —— 每条都必须被拒绝
 INVALID_OVERRIDES: list[tuple[str, str, dict[str, Any]]] = [
     ("project", "未知字段被拒（extra=forbid）", {"unexpected_field": 1}),
@@ -173,6 +179,14 @@ INVALID_OVERRIDES: list[tuple[str, str, dict[str, Any]]] = [
      {"candidates": [_hl_candidate(predicted_retention=1.5)]}),
     ("highlight-set", "非法理由码被拒",
      {"candidates": [_hl_candidate(reason_codes=["NOT_A_REASON"])]}),
+    ("reedit-plan", "未知字段被拒", {"unexpected_field": 1}),
+    ("reedit-plan", "kept_duration_ms 不能为负", {"kept_duration_ms": -1}),
+    ("reedit-plan", "op end<start 被拒",
+     {"ops": [_edit_op(source_start_ms=5000, source_end_ms=1000)]}),
+    ("reedit-plan", "非法操作枚举被拒", {"ops": [_edit_op(op="FROBNICATE")]}),
+    ("reedit-plan", "SPEED 倍率须 >0", {"ops": [_edit_op(op="SPEED", speed=0)]}),
+    ("reedit-plan", "非法连续性枚举被拒",
+     {"continuity": [{"kind": "NOPE", "at_ms": 0, "detail": "x"}]}),
 ]
 
 

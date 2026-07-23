@@ -1,0 +1,70 @@
+{
+  "continuity": [
+    {
+      "at_ms": 5000,
+      "detail": "删除填充段后 seg-0→seg-2 相邻，用推拉平滑",
+      "kind": "JUMPCUT_SMOOTH",
+      "schema_version": "1"
+    }
+  ],
+  "created_at": "2026-07-21T08:00:00Z",
+  "id": "01J2ZK3AC9V6XW8YQ4R5T6U7ZK",
+  "kept_duration_ms": 10800,
+  "ops": [
+    {
+      "id": "op-0",
+      "op": "KEEP",
+      "output_order": 0,
+      "reason": null,
+      "reframe": {
+        "follow": "SPEAKER",
+        "safe_area": null,
+        "schema_version": "1",
+        "target_aspect_ratio": "9:16"
+      },
+      "schema_version": "1",
+      "segment_ids": [
+        "seg-0"
+      ],
+      "source_end_ms": 5000,
+      "source_start_ms": 0,
+      "speed": null
+    },
+    {
+      "id": "op-1",
+      "op": "DELETE",
+      "output_order": null,
+      "reason": "filler",
+      "reframe": null,
+      "schema_version": "1",
+      "segment_ids": [
+        "seg-1"
+      ],
+      "source_end_ms": 6200,
+      "source_start_ms": 5000,
+      "speed": null
+    },
+    {
+      "id": "op-2",
+      "op": "KEEP",
+      "output_order": 1,
+      "reason": null,
+      "reframe": {
+        "follow": "SPEAKER",
+        "safe_area": null,
+        "schema_version": "1",
+        "target_aspect_ratio": "9:16"
+      },
+      "schema_version": "1",
+      "segment_ids": [
+        "seg-2"
+      ],
+      "source_end_ms": 12000,
+      "source_start_ms": 6200,
+      "speed": null
+    }
+  ],
+  "schema_version": "1",
+  "source_asset_id": "01J2ZK3AC9V6XW8YQ4R5T6U7ZA",
+  "source_transcript_id": "01J2ZK3AC9V6XW8YQ4R5T6U7ZC"
+}
