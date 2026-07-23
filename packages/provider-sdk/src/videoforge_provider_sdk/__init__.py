@@ -105,6 +105,16 @@ from videoforge_provider_sdk.ocr import (
     OCRStatus,
     UnconfiguredOCRProvider,
 )
+from videoforge_provider_sdk.reedit import (
+    FakeSegmentJudgeProvider,
+    SegmentJudgeErrorCode,
+    SegmentJudgeProvider,
+    SegmentJudgeRequest,
+    SegmentJudgeResult,
+    SegmentJudgeStatus,
+    SegmentSpec,
+    UnconfiguredSegmentJudgeProvider,
+)
 from videoforge_provider_sdk.registry import ProviderRegistry, ProviderRuntime
 from videoforge_provider_sdk.rewrite import (
     FakeStructureRewriteProvider,
@@ -188,6 +198,7 @@ __all__ = [
     "FakeLanguageSegmenter",
     "FakeOCRProvider",
     "FakeProvider",
+    "FakeSegmentJudgeProvider",
     "FakeStructureRewriteProvider",
     "FakeVLMProvider",
     "FixtureFetcher",
@@ -219,6 +230,12 @@ __all__ = [
     "RewriteResult",
     "RewriteStatus",
     "RouteDecision",
+    "SegmentJudgeErrorCode",
+    "SegmentJudgeProvider",
+    "SegmentJudgeRequest",
+    "SegmentJudgeResult",
+    "SegmentJudgeStatus",
+    "SegmentSpec",
     "ShortLinkExpander",
     "StructureRewriteProvider",
     "UnconfiguredASRProvider",
@@ -228,6 +245,7 @@ __all__ = [
     "UnconfiguredHighlightFeatureProvider",
     "UnconfiguredLanguageSegmenter",
     "UnconfiguredOCRProvider",
+    "UnconfiguredSegmentJudgeProvider",
     "UnconfiguredShortLinkExpander",
     "UnconfiguredStructureRewriteProvider",
     "UnconfiguredVLMProvider",

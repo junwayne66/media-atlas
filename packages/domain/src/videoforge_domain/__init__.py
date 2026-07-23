@@ -49,6 +49,13 @@ from videoforge_domain.kinematics import (
     series_velocity,
 )
 from videoforge_domain.reason_codes import derive_reason_codes
+from videoforge_domain.reedit import (
+    ReeditIssue,
+    ReeditIssueKind,
+    build_reedit_plan,
+    is_valid_reedit_plan,
+    validate_reedit_plan,
+)
 from videoforge_domain.rewrite import (
     ScriptIssue,
     ScriptIssueKind,
@@ -96,12 +103,15 @@ __all__ = [
     "DuplicateMatch",
     "IllegalStageTransition",
     "InsufficientSnapshots",
+    "ReeditIssue",
+    "ReeditIssueKind",
     "assert_transition",
     "build_beat_template",
     "build_candidate_rhetorical_beats",
     "build_candidate_windows",
     "build_claim_table",
     "build_creative_brief",
+    "build_reedit_plan",
     "build_visual_beats",
     "can_transition",
     "classify_kind",
@@ -122,6 +132,7 @@ __all__ = [
     "iou",
     "is_valid_blueprint",
     "is_valid_brief",
+    "is_valid_reedit_plan",
     "is_valid_script",
     "low_confidence_spans",
     "mark_low_confidence",
@@ -139,6 +150,7 @@ __all__ = [
     "track_text_observations",
     "validate_blueprint",
     "validate_brief",
+    "validate_reedit_plan",
     "validate_script",
     "vote_text",
 ]

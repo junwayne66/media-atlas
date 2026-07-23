@@ -12,11 +12,15 @@ from videoforge_contracts import (
     ClaimSourceStatus,
     ClaimTable,
     ClaimTableEntry,
+    ContinuityNote,
+    ContinuityRuleKind,
     ContractModel,
     CostModel,
     CreationMode,
     CreativeBrief,
     CreativeOpportunity,
+    EditOp,
+    EditOpKind,
     EvidenceSpan,
     FrameAnalysis,
     FrameSampleReason,
@@ -31,6 +35,9 @@ from videoforge_contracts import (
     Project,
     ProviderDescriptor,
     ProviderHealth,
+    ReeditPlan,
+    ReframeFollow,
+    ReframeHint,
     ResourceLimits,
     RhetoricalBeat,
     RhetoricalBeatKind,
@@ -502,6 +509,36 @@ def make_highlight_set() -> HighlightSet:
     )
 
 
+def make_reedit_plan() -> ReeditPlan:
+    return ReeditPlan(
+        id="01J2ZK3AC9V6XW8YQ4R5T6U7ZK",
+        source_transcript_id="01J2ZK3AC9V6XW8YQ4R5T6U7ZC",
+        source_asset_id="01J2ZK3AC9V6XW8YQ4R5T6U7ZA",
+        ops=[
+            EditOp(
+                id="op-0", op=EditOpKind.KEEP, source_start_ms=0, source_end_ms=5000,
+                segment_ids=["seg-0"], output_order=0,
+                reframe=ReframeHint(target_aspect_ratio="9:16", follow=ReframeFollow.SPEAKER),
+            ),
+            EditOp(
+                id="op-1", op=EditOpKind.DELETE, source_start_ms=5000, source_end_ms=6200,
+                segment_ids=["seg-1"], reason="filler",
+            ),
+            EditOp(
+                id="op-2", op=EditOpKind.KEEP, source_start_ms=6200, source_end_ms=12000,
+                segment_ids=["seg-2"], output_order=1,
+                reframe=ReframeHint(target_aspect_ratio="9:16", follow=ReframeFollow.SPEAKER),
+            ),
+        ],
+        continuity=[
+            ContinuityNote(kind=ContinuityRuleKind.JUMPCUT_SMOOTH, at_ms=5000,
+                           detail="删除填充段后 seg-0→seg-2 相邻，用推拉平滑"),
+        ],
+        kept_duration_ms=10800,
+        created_at=_T0,
+    )
+
+
 SAMPLES: dict[str, ContractModel] = {
     "project": make_project(),
     "artifact": make_artifact(),
@@ -520,4 +557,5 @@ SAMPLES: dict[str, ContractModel] = {
     "beat-template": make_beat_template(),
     "script-version": make_script_version(),
     "highlight-set": make_highlight_set(),
+    "reedit-plan": make_reedit_plan(),
 }
