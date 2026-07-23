@@ -26,6 +26,15 @@ from videoforge_provider_sdk.asr import (
     UnconfiguredLanguageSegmenter,
 )
 from videoforge_provider_sdk.base import FakeProvider, Provider, ProviderInvokeError
+from videoforge_provider_sdk.blueprint_fusion import (
+    BlueprintFusionErrorCode,
+    BlueprintFusionProvider,
+    BlueprintFusionRequest,
+    BlueprintFusionResult,
+    BlueprintFusionStatus,
+    FakeBlueprintFusionProvider,
+    UnconfiguredBlueprintFusionProvider,
+)
 from videoforge_provider_sdk.circuit import CircuitBreaker, CircuitState
 from videoforge_provider_sdk.connector_errors import (
     ConnectorError,
@@ -129,6 +138,11 @@ __all__ = [
     "AcquisitionError",
     "AcquisitionErrorCode",
     "AcquisitionManifest",
+    "BlueprintFusionErrorCode",
+    "BlueprintFusionProvider",
+    "BlueprintFusionRequest",
+    "BlueprintFusionResult",
+    "BlueprintFusionStatus",
     "CandidateScore",
     "CircuitBreaker",
     "CircuitState",
@@ -150,6 +164,7 @@ __all__ = [
     "DownloadRouter",
     "DownloadStatus",
     "FakeASRProvider",
+    "FakeBlueprintFusionProvider",
     "FakeLanguageSegmenter",
     "FakeOCRProvider",
     "FakeProvider",
@@ -175,6 +190,7 @@ __all__ = [
     "RouteDecision",
     "ShortLinkExpander",
     "UnconfiguredASRProvider",
+    "UnconfiguredBlueprintFusionProvider",
     "UnconfiguredCookieResolver",
     "UnconfiguredFetcher",
     "UnconfiguredLanguageSegmenter",

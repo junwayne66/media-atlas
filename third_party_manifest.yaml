@@ -132,6 +132,15 @@ python:
       + Fake（录制 caption 回放，批量一次调用）。真实引擎需模型/付费 API（停止条件），默认
       UnconfiguredVLMProvider 返回 UNCONFIGURED。成本红线：VLM 只批量分析代表帧，**绝不逐帧
       云调用**——端口 analyze 接整批帧、缓存用 VF-201 activity_cache_key 去重。接入前须评审费用。
+  - name: LLM（Blueprint 融合，Claude / Qwen 等 API 或本地 LLM）
+    license: 视具体引擎/API（另核）
+    isolation: L2
+    used_by: 计划——BlueprintFusionProvider（docs/modules/41 §10）
+    note: >
+      VF-205 只落地 VideoBlueprint 合同 + 候选生成/校验护栏（纯域）+ 融合端口 + Fake。
+      真实 LLM 需模型/付费 API（停止条件），默认 UnconfiguredBlueprintFusionProvider 返回
+      UNCONFIGURED。护栏：时间范围由程序候选、LLM 不编造时间戳，Claim 必须引用真实证据，
+      时间单调/在时长内，覆盖率 ≥0.9——由 domain.validate_blueprint 强制，非法蓝图不下游消费。
 
 javascript:
   - name: vue

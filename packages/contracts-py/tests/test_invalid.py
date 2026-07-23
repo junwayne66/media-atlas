@@ -105,6 +105,18 @@ INVALID_OVERRIDES: list[tuple[str, str, dict[str, Any]]] = [
         "帧时间不能为负",
         {"frames": [{"frame_time_ms": -1, "reasons": ["KEYFRAME"]}]},
     ),
+    ("video-blueprint", "未知字段被拒", {"unexpected_field": 1}),
+    ("video-blueprint", "duration_ms 必须 > 0", {"duration_ms": 0}),
+    (
+        "video-blueprint",
+        "Claim 必须至少一条证据",
+        {"claims": [{"id": "c", "text": "x", "evidence": []}]},
+    ),
+    (
+        "video-blueprint",
+        "节拍 end_ms 不得早于 start_ms",
+        {"rhetorical_beats": [{"id": "r", "kind": "HOOK", "start_ms": 1000, "end_ms": 500}]},
+    ),
 ]
 
 

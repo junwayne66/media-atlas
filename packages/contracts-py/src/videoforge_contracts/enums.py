@@ -110,3 +110,36 @@ class FrameSampleReason(StrEnum):
     SPEAKER_CHANGE = "SPEAKER_CHANGE"  # 说话人切换
     LOW_CONFIDENCE = "LOW_CONFIDENCE"  # 上游 OCR/ASR 低置信，需 VLM 消歧
     PERIODIC = "PERIODIC"  # 长静止段的周期性采样，保证覆盖
+
+
+class RhetoricalBeatKind(StrEnum):
+    """表达层节拍（docs/modules/41 §10.1）。UNCLASSIFIED 允许存在以保覆盖率。"""
+
+    HOOK = "HOOK"  # 钩子
+    QUESTION = "QUESTION"  # 提问
+    EVIDENCE = "EVIDENCE"  # 证据
+    CONTRAST = "CONTRAST"  # 对比
+    DEMO = "DEMO"  # 演示
+    CONCLUSION = "CONCLUSION"  # 结论
+    CTA = "CTA"  # 行动号召
+    UNCLASSIFIED = "UNCLASSIFIED"
+
+
+class VisualBeatKind(StrEnum):
+    """视觉层节拍（docs/modules/41 §10.1）。"""
+
+    PERSON = "PERSON"  # 人物出镜
+    SCREEN_RECORD = "SCREEN_RECORD"  # 屏幕录制
+    PRODUCT = "PRODUCT"  # 产品
+    B_ROLL = "B_ROLL"  # 空镜/补充画面
+    CARD = "CARD"  # 图卡/字卡
+    UNKNOWN = "UNKNOWN"
+
+
+class ClaimSourceStatus(StrEnum):
+    """Claim 的来源核验状态（docs/modules/41 §10.1）。"""
+
+    VERIFIED = "VERIFIED"
+    UNVERIFIED = "UNVERIFIED"
+    DISPUTED = "DISPUTED"
+    OPINION = "OPINION"
