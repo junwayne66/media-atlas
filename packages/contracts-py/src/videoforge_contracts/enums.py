@@ -248,6 +248,41 @@ class RenderTargetKind(StrEnum):
     WEBM_VP9 = "WEBM_VP9"
 
 
+class QASeverity(StrEnum):
+    """QA 严重级（docs/modules/42 §11）。BLOCKER 一处即拒；MAJOR 超阈升级；MINOR/INFO 记录。"""
+
+    BLOCKER = "BLOCKER"
+    MAJOR = "MAJOR"
+    MINOR = "MINOR"
+    INFO = "INFO"
+
+
+class QAFindingKind(StrEnum):
+    """QA 检测项（docs/modules/42 §11）。覆盖视频/音频/字幕/合规四大类。"""
+
+    # 视频质量
+    BLACK_FRAME = "BLACK_FRAME"  # 黑帧
+    FROZEN_FRAME = "FROZEN_FRAME"  # 冻帧
+    FLICKER = "FLICKER"  # 频闪
+    DUPLICATE_FRAMES = "DUPLICATE_FRAMES"  # 重复帧
+    HOLE = "HOLE"  # 时间轴异常空洞
+    # 音频质量
+    VOICE_TAIL_CUT = "VOICE_TAIL_CUT"  # 人声尾部截断
+    ABRUPT_SILENCE = "ABRUPT_SILENCE"  # 突兀静音
+    LOUDNESS_OUT_OF_RANGE = "LOUDNESS_OUT_OF_RANGE"  # 响度越界（LUFS）
+    TRUE_PEAK_CLIP = "TRUE_PEAK_CLIP"  # True Peak 爆表
+    # 字幕
+    CAPTION_OFF_SAFE_AREA = "CAPTION_OFF_SAFE_AREA"  # 字幕出安全区
+    CAPTION_OVERLAP = "CAPTION_OVERLAP"  # 字幕重叠
+    # 构图 / 视觉
+    BROLL_RATIO_LOW = "BROLL_RATIO_LOW"  # B-roll 占比不足
+    SUBJECT_CUT = "SUBJECT_CUT"  # 主体被裁
+    UI_CROP = "UI_CROP"  # 关键 UI 被裁
+    CLEANUP_FLICKER = "CLEANUP_FLICKER"  # 清理区时序闪烁
+    # 时长一致性
+    DURATION_MISMATCH = "DURATION_MISMATCH"  # Timeline 与输出总时长/帧数不一致
+
+
 class RemotionComposition(StrEnum):
     """Remotion 组件类型（docs/modules/42 §8.3）。每个映射到 packages 中一个 React 组件路径。"""
 

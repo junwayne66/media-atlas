@@ -265,6 +265,22 @@ INVALID_OVERRIDES: list[tuple[str, str, dict[str, Any]]] = [
     ("remotion-render-manifest", "props 键重复被拒",
      {"request": {**SAMPLES["remotion-render-manifest"].model_dump()["request"],
                     "props": [{"key": "same", "value": 1}, {"key": "same", "value": 2}]}}),
+    ("qa-report", "未知字段被拒", {"unexpected_field": 1}),
+    ("qa-report", "非法 QASeverity 被拒",
+     {"findings": [{"id": "f", "kind": "BLACK_FRAME", "severity": "PANIC", "at_ms": 0}]}),
+    ("qa-report", "非法 QAFindingKind 被拒",
+     {"findings": [{"id": "f", "kind": "NOT_A_KIND", "severity": "BLOCKER", "at_ms": 0}]}),
+    ("qa-report", "finding at_ms 不能为负",
+     {"findings": [{"id": "f", "kind": "BLACK_FRAME", "severity": "MAJOR", "at_ms": -1}]}),
+    ("qa-report", "finding duration_ms 不能为负",
+     {"findings": [{"id": "f", "kind": "BLACK_FRAME", "severity": "MAJOR", "at_ms": 0,
+                      "duration_ms": -1}]}),
+    ("qa-report", "finding id 重复被拒",
+     {"findings": [
+         {"id": "same", "kind": "BLACK_FRAME", "severity": "MAJOR", "at_ms": 0},
+         {"id": "same", "kind": "FROZEN_FRAME", "severity": "MINOR", "at_ms": 100},
+     ]}),
+    ("qa-report", "measured_duration_ms 不能为负", {"measured_duration_ms": -1}),
 ]
 
 

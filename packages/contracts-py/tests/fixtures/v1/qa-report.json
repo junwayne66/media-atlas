@@ -1,0 +1,41 @@
+{
+  "created_at": "2026-07-21T08:00:00Z",
+  "findings": [
+    {
+      "at_ms": 12000,
+      "detail": "字幕底部越出 90% 安全区",
+      "duration_ms": 800,
+      "evidence": {
+        "safe_area_bottom_pct": 90.0,
+        "y_bottom_pct": 96.2
+      },
+      "id": "f-0",
+      "kind": "CAPTION_OFF_SAFE_AREA",
+      "schema_version": "1",
+      "severity": "MINOR",
+      "track_ref": "v4"
+    },
+    {
+      "at_ms": 0,
+      "detail": "整体响度 -20 LUFS 低于目标 -14 ±2",
+      "duration_ms": 45000,
+      "evidence": {
+        "lufs": -20.1,
+        "target_max": -12.0,
+        "target_min": -16.0
+      },
+      "id": "f-1",
+      "kind": "LOUDNESS_OUT_OF_RANGE",
+      "schema_version": "1",
+      "severity": "MAJOR",
+      "track_ref": "a2"
+    }
+  ],
+  "id": "01J2ZK3AC9V6XW8YQ4R5T6U7ZS",
+  "measured_duration_ms": 45000,
+  "pass_or_block": true,
+  "render_manifest_id": "01J2ZK3AC9V6XW8YQ4R5T6U7ZP",
+  "schema_version": "1",
+  "timeline_duration_ms": 45000,
+  "timeline_id": "01J2ZK3AC9V6XW8YQ4R5T6U7ZN"
+}

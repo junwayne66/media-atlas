@@ -151,6 +151,16 @@ python:
       返回 UNCONFIGURED。护栏（domain.validate_script 强制）：只依据节拍功能 + 经核验 Claim 生成
       中性语义脚本，绝不复用原句（text_simhash 比对源转录判抄袭），引用的事实必须在 ClaimTable 且
       非 DISPUTED/不可用，DISPUTED 事实即便 must_cover 也绝不自动引用，总时长≈预算，禁用词过滤。
+  - name: 媒体质量检测器（ebur128 for loudness / opencv 感知哈希+亮度 / OCR bbox）
+    license: 视具体库（ebur128 MIT，opencv Apache-2.0，OCR 各家）
+    isolation: L2
+    used_by: 计划——MediaAnalyzerProvider（docs/modules/42 §11）
+    note: >
+      VF-309 只落地 QAReport/QAFinding 合同 + 规则引擎 + 发布门（纯域）+ MediaAnalyzer 端口 + Fake。
+      真实检测器（ebur128 计算 LUFS/True Peak、opencv 抽帧算感知哈希与亮度、OCR 拿字幕包围盒）
+      需系统二进制/pip 包，属停止条件延后：默认 UnconfiguredMediaAnalyzerProvider 返回
+      UNCONFIGURED；Fake 只回放注入样本，不做 I/O。BLOCKER 一处即拒发布 —— 从架构上让 QA 门在
+      真实检测器接入前就有可测试的骨架。
   - name: Remotion（动态字幕 / 信息卡 / 品牌动效 React 渲染框架）
     license: 商业授权（Remotion License；使用者需评审商用条款——ADR-002）
     isolation: L2
