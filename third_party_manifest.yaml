@@ -151,6 +151,18 @@ python:
       返回 UNCONFIGURED。护栏（domain.validate_script 强制）：只依据节拍功能 + 经核验 Claim 生成
       中性语义脚本，绝不复用原句（text_simhash 比对源转录判抄袭），引用的事实必须在 ClaimTable 且
       非 DISPUTED/不可用，DISPUTED 事实即便 must_cover 也绝不自动引用，总时长≈预算，禁用词过滤。
+  - name: Remotion（动态字幕 / 信息卡 / 品牌动效 React 渲染框架）
+    license: 商业授权（Remotion License；使用者需评审商用条款——ADR-002）
+    isolation: L2
+    used_by: 计划——RenderProvider（docs/modules/42 §8.3）
+    note: >
+      VF-308 只落地 RemotionRenderRequest/RenderManifest 合同 + 类型化 Props 编译器（纯域）
+      + RenderProvider 端口 + Unconfigured/Fake（**Fake 严守红线：不 import remotion / 不启子进程**）。
+      真实运行时（Remotion CLI + Node/npm + React 子包）**接入前必须专项许可评审通过**。默认
+      UnconfiguredRemotionRenderProvider 返回 LICENSE_PENDING，从架构上让上层清楚知道"许可未过
+      不能用"；不静默假装。ADR-002 明确 Remotion 特殊许可需评审——编译器与运行时分离让日常
+      开发不阻塞。合规红线：任何 Prop 字符串值/entry_component_path/output_path 均在合同层拒
+      shell 元字符，路径受 VF-307 段级归一化白名单强制（同一套 _path_within 复用）。
   - name: OpenTimelineIO
     license: Apache-2.0
     isolation: L0

@@ -1,0 +1,195 @@
+{
+  "$defs": {
+    "RemotionComposition": {
+      "description": "Remotion 组件类型（docs/modules/42 §8.3）。每个映射到 packages 中一个 React 组件路径。",
+      "enum": [
+        "CAPTIONS",
+        "INFO_CARD",
+        "DATA_CHART",
+        "BRAND_ANIMATION",
+        "LOWER_THIRD"
+      ],
+      "title": "RemotionComposition",
+      "type": "string"
+    },
+    "RemotionProp": {
+      "additionalProperties": false,
+      "description": "单个类型化 Prop——Remotion React 组件将以此消费。value 层层校验，禁 shell 元字符渗入。",
+      "properties": {
+        "key": {
+          "description": "组件 Prop 键；限 JS 标识符规则",
+          "minLength": 1,
+          "pattern": "^[a-zA-Z_][a-zA-Z0-9_]*$",
+          "title": "Key",
+          "type": "string"
+        },
+        "schema_version": {
+          "default": "1",
+          "description": "合同 schema 版本；Reader 需兼容当前与前一版本",
+          "title": "Schema Version",
+          "type": "string"
+        },
+        "value": {
+          "description": "JSON 兼容值；str/int/float/bool/None/list/dict 递归校验",
+          "title": "Value"
+        }
+      },
+      "required": [
+        "key",
+        "value"
+      ],
+      "title": "RemotionProp",
+      "type": "object"
+    },
+    "RemotionRenderRequest": {
+      "additionalProperties": false,
+      "description": "一次 Remotion 渲染请求：组件 + Props + 时长 + 帧率 + 分辨率 + 组件入口路径。",
+      "properties": {
+        "composition": {
+          "$ref": "#/$defs/RemotionComposition"
+        },
+        "duration_ms": {
+          "minimum": 0,
+          "title": "Duration Ms",
+          "type": "integer"
+        },
+        "entry_component_path": {
+          "description": "Remotion Root React 组件路径，须落在白名单内（domain 强制）",
+          "minLength": 1,
+          "title": "Entry Component Path",
+          "type": "string"
+        },
+        "fps": {
+          "description": "≤120 fps 满足绝大多数场景",
+          "exclusiveMinimum": 0,
+          "maximum": 120,
+          "title": "Fps",
+          "type": "integer"
+        },
+        "height": {
+          "exclusiveMinimum": 0,
+          "maximum": 8192,
+          "title": "Height",
+          "type": "integer"
+        },
+        "id": {
+          "minLength": 1,
+          "title": "Id",
+          "type": "string"
+        },
+        "output_path": {
+          "description": "渲染输出路径，须落在白名单内",
+          "minLength": 1,
+          "title": "Output Path",
+          "type": "string"
+        },
+        "props": {
+          "items": {
+            "$ref": "#/$defs/RemotionProp"
+          },
+          "title": "Props",
+          "type": "array"
+        },
+        "schema_version": {
+          "default": "1",
+          "description": "合同 schema 版本；Reader 需兼容当前与前一版本",
+          "title": "Schema Version",
+          "type": "string"
+        },
+        "timeline_id": {
+          "description": "源 CreativeTimeline id",
+          "minLength": 1,
+          "title": "Timeline Id",
+          "type": "string"
+        },
+        "tool_version": {
+          "description": "Remotion CLI/npm 版本，供复现",
+          "minLength": 1,
+          "title": "Tool Version",
+          "type": "string"
+        },
+        "width": {
+          "exclusiveMinimum": 0,
+          "maximum": 8192,
+          "title": "Width",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "id",
+        "timeline_id",
+        "composition",
+        "duration_ms",
+        "fps",
+        "width",
+        "height",
+        "entry_component_path",
+        "output_path",
+        "tool_version"
+      ],
+      "title": "RemotionRenderRequest",
+      "type": "object"
+    }
+  },
+  "$id": "https://videoforge.dev/schemas/remotion-render-manifest.schema.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "description": "一次 Remotion 渲染的可复现清单（§8.3；对齐 VF-307 RenderManifest 语义）。",
+  "properties": {
+    "created_at": {
+      "format": "date-time",
+      "title": "Created At",
+      "type": "string"
+    },
+    "id": {
+      "minLength": 1,
+      "title": "Id",
+      "type": "string"
+    },
+    "input_digests": {
+      "additionalProperties": {
+        "type": "string"
+      },
+      "description": "{asset_id: sha256} 供缓存与重放",
+      "title": "Input Digests",
+      "type": "object"
+    },
+    "output_digest": {
+      "anyOf": [
+        {
+          "maxLength": 64,
+          "minLength": 64,
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "description": "产出内容 sha256；未渲染前为 null",
+      "title": "Output Digest"
+    },
+    "request": {
+      "$ref": "#/$defs/RemotionRenderRequest"
+    },
+    "schema_version": {
+      "default": "1",
+      "description": "合同 schema 版本；Reader 需兼容当前与前一版本",
+      "title": "Schema Version",
+      "type": "string"
+    },
+    "tool_version": {
+      "minLength": 1,
+      "title": "Tool Version",
+      "type": "string"
+    }
+  },
+  "required": [
+    "id",
+    "request",
+    "tool_version",
+    "created_at"
+  ],
+  "title": "RemotionRenderManifest",
+  "type": "object"
+}

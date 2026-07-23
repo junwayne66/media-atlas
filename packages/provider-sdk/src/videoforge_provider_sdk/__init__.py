@@ -126,6 +126,14 @@ from videoforge_provider_sdk.reedit import (
     UnconfiguredSegmentJudgeProvider,
 )
 from videoforge_provider_sdk.registry import ProviderRegistry, ProviderRuntime
+from videoforge_provider_sdk.render_provider import (
+    FakeRemotionRenderProvider,
+    RenderProvider,
+    RenderProviderErrorCode,
+    RenderProviderResult,
+    RenderProviderStatus,
+    UnconfiguredRemotionRenderProvider,
+)
 from videoforge_provider_sdk.rewrite import (
     FakeStructureRewriteProvider,
     RewriteErrorCode,
@@ -224,6 +232,7 @@ __all__ = [
     "FakeLanguageSegmenter",
     "FakeOCRProvider",
     "FakeProvider",
+    "FakeRemotionRenderProvider",
     "FakeSegmentJudgeProvider",
     "FakeStructureRewriteProvider",
     "FakeVLMProvider",
@@ -252,6 +261,10 @@ __all__ = [
     "ProviderRuntime",
     "ResolvedCookies",
     "ResolvedSource",
+    "RenderProvider",
+    "RenderProviderErrorCode",
+    "RenderProviderResult",
+    "RenderProviderStatus",
     "RewriteErrorCode",
     "RewriteRequest",
     "RewriteResult",
@@ -278,6 +291,7 @@ __all__ = [
     "UnconfiguredHighlightFeatureProvider",
     "UnconfiguredLanguageSegmenter",
     "UnconfiguredOCRProvider",
+    "UnconfiguredRemotionRenderProvider",
     "UnconfiguredSegmentJudgeProvider",
     "UnconfiguredShortLinkExpander",
     "UnconfiguredStructureRewriteProvider",

@@ -1,0 +1,56 @@
+{
+  "created_at": "2026-07-21T08:00:00Z",
+  "id": "01J2ZK3AC9V6XW8YQ4R5T6U7ZR",
+  "input_digests": {
+    "01J2ZK3AC9V6XW8YQ4R5T6U7ZA": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+  },
+  "output_digest": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
+  "request": {
+    "composition": "CAPTIONS",
+    "duration_ms": 45000,
+    "entry_component_path": "/staging/remotion/Root.tsx",
+    "fps": 30,
+    "height": 1920,
+    "id": "01J2ZK3AC9V6XW8YQ4R5T6U7ZQ",
+    "output_path": "/output/captions.mp4",
+    "props": [
+      {
+        "key": "segments",
+        "schema_version": "1",
+        "value": [
+          {
+            "end_ms": 1500,
+            "start_ms": 0,
+            "text": "大家好"
+          },
+          {
+            "end_ms": 4500,
+            "start_ms": 1500,
+            "text": "今天带大家拆解"
+          }
+        ]
+      },
+      {
+        "key": "font_family",
+        "schema_version": "1",
+        "value": "Noto Sans CJK SC"
+      },
+      {
+        "key": "font_size_px",
+        "schema_version": "1",
+        "value": 48
+      },
+      {
+        "key": "show_background",
+        "schema_version": "1",
+        "value": true
+      }
+    ],
+    "schema_version": "1",
+    "timeline_id": "01J2ZK3AC9V6XW8YQ4R5T6U7ZN",
+    "tool_version": "remotion-4.0.240",
+    "width": 1080
+  },
+  "schema_version": "1",
+  "tool_version": "remotion-4.0.240"
+}
