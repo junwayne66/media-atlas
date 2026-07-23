@@ -1,0 +1,363 @@
+{
+  "$defs": {
+    "AssetLicense": {
+      "additionalProperties": false,
+      "description": "素材许可（合规审计核心；每个 ResolvedAsset 必带）。",
+      "properties": {
+        "holder": {
+          "description": "授权/持有方",
+          "minLength": 1,
+          "title": "Holder",
+          "type": "string"
+        },
+        "notes": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Notes"
+        },
+        "schema_version": {
+          "default": "1",
+          "description": "合同 schema 版本；Reader 需兼容当前与前一版本",
+          "title": "Schema Version",
+          "type": "string"
+        },
+        "type": {
+          "$ref": "#/$defs/AssetLicenseType"
+        },
+        "valid_until": {
+          "anyOf": [
+            {
+              "format": "date-time",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "到期时间，缺省=不限",
+          "title": "Valid Until"
+        }
+      },
+      "required": [
+        "type",
+        "holder"
+      ],
+      "title": "AssetLicense",
+      "type": "object"
+    },
+    "AssetLicenseType": {
+      "description": "素材许可类型（每个 ResolvedAsset 必带来源与许可以便追溯）。",
+      "enum": [
+        "OWNED",
+        "LICENSED_STOCK",
+        "ROYALTY_FREE",
+        "PUBLIC_DOMAIN",
+        "GENERATED_MODEL",
+        "PLACEHOLDER"
+      ],
+      "title": "AssetLicenseType",
+      "type": "string"
+    },
+    "AssetPlanSlot": {
+      "additionalProperties": false,
+      "description": "时间线上的一段素材需求（docs/modules/42 §6.1）。",
+      "properties": {
+        "allowed_sources": {
+          "description": "允许的来源；未列出者不得选中（合规约束）",
+          "items": {
+            "$ref": "#/$defs/AssetSource"
+          },
+          "minItems": 1,
+          "title": "Allowed Sources",
+          "type": "array"
+        },
+        "composition": {
+          "$ref": "#/$defs/CompositionSpec"
+        },
+        "end_ms": {
+          "minimum": 0,
+          "title": "End Ms",
+          "type": "integer"
+        },
+        "fallback": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/AssetRole"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "全部来源命中失败时的兜底角色"
+        },
+        "query": {
+          "description": "语义检索词",
+          "minLength": 1,
+          "title": "Query",
+          "type": "string"
+        },
+        "role": {
+          "$ref": "#/$defs/AssetRole"
+        },
+        "schema_version": {
+          "default": "1",
+          "description": "合同 schema 版本；Reader 需兼容当前与前一版本",
+          "title": "Schema Version",
+          "type": "string"
+        },
+        "semantic_requirements": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Semantic Requirements",
+          "type": "array"
+        },
+        "slot_id": {
+          "minLength": 1,
+          "title": "Slot Id",
+          "type": "string"
+        },
+        "start_ms": {
+          "minimum": 0,
+          "title": "Start Ms",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "slot_id",
+        "start_ms",
+        "end_ms",
+        "role",
+        "query",
+        "composition",
+        "allowed_sources"
+      ],
+      "title": "AssetPlanSlot",
+      "type": "object"
+    },
+    "AssetRole": {
+      "description": "素材在时间线上的角色（docs/modules/42 §6.1）。",
+      "enum": [
+        "TALKING_HEAD",
+        "SCREEN_DEMO",
+        "B_ROLL",
+        "INFO_CARD",
+        "LOGO",
+        "CHART",
+        "LOWER_THIRD",
+        "PLACEHOLDER"
+      ],
+      "title": "AssetRole",
+      "type": "string"
+    },
+    "AssetSource": {
+      "description": "素材来源层级（docs/modules/42 §6.2 Resolver 顺序）。",
+      "enum": [
+        "SOURCE",
+        "OWN_LIBRARY",
+        "STOCK",
+        "GENERATED",
+        "PLACEHOLDER"
+      ],
+      "title": "AssetSource",
+      "type": "string"
+    },
+    "CompositionSpec": {
+      "additionalProperties": false,
+      "description": "构图约束（docs/modules/42 §6.1）：目标画幅 + 安全区。",
+      "properties": {
+        "aspect_ratio": {
+          "description": "如 9:16 / 1:1 / 16:9",
+          "minLength": 1,
+          "title": "Aspect Ratio",
+          "type": "string"
+        },
+        "safe_area": {
+          "description": "如 center / bottom_third",
+          "minLength": 1,
+          "title": "Safe Area",
+          "type": "string"
+        },
+        "schema_version": {
+          "default": "1",
+          "description": "合同 schema 版本；Reader 需兼容当前与前一版本",
+          "title": "Schema Version",
+          "type": "string"
+        }
+      },
+      "required": [
+        "aspect_ratio",
+        "safe_area"
+      ],
+      "title": "CompositionSpec",
+      "type": "object"
+    },
+    "ResolvedAsset": {
+      "additionalProperties": false,
+      "description": "一次解析结果：谁、从哪、什么许可、按什么检索词、用在哪段（§6.2 可溯性四要素）。",
+      "properties": {
+        "asset_id": {
+          "minLength": 1,
+          "title": "Asset Id",
+          "type": "string"
+        },
+        "is_fallback": {
+          "default": false,
+          "description": "是否 fallback 兜底（非命中）",
+          "title": "Is Fallback",
+          "type": "boolean"
+        },
+        "license": {
+          "$ref": "#/$defs/AssetLicense"
+        },
+        "match_score": {
+          "maximum": 1.0,
+          "minimum": 0.0,
+          "title": "Match Score",
+          "type": "number"
+        },
+        "provider": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "来源提供方标识",
+          "title": "Provider"
+        },
+        "query": {
+          "description": "定位到该素材使用的检索词",
+          "minLength": 1,
+          "title": "Query",
+          "type": "string"
+        },
+        "reuse_count": {
+          "default": 1,
+          "description": "累计被使用次数（供复用惩罚追踪）",
+          "minimum": 1,
+          "title": "Reuse Count",
+          "type": "integer"
+        },
+        "schema_version": {
+          "default": "1",
+          "description": "合同 schema 版本；Reader 需兼容当前与前一版本",
+          "title": "Schema Version",
+          "type": "string"
+        },
+        "slot_id": {
+          "description": "所属 AssetPlanSlot",
+          "minLength": 1,
+          "title": "Slot Id",
+          "type": "string"
+        },
+        "source": {
+          "$ref": "#/$defs/AssetSource"
+        },
+        "usage_end_ms": {
+          "description": "素材在输出时间线上的使用终点",
+          "minimum": 0,
+          "title": "Usage End Ms",
+          "type": "integer"
+        },
+        "usage_start_ms": {
+          "description": "素材在输出时间线上的使用起点",
+          "minimum": 0,
+          "title": "Usage Start Ms",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "slot_id",
+        "asset_id",
+        "source",
+        "license",
+        "query",
+        "usage_start_ms",
+        "usage_end_ms",
+        "match_score"
+      ],
+      "title": "ResolvedAsset",
+      "type": "object"
+    }
+  },
+  "$id": "https://videoforge.dev/schemas/asset-plan.schema.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "description": "聚合：所有槽位 + 解析结果映射。",
+  "properties": {
+    "created_at": {
+      "format": "date-time",
+      "title": "Created At",
+      "type": "string"
+    },
+    "id": {
+      "minLength": 1,
+      "title": "Id",
+      "type": "string"
+    },
+    "resolved": {
+      "description": "按 slot_id 一对一，缺失=未解析（人工兜底）",
+      "items": {
+        "$ref": "#/$defs/ResolvedAsset"
+      },
+      "title": "Resolved",
+      "type": "array"
+    },
+    "schema_version": {
+      "default": "1",
+      "description": "合同 schema 版本；Reader 需兼容当前与前一版本",
+      "title": "Schema Version",
+      "type": "string"
+    },
+    "slots": {
+      "items": {
+        "$ref": "#/$defs/AssetPlanSlot"
+      },
+      "title": "Slots",
+      "type": "array"
+    },
+    "source_transcript_id": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Source Transcript Id"
+    },
+    "weights_version": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Weights Version"
+    }
+  },
+  "required": [
+    "id",
+    "created_at"
+  ],
+  "title": "AssetPlan",
+  "type": "object"
+}

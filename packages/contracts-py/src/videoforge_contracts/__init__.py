@@ -1,4 +1,11 @@
 from videoforge_contracts.artifact import Artifact, MediaProbe, ProducedBy, StorageRef
+from videoforge_contracts.asset_plan import (
+    AssetLicense,
+    AssetPlan,
+    AssetPlanSlot,
+    CompositionSpec,
+    ResolvedAsset,
+)
 from videoforge_contracts.base import CONTRACT_SCHEMA_VERSION, ContractModel
 from videoforge_contracts.blueprint import (
     Claim,
@@ -16,6 +23,9 @@ from videoforge_contracts.brief import (
     VisualMix,
 )
 from videoforge_contracts.enums import (
+    AssetLicenseType,
+    AssetRole,
+    AssetSource,
     ClaimSourceStatus,
     ContinuityRuleKind,
     CreationMode,
@@ -98,12 +108,19 @@ CONTRACTS: dict[str, type[ContractModel]] = {
     "script-version": ScriptVersion,
     "highlight-set": HighlightSet,
     "reedit-plan": ReeditPlan,
+    "asset-plan": AssetPlan,
 }
 
 __all__ = [
     "CONTRACT_SCHEMA_VERSION",
     "CONTRACTS",
     "Artifact",
+    "AssetLicense",
+    "AssetLicenseType",
+    "AssetPlan",
+    "AssetPlanSlot",
+    "AssetRole",
+    "AssetSource",
     "BBox",
     "BeatSlot",
     "BeatTemplate",
@@ -112,6 +129,7 @@ __all__ = [
     "ClaimSourceStatus",
     "ClaimTable",
     "ClaimTableEntry",
+    "CompositionSpec",
     "ContinuityNote",
     "ContinuityRuleKind",
     "ContractModel",
@@ -145,6 +163,7 @@ __all__ = [
     "ReeditPlan",
     "ReframeFollow",
     "ReframeHint",
+    "ResolvedAsset",
     "ResourceLimits",
     "RhetoricalBeat",
     "RhetoricalBeatKind",

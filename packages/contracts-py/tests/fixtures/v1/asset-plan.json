@@ -1,0 +1,53 @@
+{
+  "created_at": "2026-07-21T08:00:00Z",
+  "id": "01J2ZK3AC9V6XW8YQ4R5T6U7ZL",
+  "resolved": [
+    {
+      "asset_id": "01J2ZK3AC9V6XW8YQ4R5T6U7ZM",
+      "is_fallback": false,
+      "license": {
+        "holder": "videoforge",
+        "notes": null,
+        "schema_version": "1",
+        "type": "OWNED",
+        "valid_until": null
+      },
+      "match_score": 0.82,
+      "provider": "own_library.fake",
+      "query": "macOS local inference settings panel",
+      "reuse_count": 1,
+      "schema_version": "1",
+      "slot_id": "slot-0",
+      "source": "OWN_LIBRARY",
+      "usage_end_ms": 5000,
+      "usage_start_ms": 0
+    }
+  ],
+  "schema_version": "1",
+  "slots": [
+    {
+      "allowed_sources": [
+        "SOURCE",
+        "OWN_LIBRARY",
+        "STOCK"
+      ],
+      "composition": {
+        "aspect_ratio": "9:16",
+        "safe_area": "center",
+        "schema_version": "1"
+      },
+      "end_ms": 5000,
+      "fallback": "INFO_CARD",
+      "query": "macOS local inference settings panel",
+      "role": "SCREEN_DEMO",
+      "schema_version": "1",
+      "semantic_requirements": [
+        "must show settings panel"
+      ],
+      "slot_id": "slot-0",
+      "start_ms": 0
+    }
+  ],
+  "source_transcript_id": "01J2ZK3AC9V6XW8YQ4R5T6U7ZC",
+  "weights_version": "asset-v1"
+}
