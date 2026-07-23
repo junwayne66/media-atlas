@@ -38,6 +38,8 @@ from videoforge_contracts.enums import (
     IsolationLevel,
     ProjectStatus,
     ProviderType,
+    QAFindingKind,
+    QASeverity,
     ReframeFollow,
     RemotionComposition,
     RenderStage,
@@ -58,6 +60,7 @@ from videoforge_contracts.highlight import (
 from videoforge_contracts.problem import ProblemDetail
 from videoforge_contracts.project import Project
 from videoforge_contracts.provider import CostModel, ProviderDescriptor, ProviderHealth
+from videoforge_contracts.qa import QAFinding, QAReport
 from videoforge_contracts.reedit import (
     ContinuityNote,
     EditOp,
@@ -137,6 +140,7 @@ CONTRACTS: dict[str, type[ContractModel]] = {
     "creative-timeline": CreativeTimeline,
     "render-manifest": RenderManifest,
     "remotion-render-manifest": RemotionRenderManifest,
+    "qa-report": QAReport,
 }
 
 __all__ = [
@@ -193,6 +197,10 @@ __all__ = [
     "ProviderDescriptor",
     "ProviderHealth",
     "ProviderType",
+    "QAFinding",
+    "QAFindingKind",
+    "QAReport",
+    "QASeverity",
     "RationalTime",
     "RationalTimeRange",
     "ReeditPlan",

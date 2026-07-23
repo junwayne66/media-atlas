@@ -46,6 +46,10 @@ from videoforge_contracts import (
     Project,
     ProviderDescriptor,
     ProviderHealth,
+    QAFinding,
+    QAFindingKind,
+    QAReport,
+    QASeverity,
     RationalTime,
     RationalTimeRange,
     ReeditPlan,
@@ -719,6 +723,32 @@ def make_remotion_render_manifest() -> RemotionRenderManifest:
     )
 
 
+def make_qa_report() -> QAReport:
+    return QAReport(
+        id="01J2ZK3AC9V6XW8YQ4R5T6U7ZS",
+        timeline_id="01J2ZK3AC9V6XW8YQ4R5T6U7ZN",
+        render_manifest_id="01J2ZK3AC9V6XW8YQ4R5T6U7ZP",
+        findings=[
+            QAFinding(
+                id="f-0", kind=QAFindingKind.CAPTION_OFF_SAFE_AREA, severity=QASeverity.MINOR,
+                at_ms=12000, duration_ms=800, track_ref="v4",
+                detail="字幕底部越出 90% 安全区",
+                evidence={"y_bottom_pct": 96.2, "safe_area_bottom_pct": 90.0},
+            ),
+            QAFinding(
+                id="f-1", kind=QAFindingKind.LOUDNESS_OUT_OF_RANGE, severity=QASeverity.MAJOR,
+                at_ms=0, duration_ms=45000, track_ref="a2",
+                detail="整体响度 -20 LUFS 低于目标 -14 ±2",
+                evidence={"lufs": -20.1, "target_min": -16.0, "target_max": -12.0},
+            ),
+        ],
+        timeline_duration_ms=45000,
+        measured_duration_ms=45000,
+        pass_or_block=True,
+        created_at=_T0,
+    )
+
+
 SAMPLES: dict[str, ContractModel] = {
     "project": make_project(),
     "artifact": make_artifact(),
@@ -742,4 +772,5 @@ SAMPLES: dict[str, ContractModel] = {
     "creative-timeline": make_creative_timeline(),
     "render-manifest": make_render_manifest(),
     "remotion-render-manifest": make_remotion_render_manifest(),
+    "qa-report": make_qa_report(),
 }

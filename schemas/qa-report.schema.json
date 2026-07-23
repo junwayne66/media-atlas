@@ -1,0 +1,202 @@
+{
+  "$defs": {
+    "QAFinding": {
+      "additionalProperties": false,
+      "description": "单条 QA 发现：位置 + 类别 + 严重级 + 证据键值对。",
+      "properties": {
+        "at_ms": {
+          "description": "发生时刻（输出时间线）",
+          "minimum": 0,
+          "title": "At Ms",
+          "type": "integer"
+        },
+        "detail": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "可读描述",
+          "title": "Detail"
+        },
+        "duration_ms": {
+          "default": 0,
+          "description": "持续时长；0 表示瞬时事件",
+          "minimum": 0,
+          "title": "Duration Ms",
+          "type": "integer"
+        },
+        "evidence": {
+          "additionalProperties": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "integer"
+              },
+              {
+                "type": "number"
+              },
+              {
+                "type": "boolean"
+              }
+            ]
+          },
+          "description": "度量证据，如 {mean_luma: 3.2, threshold: 8}",
+          "title": "Evidence",
+          "type": "object"
+        },
+        "id": {
+          "minLength": 1,
+          "title": "Id",
+          "type": "string"
+        },
+        "kind": {
+          "$ref": "#/$defs/QAFindingKind"
+        },
+        "schema_version": {
+          "default": "1",
+          "description": "合同 schema 版本；Reader 需兼容当前与前一版本",
+          "title": "Schema Version",
+          "type": "string"
+        },
+        "severity": {
+          "$ref": "#/$defs/QASeverity"
+        },
+        "track_ref": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "所属轨道 id，如 v1/a0/v4",
+          "title": "Track Ref"
+        }
+      },
+      "required": [
+        "id",
+        "kind",
+        "severity",
+        "at_ms"
+      ],
+      "title": "QAFinding",
+      "type": "object"
+    },
+    "QAFindingKind": {
+      "description": "QA 检测项（docs/modules/42 §11）。覆盖视频/音频/字幕/合规四大类。",
+      "enum": [
+        "BLACK_FRAME",
+        "FROZEN_FRAME",
+        "FLICKER",
+        "DUPLICATE_FRAMES",
+        "HOLE",
+        "VOICE_TAIL_CUT",
+        "ABRUPT_SILENCE",
+        "LOUDNESS_OUT_OF_RANGE",
+        "TRUE_PEAK_CLIP",
+        "CAPTION_OFF_SAFE_AREA",
+        "CAPTION_OVERLAP",
+        "BROLL_RATIO_LOW",
+        "SUBJECT_CUT",
+        "UI_CROP",
+        "CLEANUP_FLICKER",
+        "DURATION_MISMATCH"
+      ],
+      "title": "QAFindingKind",
+      "type": "string"
+    },
+    "QASeverity": {
+      "description": "QA 严重级（docs/modules/42 §11）。BLOCKER 一处即拒；MAJOR 超阈升级；MINOR/INFO 记录。",
+      "enum": [
+        "BLOCKER",
+        "MAJOR",
+        "MINOR",
+        "INFO"
+      ],
+      "title": "QASeverity",
+      "type": "string"
+    }
+  },
+  "$id": "https://videoforge.dev/schemas/qa-report.schema.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "description": "一次渲染的 QA 报告：全部发现 + 时长一致性 + 发布门结论。",
+  "properties": {
+    "created_at": {
+      "format": "date-time",
+      "title": "Created At",
+      "type": "string"
+    },
+    "findings": {
+      "items": {
+        "$ref": "#/$defs/QAFinding"
+      },
+      "title": "Findings",
+      "type": "array"
+    },
+    "id": {
+      "minLength": 1,
+      "title": "Id",
+      "type": "string"
+    },
+    "measured_duration_ms": {
+      "description": "渲染成品实测总时长（ffprobe）",
+      "minimum": 0,
+      "title": "Measured Duration Ms",
+      "type": "integer"
+    },
+    "pass_or_block": {
+      "default": true,
+      "title": "Pass Or Block",
+      "type": "boolean"
+    },
+    "render_manifest_id": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "description": "§11 关联 RenderManifest",
+      "title": "Render Manifest Id"
+    },
+    "schema_version": {
+      "default": "1",
+      "description": "合同 schema 版本；Reader 需兼容当前与前一版本",
+      "title": "Schema Version",
+      "type": "string"
+    },
+    "timeline_duration_ms": {
+      "description": "Timeline 声明的总时长",
+      "minimum": 0,
+      "title": "Timeline Duration Ms",
+      "type": "integer"
+    },
+    "timeline_id": {
+      "minLength": 1,
+      "title": "Timeline Id",
+      "type": "string"
+    }
+  },
+  "required": [
+    "id",
+    "timeline_id",
+    "timeline_duration_ms",
+    "measured_duration_ms",
+    "created_at"
+  ],
+  "title": "QAReport",
+  "type": "object"
+}
