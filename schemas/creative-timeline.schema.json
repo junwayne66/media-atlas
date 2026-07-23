@@ -1,0 +1,388 @@
+{
+  "$defs": {
+    "LocalizationPolicy": {
+      "additionalProperties": false,
+      "description": "本地化策略（多语言版本），标记本 Segment 依赖的语言资源。",
+      "properties": {
+        "language": {
+          "minLength": 1,
+          "title": "Language",
+          "type": "string"
+        },
+        "schema_version": {
+          "default": "1",
+          "description": "合同 schema 版本；Reader 需兼容当前与前一版本",
+          "title": "Schema Version",
+          "type": "string"
+        },
+        "strategy": {
+          "default": "passthrough",
+          "description": "passthrough/dub/subtitle_only …",
+          "title": "Strategy",
+          "type": "string"
+        }
+      },
+      "required": [
+        "language"
+      ],
+      "title": "LocalizationPolicy",
+      "type": "object"
+    },
+    "RationalTime": {
+      "additionalProperties": false,
+      "description": "有理时间（OTIO 兼容）：value/rate 秒。等价性以 value*other.rate == other.value*rate 判定。",
+      "properties": {
+        "rate": {
+          "description": "每秒计数，须与 timeline 一致",
+          "exclusiveMinimum": 0,
+          "title": "Rate",
+          "type": "integer"
+        },
+        "schema_version": {
+          "default": "1",
+          "description": "合同 schema 版本；Reader 需兼容当前与前一版本",
+          "title": "Schema Version",
+          "type": "string"
+        },
+        "value": {
+          "description": "以 rate 为单位的整数计数",
+          "minimum": 0,
+          "title": "Value",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "value",
+        "rate"
+      ],
+      "title": "RationalTime",
+      "type": "object"
+    },
+    "RationalTimeRange": {
+      "additionalProperties": false,
+      "description": "有理时间段 [start, start+duration)。duration 可为 0，表示瞬时点。",
+      "properties": {
+        "duration": {
+          "$ref": "#/$defs/RationalTime"
+        },
+        "schema_version": {
+          "default": "1",
+          "description": "合同 schema 版本；Reader 需兼容当前与前一版本",
+          "title": "Schema Version",
+          "type": "string"
+        },
+        "start": {
+          "$ref": "#/$defs/RationalTime"
+        }
+      },
+      "required": [
+        "start",
+        "duration"
+      ],
+      "title": "RationalTimeRange",
+      "type": "object"
+    },
+    "Segment": {
+      "additionalProperties": false,
+      "description": "时间线上的一个片段（docs/modules/42 §8.2）。九扩展字段用于回溯语义、模板、来源、多语言。",
+      "properties": {
+        "crop_path": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "智能重构图的裁剪轨迹标识",
+          "title": "Crop Path"
+        },
+        "effects": {
+          "items": {
+            "$ref": "#/$defs/SegmentEffect"
+          },
+          "title": "Effects",
+          "type": "array"
+        },
+        "id": {
+          "minLength": 1,
+          "title": "Id",
+          "type": "string"
+        },
+        "localization": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/LocalizationPolicy"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "provenance_ref": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "ResolvedAsset.id / Claim.id 等可溯性引用",
+          "title": "Provenance Ref"
+        },
+        "schema_version": {
+          "default": "1",
+          "description": "合同 schema 版本；Reader 需兼容当前与前一版本",
+          "title": "Schema Version",
+          "type": "string"
+        },
+        "script_sentence_id": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Script Sentence Id"
+        },
+        "semantic_role": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "如 HOOK/EVIDENCE/CTA",
+          "title": "Semantic Role"
+        },
+        "source_ref": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "源素材 asset_id 或占位",
+          "title": "Source Ref"
+        },
+        "speaker_id": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Speaker Id"
+        },
+        "template_slot": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Template Slot"
+        },
+        "time_range": {
+          "$ref": "#/$defs/RationalTimeRange"
+        }
+      },
+      "required": [
+        "id",
+        "time_range"
+      ],
+      "title": "Segment",
+      "type": "object"
+    },
+    "SegmentEffect": {
+      "additionalProperties": false,
+      "description": "效果占位：具体参数由 Render Graph 阶段消费；此处仅记录 kind + 参数字典。",
+      "properties": {
+        "kind": {
+          "minLength": 1,
+          "title": "Kind",
+          "type": "string"
+        },
+        "params": {
+          "additionalProperties": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "integer"
+              },
+              {
+                "type": "number"
+              },
+              {
+                "type": "boolean"
+              }
+            ]
+          },
+          "title": "Params",
+          "type": "object"
+        },
+        "schema_version": {
+          "default": "1",
+          "description": "合同 schema 版本；Reader 需兼容当前与前一版本",
+          "title": "Schema Version",
+          "type": "string"
+        }
+      },
+      "required": [
+        "kind"
+      ],
+      "title": "SegmentEffect",
+      "type": "object"
+    },
+    "Track": {
+      "additionalProperties": false,
+      "description": "时间线单轨（docs/modules/42 §8.1）。同轨 segment 不得重叠，由 validate_timeline 检查。",
+      "properties": {
+        "id": {
+          "minLength": 1,
+          "title": "Id",
+          "type": "string"
+        },
+        "kind": {
+          "$ref": "#/$defs/TrackKind"
+        },
+        "schema_version": {
+          "default": "1",
+          "description": "合同 schema 版本；Reader 需兼容当前与前一版本",
+          "title": "Schema Version",
+          "type": "string"
+        },
+        "segments": {
+          "items": {
+            "$ref": "#/$defs/Segment"
+          },
+          "title": "Segments",
+          "type": "array"
+        }
+      },
+      "required": [
+        "id",
+        "kind"
+      ],
+      "title": "Track",
+      "type": "object"
+    },
+    "TrackKind": {
+      "description": "时间线轨道类型（docs/modules/42 §8.1）。V0..V5 视频层 / A0..A3 音频层 / M0 语义标记。",
+      "enum": [
+        "V0_BACKGROUND",
+        "V1_PRIMARY_VIDEO",
+        "V2_BROLL_SCREEN",
+        "V3_INFO_CARDS",
+        "V4_CAPTIONS",
+        "V5_OVERLAYS",
+        "A0_ORIGINAL",
+        "A1_DUB",
+        "A2_MUSIC",
+        "A3_SFX",
+        "M0_MARKERS"
+      ],
+      "title": "TrackKind",
+      "type": "string"
+    }
+  },
+  "$id": "https://videoforge.dev/schemas/creative-timeline.schema.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "description": "领域时间线真值（ADR-003）：rate + 多轨 + 总时长 + 来源引用。",
+  "properties": {
+    "created_at": {
+      "format": "date-time",
+      "title": "Created At",
+      "type": "string"
+    },
+    "duration": {
+      "$ref": "#/$defs/RationalTime"
+    },
+    "id": {
+      "minLength": 1,
+      "title": "Id",
+      "type": "string"
+    },
+    "project_id": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Project Id"
+    },
+    "rate": {
+      "description": "全 timeline 帧率/采样率基准；所有 track/segment 须一致",
+      "exclusiveMinimum": 0,
+      "title": "Rate",
+      "type": "integer"
+    },
+    "schema_version": {
+      "default": "1",
+      "description": "合同 schema 版本；Reader 需兼容当前与前一版本",
+      "title": "Schema Version",
+      "type": "string"
+    },
+    "source_asset_ids": {
+      "items": {
+        "type": "string"
+      },
+      "title": "Source Asset Ids",
+      "type": "array"
+    },
+    "source_transcript_id": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Source Transcript Id"
+    },
+    "tracks": {
+      "items": {
+        "$ref": "#/$defs/Track"
+      },
+      "title": "Tracks",
+      "type": "array"
+    }
+  },
+  "required": [
+    "id",
+    "rate",
+    "duration",
+    "created_at"
+  ],
+  "title": "CreativeTimeline",
+  "type": "object"
+}

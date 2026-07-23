@@ -26,6 +26,7 @@ from videoforge_contracts import (
     CreationMode,
     CreativeBrief,
     CreativeOpportunity,
+    CreativeTimeline,
     EditOp,
     EditOpKind,
     EvidenceSpan,
@@ -42,6 +43,8 @@ from videoforge_contracts import (
     Project,
     ProviderDescriptor,
     ProviderHealth,
+    RationalTime,
+    RationalTimeRange,
     ReeditPlan,
     ReframeFollow,
     ReframeHint,
@@ -51,12 +54,15 @@ from videoforge_contracts import (
     RhetoricalBeatKind,
     ScriptSentence,
     ScriptVersion,
+    Segment,
     StorageRef,
     TaskEnvelope,
     TextObservation,
     TextTrack,
     TextTrackKind,
     TextTrackSet,
+    Track,
+    TrackKind,
     Transcript,
     TranscriptModels,
     TranscriptSegment,
@@ -580,6 +586,52 @@ def make_asset_plan() -> AssetPlan:
     )
 
 
+def make_creative_timeline() -> CreativeTimeline:
+    rate = 30  # 30 fps 基准
+    def rt(v: int) -> RationalTime:
+        return RationalTime(value=v, rate=rate)
+
+    v1 = Track(
+        id="v1", kind=TrackKind.V1_PRIMARY_VIDEO,
+        segments=[
+            Segment(
+                id="v1-s0",
+                time_range=RationalTimeRange(start=rt(0), duration=rt(150)),  # 5 秒
+                source_ref="01J2ZK3AC9V6XW8YQ4R5T6U7ZA", semantic_role="HOOK",
+                script_sentence_id="s-0", speaker_id="host",
+                provenance_ref="01J2ZK3AC9V6XW8YQ4R5T6U7ZM",  # ResolvedAsset id
+                template_slot="slot-0",
+            ),
+        ],
+    )
+    v4 = Track(
+        id="v4", kind=TrackKind.V4_CAPTIONS,
+        segments=[
+            Segment(id="v4-s0",
+                    time_range=RationalTimeRange(start=rt(0), duration=rt(150)),
+                    script_sentence_id="s-0"),
+        ],
+    )
+    a0 = Track(
+        id="a0", kind=TrackKind.A0_ORIGINAL,
+        segments=[
+            Segment(id="a0-s0",
+                    time_range=RationalTimeRange(start=rt(0), duration=rt(150)),
+                    source_ref="01J2ZK3AC9V6XW8YQ4R5T6U7ZA"),
+        ],
+    )
+    return CreativeTimeline(
+        id="01J2ZK3AC9V6XW8YQ4R5T6U7ZN",
+        project_id="01J2ZK3AC9V6XW8YQ4R5T6U7Z0",
+        rate=rate,
+        duration=rt(150),
+        tracks=[v1, v4, a0],
+        source_transcript_id="01J2ZK3AC9V6XW8YQ4R5T6U7ZC",
+        source_asset_ids=["01J2ZK3AC9V6XW8YQ4R5T6U7ZA"],
+        created_at=_T0,
+    )
+
+
 SAMPLES: dict[str, ContractModel] = {
     "project": make_project(),
     "artifact": make_artifact(),
@@ -600,4 +652,5 @@ SAMPLES: dict[str, ContractModel] = {
     "highlight-set": make_highlight_set(),
     "reedit-plan": make_reedit_plan(),
     "asset-plan": make_asset_plan(),
+    "creative-timeline": make_creative_timeline(),
 }

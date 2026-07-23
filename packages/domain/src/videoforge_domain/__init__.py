@@ -89,6 +89,14 @@ from videoforge_domain.texttrack import (
     track_text_observations,
     vote_text,
 )
+from videoforge_domain.timeline import (
+    TimelineIssue,
+    TimelineIssueKind,
+    from_otio_mapping,
+    is_valid_timeline,
+    to_otio_mapping,
+    validate_timeline,
+)
 from videoforge_domain.transcript import (
     low_confidence_spans,
     mark_low_confidence,
@@ -121,6 +129,8 @@ __all__ = [
     "InsufficientSnapshots",
     "ReeditIssue",
     "ReeditIssueKind",
+    "TimelineIssue",
+    "TimelineIssueKind",
     "assert_transition",
     "build_beat_template",
     "build_candidate_rhetorical_beats",
@@ -141,6 +151,7 @@ __all__ = [
     "engagement_efficiency",
     "estimate_duration_ms",
     "find_duplicate_groups",
+    "from_otio_mapping",
     "hamming",
     "hamming_similarity",
     "highlight_score",
@@ -151,6 +162,7 @@ __all__ = [
     "is_valid_brief",
     "is_valid_reedit_plan",
     "is_valid_script",
+    "is_valid_timeline",
     "match_score",
     "low_confidence_spans",
     "mark_low_confidence",
@@ -166,11 +178,13 @@ __all__ = [
     "series_velocity",
     "sigmoid",
     "text_simhash",
+    "to_otio_mapping",
     "track_text_observations",
     "validate_asset_plan",
     "validate_blueprint",
     "validate_brief",
     "validate_reedit_plan",
     "validate_script",
+    "validate_timeline",
     "vote_text",
 ]

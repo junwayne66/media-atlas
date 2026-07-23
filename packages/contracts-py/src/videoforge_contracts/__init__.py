@@ -42,6 +42,7 @@ from videoforge_contracts.enums import (
     RhetoricalBeatKind,
     StorageBackend,
     TextTrackKind,
+    TrackKind,
     TrendStage,
     VisualBeatKind,
 )
@@ -73,6 +74,15 @@ from videoforge_contracts.texttrack import (
     TextObservation,
     TextTrack,
     TextTrackSet,
+)
+from videoforge_contracts.timeline import (
+    CreativeTimeline,
+    LocalizationPolicy,
+    RationalTime,
+    RationalTimeRange,
+    Segment,
+    SegmentEffect,
+    Track,
 )
 from videoforge_contracts.transcript import (
     Transcript,
@@ -109,6 +119,7 @@ CONTRACTS: dict[str, type[ContractModel]] = {
     "highlight-set": HighlightSet,
     "reedit-plan": ReeditPlan,
     "asset-plan": AssetPlan,
+    "creative-timeline": CreativeTimeline,
 }
 
 __all__ = [
@@ -136,6 +147,7 @@ __all__ = [
     "CostModel",
     "CreationMode",
     "CreativeBrief",
+    "CreativeTimeline",
     "CreativeOpportunity",
     "EditOp",
     "EditOpKind",
@@ -152,6 +164,7 @@ __all__ = [
     "HighlightWeights",
     "HotScoreWeights",
     "IsolationLevel",
+    "LocalizationPolicy",
     "MediaProbe",
     "ProblemDetail",
     "ProducedBy",
@@ -160,6 +173,8 @@ __all__ = [
     "ProviderDescriptor",
     "ProviderHealth",
     "ProviderType",
+    "RationalTime",
+    "RationalTimeRange",
     "ReeditPlan",
     "ReframeFollow",
     "ReframeHint",
@@ -169,6 +184,8 @@ __all__ = [
     "RhetoricalBeatKind",
     "ScriptSentence",
     "ScriptVersion",
+    "Segment",
+    "SegmentEffect",
     "SegmentJudgment",
     "StorageBackend",
     "StorageRef",
@@ -177,6 +194,8 @@ __all__ = [
     "TextTrack",
     "TextTrackKind",
     "TextTrackSet",
+    "Track",
+    "TrackKind",
     "Transcript",
     "TranscriptModels",
     "TranscriptSegment",
