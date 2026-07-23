@@ -20,6 +20,11 @@ from videoforge_contracts import (
     EvidenceSpan,
     FrameAnalysis,
     FrameSampleReason,
+    HighlightCandidate,
+    HighlightFeatures,
+    HighlightLabel,
+    HighlightReason,
+    HighlightSet,
     MediaProbe,
     ProblemDetail,
     ProducedBy,
@@ -471,6 +476,32 @@ def make_script_version() -> ScriptVersion:
     )
 
 
+def make_highlight_set() -> HighlightSet:
+    features = HighlightFeatures(
+        hook_strength=0.82, self_containedness=0.7, information_density=0.66,
+        surprise_or_conflict=0.55, emotional_energy=0.5, topic_relevance=0.75,
+        visual_activity=0.4, speaker_prominence=0.6, ending_payoff=0.72,
+        context_dependency=0.2, technical_defect=0.05,
+    )
+    return HighlightSet(
+        id="01J2ZK3AC9V6XW8YQ4R5T6U7ZH",
+        source_transcript_id="01J2ZK3AC9V6XW8YQ4R5T6U7ZC",
+        candidates=[
+            HighlightCandidate(
+                id="hl-0", source_transcript_id="01J2ZK3AC9V6XW8YQ4R5T6U7ZC",
+                start_ms=0, end_ms=18000, segment_ids=["seg-0", "seg-1", "seg-2"],
+                score=0.5423, features=features,
+                reason_codes=[HighlightReason.HOOK_QUOTE, HighlightReason.CLEAR_PAYOFF],
+                human_label=HighlightLabel.SELECTED, human_label_reason="开场强、结尾有回报",
+                weights_version="highlight-v1",
+            ),
+        ],
+        weights_version="highlight-v1",
+        feature_provider="highlight.fake",
+        created_at=_T0,
+    )
+
+
 SAMPLES: dict[str, ContractModel] = {
     "project": make_project(),
     "artifact": make_artifact(),
@@ -488,4 +519,5 @@ SAMPLES: dict[str, ContractModel] = {
     "claim-table": make_claim_table(),
     "beat-template": make_beat_template(),
     "script-version": make_script_version(),
+    "highlight-set": make_highlight_set(),
 }

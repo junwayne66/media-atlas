@@ -21,6 +21,8 @@ from videoforge_contracts.enums import (
     ExecutionPolicy,
     FrameSampleReason,
     HealthState,
+    HighlightLabel,
+    HighlightReason,
     IsolationLevel,
     ProjectStatus,
     ProviderType,
@@ -29,6 +31,12 @@ from videoforge_contracts.enums import (
     TextTrackKind,
     TrendStage,
     VisualBeatKind,
+)
+from videoforge_contracts.highlight import (
+    HighlightCandidate,
+    HighlightFeatures,
+    HighlightSet,
+    HighlightWeights,
 )
 from videoforge_contracts.problem import ProblemDetail
 from videoforge_contracts.project import Project
@@ -78,6 +86,7 @@ CONTRACTS: dict[str, type[ContractModel]] = {
     "claim-table": ClaimTable,
     "beat-template": BeatTemplate,
     "script-version": ScriptVersion,
+    "highlight-set": HighlightSet,
 }
 
 __all__ = [
@@ -102,6 +111,12 @@ __all__ = [
     "FrameAnalysis",
     "FrameSampleReason",
     "HealthState",
+    "HighlightCandidate",
+    "HighlightFeatures",
+    "HighlightLabel",
+    "HighlightReason",
+    "HighlightSet",
+    "HighlightWeights",
     "HotScoreWeights",
     "IsolationLevel",
     "MediaProbe",
