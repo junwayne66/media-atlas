@@ -5,9 +5,12 @@ from datetime import UTC, datetime
 from videoforge_contracts import (
     Artifact,
     BBox,
+    Claim,
+    ClaimSourceStatus,
     ContractModel,
     CostModel,
     CreationMode,
+    EvidenceSpan,
     FrameAnalysis,
     FrameSampleReason,
     MediaProbe,
@@ -17,6 +20,8 @@ from videoforge_contracts import (
     ProviderDescriptor,
     ProviderHealth,
     ResourceLimits,
+    RhetoricalBeat,
+    RhetoricalBeatKind,
     StorageRef,
     TaskEnvelope,
     TextObservation,
@@ -31,7 +36,10 @@ from videoforge_contracts import (
     TrendItemSnapshot,
     TrendStage,
     TrendSubScores,
+    VideoBlueprint,
     VisualAnalysis,
+    VisualBeat,
+    VisualBeatKind,
 )
 
 _T0 = datetime(2026, 7, 21, 8, 0, 0, tzinfo=UTC)
@@ -303,6 +311,52 @@ def make_visual_analysis() -> VisualAnalysis:
     )
 
 
+def make_video_blueprint() -> VideoBlueprint:
+    return VideoBlueprint(
+        id="01J2ZK3AC9V6XW8YQ4R5T6U7ZB",
+        source_artifact_id="01J2ZK3AC9V6XW8YQ4R5T6U7W1",
+        duration_ms=58200,
+        claims=[
+            Claim(
+                id="claim-0",
+                text="这款芯片端侧推理速度是上代的两倍",
+                entities=["M5"],
+                source_status=ClaimSourceStatus.UNVERIFIED,
+                evidence=[
+                    EvidenceSpan(kind="transcript", ref_id="seg-0", start_ms=1400, end_ms=2480),
+                    EvidenceSpan(kind="ocr", ref_id="tt-0", start_ms=1200, end_ms=3600),
+                ],
+            )
+        ],
+        rhetorical_beats=[
+            RhetoricalBeat(
+                id="rb-0", kind=RhetoricalBeatKind.HOOK, start_ms=0, end_ms=2600,
+                summary="开场抛出芯片话题",
+            ),
+            RhetoricalBeat(
+                id="rb-1", kind=RhetoricalBeatKind.EVIDENCE, start_ms=2600, end_ms=40000,
+                summary="跑分演示", claim_ids=["claim-0"],
+            ),
+            RhetoricalBeat(
+                id="rb-2", kind=RhetoricalBeatKind.CTA, start_ms=40000, end_ms=58200,
+                summary="关注引导",
+            ),
+        ],
+        visual_beats=[
+            VisualBeat(
+                id="vb-0", kind=VisualBeatKind.PERSON, start_ms=0, end_ms=3000, frame_time_ms=0
+            ),
+            VisualBeat(
+                id="vb-1", kind=VisualBeatKind.SCREEN_RECORD, start_ms=3000, end_ms=40000,
+                frame_time_ms=3000,
+            ),
+        ],
+        coverage=1.0,
+        fusion_provider="llm.blueprint_fusion",
+        created_at=_T0,
+    )
+
+
 SAMPLES: dict[str, ContractModel] = {
     "project": make_project(),
     "artifact": make_artifact(),
@@ -314,4 +368,5 @@ SAMPLES: dict[str, ContractModel] = {
     "transcript": make_transcript(),
     "text-track-set": make_text_track_set(),
     "visual-analysis": make_visual_analysis(),
+    "video-blueprint": make_video_blueprint(),
 }

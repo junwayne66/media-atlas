@@ -1,3 +1,12 @@
+from videoforge_domain.blueprint import (
+    BlueprintIssue,
+    BlueprintIssueKind,
+    build_candidate_rhetorical_beats,
+    build_visual_beats,
+    coverage_ratio,
+    is_valid_blueprint,
+    validate_blueprint,
+)
 from videoforge_domain.cluster_scoring import compute_sub_scores, rescore_cluster
 from videoforge_domain.dedup import (
     AssetFingerprint,
@@ -49,6 +58,8 @@ __all__ = [
     "SAMPLING_POLICY",
     "STAGE_TRANSITIONS",
     "AssetFingerprint",
+    "BlueprintIssue",
+    "BlueprintIssueKind",
     "DedupConfig",
     "DomainError",
     "DuplicateGroup",
@@ -57,10 +68,13 @@ __all__ = [
     "IllegalStageTransition",
     "InsufficientSnapshots",
     "assert_transition",
+    "build_candidate_rhetorical_beats",
+    "build_visual_beats",
     "can_transition",
     "classify_kind",
     "classify_stage",
     "compute_sub_scores",
+    "coverage_ratio",
     "decline_from_peak",
     "derive_reason_codes",
     "dhash_from_gray",
@@ -70,6 +84,7 @@ __all__ = [
     "hamming_similarity",
     "hot_score",
     "iou",
+    "is_valid_blueprint",
     "low_confidence_spans",
     "mark_low_confidence",
     "needs_review",
@@ -82,5 +97,6 @@ __all__ = [
     "sigmoid",
     "text_simhash",
     "track_text_observations",
+    "validate_blueprint",
     "vote_text",
 ]

@@ -1,6 +1,14 @@
 from videoforge_contracts.artifact import Artifact, MediaProbe, ProducedBy, StorageRef
 from videoforge_contracts.base import CONTRACT_SCHEMA_VERSION, ContractModel
+from videoforge_contracts.blueprint import (
+    Claim,
+    EvidenceSpan,
+    RhetoricalBeat,
+    VideoBlueprint,
+    VisualBeat,
+)
 from videoforge_contracts.enums import (
+    ClaimSourceStatus,
     CreationMode,
     ExecutionPolicy,
     FrameSampleReason,
@@ -8,9 +16,11 @@ from videoforge_contracts.enums import (
     IsolationLevel,
     ProjectStatus,
     ProviderType,
+    RhetoricalBeatKind,
     StorageBackend,
     TextTrackKind,
     TrendStage,
+    VisualBeatKind,
 )
 from videoforge_contracts.problem import ProblemDetail
 from videoforge_contracts.project import Project
@@ -48,6 +58,7 @@ CONTRACTS: dict[str, type[ContractModel]] = {
     "transcript": Transcript,
     "text-track-set": TextTrackSet,
     "visual-analysis": VisualAnalysis,
+    "video-blueprint": VideoBlueprint,
 }
 
 __all__ = [
@@ -55,9 +66,12 @@ __all__ = [
     "CONTRACTS",
     "Artifact",
     "BBox",
+    "Claim",
+    "ClaimSourceStatus",
     "ContractModel",
     "CostModel",
     "CreationMode",
+    "EvidenceSpan",
     "ExecutionPolicy",
     "FrameAnalysis",
     "FrameSampleReason",
@@ -73,6 +87,8 @@ __all__ = [
     "ProviderHealth",
     "ProviderType",
     "ResourceLimits",
+    "RhetoricalBeat",
+    "RhetoricalBeatKind",
     "StorageBackend",
     "StorageRef",
     "TaskEnvelope",
@@ -88,5 +104,8 @@ __all__ = [
     "TrendItemSnapshot",
     "TrendStage",
     "TrendSubScores",
+    "VideoBlueprint",
     "VisualAnalysis",
+    "VisualBeat",
+    "VisualBeatKind",
 ]
