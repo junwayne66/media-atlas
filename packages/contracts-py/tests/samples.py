@@ -30,6 +30,9 @@ from videoforge_contracts import (
     EditOp,
     EditOpKind,
     EvidenceSpan,
+    FfmpegRenderGraph,
+    FilterGraph,
+    FilterNode,
     FrameAnalysis,
     FrameSampleReason,
     HighlightCandidate,
@@ -48,6 +51,10 @@ from videoforge_contracts import (
     ReeditPlan,
     ReframeFollow,
     ReframeHint,
+    RenderInput,
+    RenderManifest,
+    RenderStage,
+    RenderTargetKind,
     ResolvedAsset,
     ResourceLimits,
     RhetoricalBeat,
@@ -632,6 +639,50 @@ def make_creative_timeline() -> CreativeTimeline:
     )
 
 
+def make_render_manifest() -> RenderManifest:
+    # 结构化 FilterGraph 供 domain 编译器序列化为 -filter_complex；args 只含纯 argv 参数，
+    # 绝无 shell 拼接、绝无 filter_complex 长串（分号是 ffmpeg 分隔符，会误触本层拒绝）。
+    render_graph = FfmpegRenderGraph(
+        args=[
+            "ffmpeg", "-y", "-hide_banner",
+            "-i", "/staging/source.mp4",
+            "-map", "[v]", "-map", "[a]",
+            "-c:v", "libx264", "-preset", "medium", "-crf", "20",
+            "-c:a", "aac", "-b:a", "192k",
+            "-movflags", "+faststart",
+            "/output/final.mp4",
+        ],
+        filter_complex=FilterGraph(
+            nodes=[
+                FilterNode(id="n0", filter="scale", params={"w": "1080", "h": "1920"},
+                           inputs=["0:v"], outputs=["v_scaled"]),
+                FilterNode(id="n1", filter="setsar", params={"sar": "1"},
+                           inputs=["v_scaled"], outputs=["v"]),
+                FilterNode(id="n2", filter="aformat", params={"sample_fmts": "fltp"},
+                           inputs=["0:a"], outputs=["a"]),
+            ],
+            sinks=["v", "a"],
+        ),
+        inputs=[RenderInput(asset_id="01J2ZK3AC9V6XW8YQ4R5T6U7ZA",
+                             sha256="a" * 64, resolved_path="/staging/source.mp4",
+                             role="video")],
+        output_path="/output/final.mp4",
+        target=RenderTargetKind.MP4_H264,
+        tool_version="ffmpeg-8.1.2",
+    )
+    return RenderManifest(
+        id="01J2ZK3AC9V6XW8YQ4R5T6U7ZP",
+        timeline_id="01J2ZK3AC9V6XW8YQ4R5T6U7ZN",
+        stage=RenderStage.FINAL,
+        render_graph=render_graph,
+        input_digests={"01J2ZK3AC9V6XW8YQ4R5T6U7ZA": "a" * 64},
+        output_digest="b" * 64,
+        duration_ms=45000,
+        tool_version="ffmpeg-8.1.2",
+        created_at=_T0,
+    )
+
+
 SAMPLES: dict[str, ContractModel] = {
     "project": make_project(),
     "artifact": make_artifact(),
@@ -653,4 +704,5 @@ SAMPLES: dict[str, ContractModel] = {
     "reedit-plan": make_reedit_plan(),
     "asset-plan": make_asset_plan(),
     "creative-timeline": make_creative_timeline(),
+    "render-manifest": make_render_manifest(),
 }

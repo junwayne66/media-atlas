@@ -1,0 +1,304 @@
+{
+  "$defs": {
+    "FfmpegRenderGraph": {
+      "additionalProperties": false,
+      "description": "FFmpeg 渲染指令：严格 argv 数组 + Filter Graph + 版本 pin。**绝不 shell 拼接**。",
+      "properties": {
+        "args": {
+          "description": "ffmpeg argv，绝无 shell 拼接",
+          "items": {
+            "type": "string"
+          },
+          "minItems": 1,
+          "title": "Args",
+          "type": "array"
+        },
+        "filter_complex": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/FilterGraph"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "inputs": {
+          "items": {
+            "$ref": "#/$defs/RenderInput"
+          },
+          "title": "Inputs",
+          "type": "array"
+        },
+        "output_path": {
+          "description": "输出绝对路径",
+          "minLength": 1,
+          "title": "Output Path",
+          "type": "string"
+        },
+        "schema_version": {
+          "default": "1",
+          "description": "合同 schema 版本；Reader 需兼容当前与前一版本",
+          "title": "Schema Version",
+          "type": "string"
+        },
+        "target": {
+          "$ref": "#/$defs/RenderTargetKind"
+        },
+        "tool_version": {
+          "description": "ffmpeg 版本，供复现",
+          "minLength": 1,
+          "title": "Tool Version",
+          "type": "string"
+        }
+      },
+      "required": [
+        "args",
+        "output_path",
+        "target",
+        "tool_version"
+      ],
+      "title": "FfmpegRenderGraph",
+      "type": "object"
+    },
+    "FilterGraph": {
+      "additionalProperties": false,
+      "description": "Filter Graph DAG：节点集合 + 边由 inputs/outputs 隐式定义。禁循环（domain 层拓扑校验）。",
+      "properties": {
+        "nodes": {
+          "items": {
+            "$ref": "#/$defs/FilterNode"
+          },
+          "title": "Nodes",
+          "type": "array"
+        },
+        "schema_version": {
+          "default": "1",
+          "description": "合同 schema 版本；Reader 需兼容当前与前一版本",
+          "title": "Schema Version",
+          "type": "string"
+        },
+        "sinks": {
+          "description": "终点标签，供 -map 引用",
+          "items": {
+            "type": "string"
+          },
+          "title": "Sinks",
+          "type": "array"
+        }
+      },
+      "title": "FilterGraph",
+      "type": "object"
+    },
+    "FilterNode": {
+      "additionalProperties": false,
+      "description": "Filter Graph 单节点：滤镜名 + 参数字典 + 输入/输出标签。参数值受元字符拒绝。",
+      "properties": {
+        "filter": {
+          "description": "ffmpeg 滤镜名，如 trim/setpts/scale/overlay",
+          "minLength": 1,
+          "title": "Filter",
+          "type": "string"
+        },
+        "id": {
+          "minLength": 1,
+          "title": "Id",
+          "type": "string"
+        },
+        "inputs": {
+          "description": "上游节点/输入流标签",
+          "items": {
+            "type": "string"
+          },
+          "title": "Inputs",
+          "type": "array"
+        },
+        "outputs": {
+          "description": "本节点产出的标签",
+          "items": {
+            "type": "string"
+          },
+          "minItems": 1,
+          "title": "Outputs",
+          "type": "array"
+        },
+        "params": {
+          "additionalProperties": {
+            "type": "string"
+          },
+          "title": "Params",
+          "type": "object"
+        },
+        "schema_version": {
+          "default": "1",
+          "description": "合同 schema 版本；Reader 需兼容当前与前一版本",
+          "title": "Schema Version",
+          "type": "string"
+        }
+      },
+      "required": [
+        "id",
+        "filter",
+        "outputs"
+      ],
+      "title": "FilterNode",
+      "type": "object"
+    },
+    "RenderInput": {
+      "additionalProperties": false,
+      "description": "一个渲染输入：素材身份 + 内容哈希 + 已解析的绝对路径（须在白名单内，由 domain 校验）。",
+      "properties": {
+        "asset_id": {
+          "minLength": 1,
+          "title": "Asset Id",
+          "type": "string"
+        },
+        "resolved_path": {
+          "description": "已解析的绝对路径",
+          "minLength": 1,
+          "title": "Resolved Path",
+          "type": "string"
+        },
+        "role": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "video/audio/subtitle/…",
+          "title": "Role"
+        },
+        "schema_version": {
+          "default": "1",
+          "description": "合同 schema 版本；Reader 需兼容当前与前一版本",
+          "title": "Schema Version",
+          "type": "string"
+        },
+        "sha256": {
+          "description": "内容哈希，可复现验证",
+          "maxLength": 64,
+          "minLength": 64,
+          "title": "Sha256",
+          "type": "string"
+        }
+      },
+      "required": [
+        "asset_id",
+        "sha256",
+        "resolved_path"
+      ],
+      "title": "RenderInput",
+      "type": "object"
+    },
+    "RenderStage": {
+      "description": "渲染阶段（docs/modules/42 §8.3）。PROXY 供预览/审校，FINAL 供发布。",
+      "enum": [
+        "PROXY",
+        "FINAL"
+      ],
+      "title": "RenderStage",
+      "type": "string"
+    },
+    "RenderTargetKind": {
+      "description": "渲染目标（编解码 + 封装）。",
+      "enum": [
+        "MP4_H264",
+        "MP4_H265",
+        "MOV_PRORES",
+        "WEBM_VP9"
+      ],
+      "title": "RenderTargetKind",
+      "type": "string"
+    }
+  },
+  "$id": "https://videoforge.dev/schemas/render-manifest.schema.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "description": "一次渲染的可复现清单（§8.3）：输入哈希 + 工具版本 + 输出哈希 + 时间线来源。",
+  "properties": {
+    "created_at": {
+      "format": "date-time",
+      "title": "Created At",
+      "type": "string"
+    },
+    "duration_ms": {
+      "anyOf": [
+        {
+          "minimum": 0,
+          "type": "integer"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Duration Ms"
+    },
+    "id": {
+      "minLength": 1,
+      "title": "Id",
+      "type": "string"
+    },
+    "input_digests": {
+      "additionalProperties": {
+        "type": "string"
+      },
+      "description": "{asset_id: sha256} 供缓存与重放",
+      "title": "Input Digests",
+      "type": "object"
+    },
+    "output_digest": {
+      "anyOf": [
+        {
+          "maxLength": 64,
+          "minLength": 64,
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "description": "产出内容 sha256；未渲染前为 null",
+      "title": "Output Digest"
+    },
+    "render_graph": {
+      "$ref": "#/$defs/FfmpegRenderGraph"
+    },
+    "schema_version": {
+      "default": "1",
+      "description": "合同 schema 版本；Reader 需兼容当前与前一版本",
+      "title": "Schema Version",
+      "type": "string"
+    },
+    "stage": {
+      "$ref": "#/$defs/RenderStage"
+    },
+    "timeline_id": {
+      "description": "源 CreativeTimeline id",
+      "minLength": 1,
+      "title": "Timeline Id",
+      "type": "string"
+    },
+    "tool_version": {
+      "minLength": 1,
+      "title": "Tool Version",
+      "type": "string"
+    }
+  },
+  "required": [
+    "id",
+    "timeline_id",
+    "stage",
+    "render_graph",
+    "tool_version",
+    "created_at"
+  ],
+  "title": "RenderManifest",
+  "type": "object"
+}

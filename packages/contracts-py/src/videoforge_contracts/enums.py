@@ -232,6 +232,22 @@ class AssetLicenseType(StrEnum):
     PLACEHOLDER = "PLACEHOLDER"  # 占位（未来替换）
 
 
+class RenderStage(StrEnum):
+    """渲染阶段（docs/modules/42 §8.3）。PROXY 供预览/审校，FINAL 供发布。"""
+
+    PROXY = "PROXY"
+    FINAL = "FINAL"
+
+
+class RenderTargetKind(StrEnum):
+    """渲染目标（编解码 + 封装）。"""
+
+    MP4_H264 = "MP4_H264"
+    MP4_H265 = "MP4_H265"
+    MOV_PRORES = "MOV_PRORES"
+    WEBM_VP9 = "WEBM_VP9"
+
+
 class TrackKind(StrEnum):
     """时间线轨道类型（docs/modules/42 §8.1）。V0..V5 视频层 / A0..A3 音频层 / M0 语义标记。"""
 

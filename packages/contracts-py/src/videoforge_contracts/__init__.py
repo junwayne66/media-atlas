@@ -39,6 +39,8 @@ from videoforge_contracts.enums import (
     ProjectStatus,
     ProviderType,
     ReframeFollow,
+    RenderStage,
+    RenderTargetKind,
     RhetoricalBeatKind,
     StorageBackend,
     TextTrackKind,
@@ -61,6 +63,13 @@ from videoforge_contracts.reedit import (
     ReeditPlan,
     ReframeHint,
     SegmentJudgment,
+)
+from videoforge_contracts.render import (
+    FfmpegRenderGraph,
+    FilterGraph,
+    FilterNode,
+    RenderInput,
+    RenderManifest,
 )
 from videoforge_contracts.rewrite import (
     BeatSlot,
@@ -120,6 +129,7 @@ CONTRACTS: dict[str, type[ContractModel]] = {
     "reedit-plan": ReeditPlan,
     "asset-plan": AssetPlan,
     "creative-timeline": CreativeTimeline,
+    "render-manifest": RenderManifest,
 }
 
 __all__ = [
@@ -153,6 +163,9 @@ __all__ = [
     "EditOpKind",
     "EvidenceSpan",
     "ExecutionPolicy",
+    "FfmpegRenderGraph",
+    "FilterGraph",
+    "FilterNode",
     "FrameAnalysis",
     "FrameSampleReason",
     "HealthState",
@@ -178,6 +191,10 @@ __all__ = [
     "ReeditPlan",
     "ReframeFollow",
     "ReframeHint",
+    "RenderInput",
+    "RenderManifest",
+    "RenderStage",
+    "RenderTargetKind",
     "ResolvedAsset",
     "ResourceLimits",
     "RhetoricalBeat",

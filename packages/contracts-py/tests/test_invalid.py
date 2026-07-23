@@ -229,6 +229,22 @@ INVALID_OVERRIDES: list[tuple[str, str, dict[str, Any]]] = [
      }]}]}),
     ("creative-timeline", "RationalTime value 不能为负",
      {"duration": {"value": -1, "rate": 30}}),
+    ("render-manifest", "未知字段被拒", {"unexpected_field": 1}),
+    ("render-manifest", "argv 元素含 shell 元字符被拒",
+     {"render_graph": {**SAMPLES["render-manifest"].model_dump()["render_graph"],
+                        "args": ["ffmpeg", "-y", "$(rm -rf /)", "/output/final.mp4"]}}),
+    ("render-manifest", "空 argv token 被拒",
+     {"render_graph": {**SAMPLES["render-manifest"].model_dump()["render_graph"],
+                        "args": ["ffmpeg", "", "/output/final.mp4"]}}),
+    ("render-manifest", "output_path 含 shell 元字符被拒",
+     {"render_graph": {**SAMPLES["render-manifest"].model_dump()["render_graph"],
+                        "output_path": "/output/`whoami`.mp4"}}),
+    ("render-manifest", "input.sha256 非 64 hex 被拒",
+     {"render_graph": {**SAMPLES["render-manifest"].model_dump()["render_graph"],
+                        "inputs": [{"asset_id": "a", "sha256": "ZZZ",
+                                    "resolved_path": "/s/a.mp4"}]}}),
+    ("render-manifest", "output_digest 非 64 hex 被拒", {"output_digest": "shortdigest"}),
+    ("render-manifest", "非法 RenderStage 被拒", {"stage": "DRAFT"}),
 ]
 
 

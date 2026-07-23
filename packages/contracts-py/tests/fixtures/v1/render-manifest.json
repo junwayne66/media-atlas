@@ -1,0 +1,104 @@
+{
+  "created_at": "2026-07-21T08:00:00Z",
+  "duration_ms": 45000,
+  "id": "01J2ZK3AC9V6XW8YQ4R5T6U7ZP",
+  "input_digests": {
+    "01J2ZK3AC9V6XW8YQ4R5T6U7ZA": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+  },
+  "output_digest": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+  "render_graph": {
+    "args": [
+      "ffmpeg",
+      "-y",
+      "-hide_banner",
+      "-i",
+      "/staging/source.mp4",
+      "-map",
+      "[v]",
+      "-map",
+      "[a]",
+      "-c:v",
+      "libx264",
+      "-preset",
+      "medium",
+      "-crf",
+      "20",
+      "-c:a",
+      "aac",
+      "-b:a",
+      "192k",
+      "-movflags",
+      "+faststart",
+      "/output/final.mp4"
+    ],
+    "filter_complex": {
+      "nodes": [
+        {
+          "filter": "scale",
+          "id": "n0",
+          "inputs": [
+            "0:v"
+          ],
+          "outputs": [
+            "v_scaled"
+          ],
+          "params": {
+            "h": "1920",
+            "w": "1080"
+          },
+          "schema_version": "1"
+        },
+        {
+          "filter": "setsar",
+          "id": "n1",
+          "inputs": [
+            "v_scaled"
+          ],
+          "outputs": [
+            "v"
+          ],
+          "params": {
+            "sar": "1"
+          },
+          "schema_version": "1"
+        },
+        {
+          "filter": "aformat",
+          "id": "n2",
+          "inputs": [
+            "0:a"
+          ],
+          "outputs": [
+            "a"
+          ],
+          "params": {
+            "sample_fmts": "fltp"
+          },
+          "schema_version": "1"
+        }
+      ],
+      "schema_version": "1",
+      "sinks": [
+        "v",
+        "a"
+      ]
+    },
+    "inputs": [
+      {
+        "asset_id": "01J2ZK3AC9V6XW8YQ4R5T6U7ZA",
+        "resolved_path": "/staging/source.mp4",
+        "role": "video",
+        "schema_version": "1",
+        "sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+      }
+    ],
+    "output_path": "/output/final.mp4",
+    "schema_version": "1",
+    "target": "MP4_H264",
+    "tool_version": "ffmpeg-8.1.2"
+  },
+  "schema_version": "1",
+  "stage": "FINAL",
+  "timeline_id": "01J2ZK3AC9V6XW8YQ4R5T6U7ZN",
+  "tool_version": "ffmpeg-8.1.2"
+}
