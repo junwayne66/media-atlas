@@ -4,6 +4,12 @@ from datetime import UTC, datetime
 
 from videoforge_contracts import (
     Artifact,
+    AssetLicense,
+    AssetLicenseType,
+    AssetPlan,
+    AssetPlanSlot,
+    AssetRole,
+    AssetSource,
     BBox,
     BeatSlot,
     BeatTemplate,
@@ -12,6 +18,7 @@ from videoforge_contracts import (
     ClaimSourceStatus,
     ClaimTable,
     ClaimTableEntry,
+    CompositionSpec,
     ContinuityNote,
     ContinuityRuleKind,
     ContractModel,
@@ -38,6 +45,7 @@ from videoforge_contracts import (
     ReeditPlan,
     ReframeFollow,
     ReframeHint,
+    ResolvedAsset,
     ResourceLimits,
     RhetoricalBeat,
     RhetoricalBeatKind,
@@ -539,6 +547,39 @@ def make_reedit_plan() -> ReeditPlan:
     )
 
 
+def make_asset_plan() -> AssetPlan:
+    slot = AssetPlanSlot(
+        slot_id="slot-0",
+        start_ms=0,
+        end_ms=5000,
+        role=AssetRole.SCREEN_DEMO,
+        query="macOS local inference settings panel",
+        semantic_requirements=["must show settings panel"],
+        composition=CompositionSpec(aspect_ratio="9:16", safe_area="center"),
+        allowed_sources=[AssetSource.SOURCE, AssetSource.OWN_LIBRARY, AssetSource.STOCK],
+        fallback=AssetRole.INFO_CARD,
+    )
+    resolved = ResolvedAsset(
+        slot_id="slot-0",
+        asset_id="01J2ZK3AC9V6XW8YQ4R5T6U7ZM",
+        source=AssetSource.OWN_LIBRARY,
+        license=AssetLicense(type=AssetLicenseType.OWNED, holder="videoforge"),
+        query="macOS local inference settings panel",
+        usage_start_ms=0,
+        usage_end_ms=5000,
+        match_score=0.82,
+        provider="own_library.fake",
+    )
+    return AssetPlan(
+        id="01J2ZK3AC9V6XW8YQ4R5T6U7ZL",
+        source_transcript_id="01J2ZK3AC9V6XW8YQ4R5T6U7ZC",
+        slots=[slot],
+        resolved=[resolved],
+        weights_version="asset-v1",
+        created_at=_T0,
+    )
+
+
 SAMPLES: dict[str, ContractModel] = {
     "project": make_project(),
     "artifact": make_artifact(),
@@ -558,4 +599,5 @@ SAMPLES: dict[str, ContractModel] = {
     "script-version": make_script_version(),
     "highlight-set": make_highlight_set(),
     "reedit-plan": make_reedit_plan(),
+    "asset-plan": make_asset_plan(),
 }

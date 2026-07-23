@@ -25,6 +25,16 @@ from videoforge_provider_sdk.asr import (
     UnconfiguredASRProvider,
     UnconfiguredLanguageSegmenter,
 )
+from videoforge_provider_sdk.asset import (
+    AssetCandidateSpec,
+    AssetSearchRequest,
+    AssetSourceErrorCode,
+    AssetSourceProvider,
+    AssetSourceResult,
+    AssetSourceStatus,
+    FakeAssetSourceProvider,
+    UnconfiguredAssetSourceProvider,
+)
 from videoforge_provider_sdk.base import FakeProvider, Provider, ProviderInvokeError
 from videoforge_provider_sdk.blueprint_fusion import (
     BlueprintFusionErrorCode,
@@ -167,6 +177,12 @@ __all__ = [
     "AcquisitionError",
     "AcquisitionErrorCode",
     "AcquisitionManifest",
+    "AssetCandidateSpec",
+    "AssetSearchRequest",
+    "AssetSourceErrorCode",
+    "AssetSourceProvider",
+    "AssetSourceResult",
+    "AssetSourceStatus",
     "BlueprintFusionErrorCode",
     "BlueprintFusionProvider",
     "BlueprintFusionRequest",
@@ -193,6 +209,7 @@ __all__ = [
     "DownloadRouter",
     "DownloadStatus",
     "FakeASRProvider",
+    "FakeAssetSourceProvider",
     "FakeBlueprintFusionProvider",
     "FakeHighlightFeatureProvider",
     "FakeLanguageSegmenter",
@@ -239,6 +256,7 @@ __all__ = [
     "ShortLinkExpander",
     "StructureRewriteProvider",
     "UnconfiguredASRProvider",
+    "UnconfiguredAssetSourceProvider",
     "UnconfiguredBlueprintFusionProvider",
     "UnconfiguredCookieResolver",
     "UnconfiguredFetcher",

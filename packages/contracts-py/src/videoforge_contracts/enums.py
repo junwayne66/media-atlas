@@ -196,3 +196,37 @@ class ContinuityRuleKind(StrEnum):
     INSERT_BROLL = "INSERT_BROLL"  # 朝向/视线冲突插空镜/图卡
     JUMPCUT_SMOOTH = "JUMPCUT_SMOOTH"  # jump cut 用推拉/构图变化平滑
     BEAT_ALIGN = "BEAT_ALIGN"  # 音乐按 Beat Grid 对齐（不破句）
+
+
+class AssetRole(StrEnum):
+    """素材在时间线上的角色（docs/modules/42 §6.1）。"""
+
+    TALKING_HEAD = "TALKING_HEAD"
+    SCREEN_DEMO = "SCREEN_DEMO"
+    B_ROLL = "B_ROLL"
+    INFO_CARD = "INFO_CARD"
+    LOGO = "LOGO"
+    CHART = "CHART"
+    LOWER_THIRD = "LOWER_THIRD"
+    PLACEHOLDER = "PLACEHOLDER"
+
+
+class AssetSource(StrEnum):
+    """素材来源层级（docs/modules/42 §6.2 Resolver 顺序）。"""
+
+    SOURCE = "SOURCE"  # 授权原片
+    OWN_LIBRARY = "OWN_LIBRARY"  # 自有素材库
+    STOCK = "STOCK"  # 商业/许可素材
+    GENERATED = "GENERATED"  # AI 生成
+    PLACEHOLDER = "PLACEHOLDER"  # 数字人/信息卡/屏幕录制占位
+
+
+class AssetLicenseType(StrEnum):
+    """素材许可类型（每个 ResolvedAsset 必带来源与许可以便追溯）。"""
+
+    OWNED = "OWNED"  # 自有版权/授权原片
+    LICENSED_STOCK = "LICENSED_STOCK"  # 采购的商业许可
+    ROYALTY_FREE = "ROYALTY_FREE"  # 免版税
+    PUBLIC_DOMAIN = "PUBLIC_DOMAIN"
+    GENERATED_MODEL = "GENERATED_MODEL"  # 生成式模型输出
+    PLACEHOLDER = "PLACEHOLDER"  # 占位（未来替换）

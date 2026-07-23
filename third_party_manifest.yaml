@@ -151,6 +151,16 @@ python:
       返回 UNCONFIGURED。护栏（domain.validate_script 强制）：只依据节拍功能 + 经核验 Claim 生成
       中性语义脚本，绝不复用原句（text_simhash 比对源转录判抄袭），引用的事实必须在 ClaimTable 且
       非 DISPUTED/不可用，DISPUTED 事实即便 must_cover 也绝不自动引用，总时长≈预算，禁用词过滤。
+  - name: 素材源（自有库语义向量 / 商业 Stock / AI 生成 / 数字人）
+    license: 视具体来源与 API（商业 stock 各家条款；生成模型另核）
+    isolation: L2
+    used_by: 计划——AssetSourceProvider（docs/modules/42 §6）
+    note: >
+      VF-305 只落地 AssetPlanSlot/ResolvedAsset/AssetPlan 合同 + 匹配分/五级优先级/来源许可护栏
+      （纯域）+ 素材源端口 + Fake。真实素材源需自有向量库/商业采购/生成模型（停止条件），默认
+      UnconfiguredAssetSourceProvider 返回 UNCONFIGURED；Fake 只回放注册候选，不伪造 license。
+      合规红线：每个 ResolvedAsset 必带来源+许可+检索词+使用区间（可溯性）；未被 slot
+      allowed_sources 允许的来源不得进入结果；商业许可到期即拦下；单素材复用不超上限。
   - name: VLM/LLM（热门片段特征评分，Qwen-VL / Claude 等或训练模型）
     license: 视具体引擎/API（另核）
     isolation: L2

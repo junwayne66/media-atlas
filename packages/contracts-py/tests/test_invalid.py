@@ -187,6 +187,32 @@ INVALID_OVERRIDES: list[tuple[str, str, dict[str, Any]]] = [
     ("reedit-plan", "SPEED 倍率须 >0", {"ops": [_edit_op(op="SPEED", speed=0)]}),
     ("reedit-plan", "非法连续性枚举被拒",
      {"continuity": [{"kind": "NOPE", "at_ms": 0, "detail": "x"}]}),
+    ("asset-plan", "未知字段被拒", {"unexpected_field": 1}),
+    ("asset-plan", "slot end_ms<start_ms 被拒", {"slots": [{
+        "slot_id": "s", "start_ms": 5000, "end_ms": 1000, "role": "B_ROLL",
+        "query": "q", "composition": {"aspect_ratio": "9:16", "safe_area": "center"},
+        "allowed_sources": ["SOURCE"],
+    }]}),
+    ("asset-plan", "allowed_sources 不能为空", {"slots": [{
+        "slot_id": "s", "start_ms": 0, "end_ms": 1000, "role": "B_ROLL",
+        "query": "q", "composition": {"aspect_ratio": "9:16", "safe_area": "center"},
+        "allowed_sources": [],
+    }]}),
+    ("asset-plan", "非法 AssetRole 被拒", {"slots": [{
+        "slot_id": "s", "start_ms": 0, "end_ms": 1000, "role": "NOT_A_ROLE",
+        "query": "q", "composition": {"aspect_ratio": "9:16", "safe_area": "center"},
+        "allowed_sources": ["SOURCE"],
+    }]}),
+    ("asset-plan", "resolved usage_end<start 被拒", {"resolved": [{
+        "slot_id": "s", "asset_id": "a", "source": "OWN_LIBRARY",
+        "license": {"type": "OWNED", "holder": "h"},
+        "query": "q", "usage_start_ms": 5000, "usage_end_ms": 1000, "match_score": 0.5,
+    }]}),
+    ("asset-plan", "非法 AssetLicenseType 被拒", {"resolved": [{
+        "slot_id": "s", "asset_id": "a", "source": "OWN_LIBRARY",
+        "license": {"type": "PIRATED", "holder": "h"},
+        "query": "q", "usage_start_ms": 0, "usage_end_ms": 1000, "match_score": 0.5,
+    }]}),
 ]
 
 
