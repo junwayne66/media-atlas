@@ -1,0 +1,36 @@
+{
+  "created_at": "2026-07-21T08:00:00Z",
+  "duration_target_ms": 45000,
+  "id": "01J2ZK3AC9V6XW8YQ4R5T6U7ZF",
+  "schema_version": "1",
+  "slots": [
+    {
+      "end_ms": 3000,
+      "guidance": "抛出反常识结论",
+      "id": "slot-0",
+      "role": "HOOK",
+      "schema_version": "1",
+      "start_ms": 0,
+      "target_duration_ms": 3000
+    },
+    {
+      "end_ms": 40000,
+      "guidance": "实测演示与数据",
+      "id": "slot-1",
+      "role": "EVIDENCE",
+      "schema_version": "1",
+      "start_ms": 3000,
+      "target_duration_ms": 37000
+    },
+    {
+      "end_ms": 45000,
+      "guidance": "引导互动",
+      "id": "slot-2",
+      "role": "CTA",
+      "schema_version": "1",
+      "start_ms": 40000,
+      "target_duration_ms": 5000
+    }
+  ],
+  "source_blueprint_id": "01J2ZK3AC9V6XW8YQ4R5T6U7ZB"
+}

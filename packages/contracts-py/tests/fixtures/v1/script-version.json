@@ -1,0 +1,49 @@
+{
+  "beat_template_id": "01J2ZK3AC9V6XW8YQ4R5T6U7ZF",
+  "brief_id": "01J2ZK3AC9V6XW8YQ4R5T6U7ZD",
+  "claim_table_id": "01J2ZK3AC9V6XW8YQ4R5T6U7ZE",
+  "created_at": "2026-07-21T08:00:00Z",
+  "id": "01J2ZK3AC9V6XW8YQ4R5T6U7ZG",
+  "language": "zh-CN",
+  "rewrite_provider": "llm.rewrite",
+  "schema_version": "1",
+  "sentences": [
+    {
+      "beat_slot_id": "slot-0",
+      "claim_ids": [],
+      "editable": true,
+      "id": "s-0",
+      "language": "zh-CN",
+      "role": "HOOK",
+      "schema_version": "1",
+      "target_duration_ms": 2000,
+      "text": "有个参数表没告诉你的限制"
+    },
+    {
+      "beat_slot_id": "slot-1",
+      "claim_ids": [
+        "claim-0"
+      ],
+      "editable": true,
+      "id": "s-1",
+      "language": "zh-CN",
+      "role": "EVIDENCE",
+      "schema_version": "1",
+      "target_duration_ms": 36000,
+      "text": "官方称端侧推理约为上代两倍，我们实测记录如下"
+    },
+    {
+      "beat_slot_id": "slot-2",
+      "claim_ids": [],
+      "editable": true,
+      "id": "s-2",
+      "language": "zh-CN",
+      "role": "CTA",
+      "schema_version": "1",
+      "target_duration_ms": 2200,
+      "text": "评论区说你最想测的场景"
+    }
+  ],
+  "total_duration_ms": 40200,
+  "version": 1
+}

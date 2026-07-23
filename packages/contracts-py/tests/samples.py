@@ -5,6 +5,8 @@ from datetime import UTC, datetime
 from videoforge_contracts import (
     Artifact,
     BBox,
+    BeatSlot,
+    BeatTemplate,
     BriefHook,
     Claim,
     ClaimSourceStatus,
@@ -27,6 +29,8 @@ from videoforge_contracts import (
     ResourceLimits,
     RhetoricalBeat,
     RhetoricalBeatKind,
+    ScriptSentence,
+    ScriptVersion,
     StorageRef,
     TaskEnvelope,
     TextObservation,
@@ -421,6 +425,52 @@ def make_claim_table() -> ClaimTable:
     )
 
 
+def make_beat_template() -> BeatTemplate:
+    return BeatTemplate(
+        id="01J2ZK3AC9V6XW8YQ4R5T6U7ZF",
+        source_blueprint_id="01J2ZK3AC9V6XW8YQ4R5T6U7ZB",
+        duration_target_ms=45000,
+        slots=[
+            BeatSlot(id="slot-0", role=RhetoricalBeatKind.HOOK, start_ms=0, end_ms=3000,
+                     target_duration_ms=3000, guidance="抛出反常识结论"),
+            BeatSlot(id="slot-1", role=RhetoricalBeatKind.EVIDENCE, start_ms=3000, end_ms=40000,
+                     target_duration_ms=37000, guidance="实测演示与数据"),
+            BeatSlot(id="slot-2", role=RhetoricalBeatKind.CTA, start_ms=40000, end_ms=45000,
+                     target_duration_ms=5000, guidance="引导互动"),
+        ],
+        created_at=_T0,
+    )
+
+
+def make_script_version() -> ScriptVersion:
+    return ScriptVersion(
+        id="01J2ZK3AC9V6XW8YQ4R5T6U7ZG",
+        brief_id="01J2ZK3AC9V6XW8YQ4R5T6U7ZD",
+        beat_template_id="01J2ZK3AC9V6XW8YQ4R5T6U7ZF",
+        claim_table_id="01J2ZK3AC9V6XW8YQ4R5T6U7ZE",
+        version=1,
+        language="zh-CN",
+        sentences=[
+            ScriptSentence(
+                id="s-0", beat_slot_id="slot-0", role=RhetoricalBeatKind.HOOK,
+                text="有个参数表没告诉你的限制", target_duration_ms=2000, language="zh-CN",
+            ),
+            ScriptSentence(
+                id="s-1", beat_slot_id="slot-1", role=RhetoricalBeatKind.EVIDENCE,
+                text="官方称端侧推理约为上代两倍，我们实测记录如下",
+                target_duration_ms=36000, claim_ids=["claim-0"], language="zh-CN",
+            ),
+            ScriptSentence(
+                id="s-2", beat_slot_id="slot-2", role=RhetoricalBeatKind.CTA,
+                text="评论区说你最想测的场景", target_duration_ms=2200, language="zh-CN",
+            ),
+        ],
+        total_duration_ms=40200,
+        rewrite_provider="llm.rewrite",
+        created_at=_T0,
+    )
+
+
 SAMPLES: dict[str, ContractModel] = {
     "project": make_project(),
     "artifact": make_artifact(),
@@ -436,4 +486,6 @@ SAMPLES: dict[str, ContractModel] = {
     "creative-opportunity": make_creative_opportunity(),
     "creative-brief": make_creative_brief(),
     "claim-table": make_claim_table(),
+    "beat-template": make_beat_template(),
+    "script-version": make_script_version(),
 }

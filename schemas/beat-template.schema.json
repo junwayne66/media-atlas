@@ -1,0 +1,129 @@
+{
+  "$defs": {
+    "BeatSlot": {
+      "additionalProperties": false,
+      "description": "节拍槽位：功能 + 目标时长（不含原句）。",
+      "properties": {
+        "end_ms": {
+          "minimum": 0,
+          "title": "End Ms",
+          "type": "integer"
+        },
+        "guidance": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "本节拍应达成的功能（抽象，非原句）",
+          "title": "Guidance"
+        },
+        "id": {
+          "minLength": 1,
+          "title": "Id",
+          "type": "string"
+        },
+        "role": {
+          "$ref": "#/$defs/RhetoricalBeatKind"
+        },
+        "schema_version": {
+          "default": "1",
+          "description": "合同 schema 版本；Reader 需兼容当前与前一版本",
+          "title": "Schema Version",
+          "type": "string"
+        },
+        "start_ms": {
+          "minimum": 0,
+          "title": "Start Ms",
+          "type": "integer"
+        },
+        "target_duration_ms": {
+          "minimum": 0,
+          "title": "Target Duration Ms",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "id",
+        "role",
+        "start_ms",
+        "end_ms",
+        "target_duration_ms"
+      ],
+      "title": "BeatSlot",
+      "type": "object"
+    },
+    "RhetoricalBeatKind": {
+      "description": "表达层节拍（docs/modules/41 §10.1）。UNCLASSIFIED 允许存在以保覆盖率。",
+      "enum": [
+        "HOOK",
+        "QUESTION",
+        "EVIDENCE",
+        "CONTRAST",
+        "DEMO",
+        "CONCLUSION",
+        "CTA",
+        "UNCLASSIFIED"
+      ],
+      "title": "RhetoricalBeatKind",
+      "type": "string"
+    }
+  },
+  "$id": "https://videoforge.dev/schemas/beat-template.schema.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "description": "抽象节拍模板（缩放到目标时长）。只复用节拍功能 + 时长比。",
+  "properties": {
+    "created_at": {
+      "format": "date-time",
+      "title": "Created At",
+      "type": "string"
+    },
+    "duration_target_ms": {
+      "exclusiveMinimum": 0,
+      "title": "Duration Target Ms",
+      "type": "integer"
+    },
+    "id": {
+      "minLength": 1,
+      "title": "Id",
+      "type": "string"
+    },
+    "schema_version": {
+      "default": "1",
+      "description": "合同 schema 版本；Reader 需兼容当前与前一版本",
+      "title": "Schema Version",
+      "type": "string"
+    },
+    "slots": {
+      "items": {
+        "$ref": "#/$defs/BeatSlot"
+      },
+      "title": "Slots",
+      "type": "array"
+    },
+    "source_blueprint_id": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Source Blueprint Id"
+    }
+  },
+  "required": [
+    "id",
+    "duration_target_ms",
+    "created_at"
+  ],
+  "title": "BeatTemplate",
+  "type": "object"
+}

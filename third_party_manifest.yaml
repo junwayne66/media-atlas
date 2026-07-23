@@ -141,6 +141,16 @@ python:
       真实 LLM 需模型/付费 API（停止条件），默认 UnconfiguredBlueprintFusionProvider 返回
       UNCONFIGURED。护栏：时间范围由程序候选、LLM 不编造时间戳，Claim 必须引用真实证据，
       时间单调/在时长内，覆盖率 ≥0.9——由 domain.validate_blueprint 强制，非法蓝图不下游消费。
+  - name: LLM（结构重写，Claude / Qwen 等 API 或本地 LLM）
+    license: 视具体引擎/API（另核）
+    isolation: L2
+    used_by: 计划——StructureRewriteProvider（docs/modules/42 §3）
+    note: >
+      VF-302 只落地 BeatTemplate/ScriptVersion 合同 + 语速估算/模板缩放/脚本护栏（纯域）+ 改写
+      端口 + Fake。真实 LLM 需模型/付费 API（停止条件），默认 UnconfiguredStructureRewriteProvider
+      返回 UNCONFIGURED。护栏（domain.validate_script 强制）：只依据节拍功能 + 经核验 Claim 生成
+      中性语义脚本，绝不复用原句（text_simhash 比对源转录判抄袭），引用的事实必须在 ClaimTable 且
+      非 DISPUTED/不可用，DISPUTED 事实即便 must_cover 也绝不自动引用，总时长≈预算，禁用词过滤。
 
 javascript:
   - name: vue
