@@ -281,6 +281,17 @@ INVALID_OVERRIDES: list[tuple[str, str, dict[str, Any]]] = [
          {"id": "same", "kind": "FROZEN_FRAME", "severity": "MINOR", "at_ms": 100},
      ]}),
     ("qa-report", "measured_duration_ms 不能为负", {"measured_duration_ms": -1}),
+    ("exporter-report", "未知字段被拒", {"unexpected_field": 1}),
+    ("exporter-report", "非法 ExporterKind 被拒",
+     {"entries": [{"kind": "PREMIERE_XML", "status": "OK"}]}),
+    ("exporter-report", "非法 ExporterStatus 被拒",
+     {"entries": [{"kind": "OTIO_FILE", "status": "SUCCESS"}]}),
+    ("exporter-report", "output_path 含 shell 元字符被拒",
+     {"entries": [{"kind": "OTIO_FILE", "status": "OK",
+                     "output_path": "/output/$(id).otio"}]}),
+    ("exporter-report", "bytes_written 不能为负",
+     {"entries": [{"kind": "OTIO_FILE", "status": "OK",
+                     "output_path": "/output/tl.otio", "bytes_written": -1}]}),
 ]
 
 

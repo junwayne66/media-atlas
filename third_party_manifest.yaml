@@ -173,6 +173,14 @@ python:
       不能用"；不静默假装。ADR-002 明确 Remotion 特殊许可需评审——编译器与运行时分离让日常
       开发不阻塞。合规红线：任何 Prop 字符串值/entry_component_path/output_path 均在合同层拒
       shell 元字符，路径受 VF-307 段级归一化白名单强制（同一套 _path_within 复用）。
+  - name: pyJianYingDraft / pyCapCut（experimental Draft Adapter）
+    license: 视具体库（多为 MIT / Apache-2.0；剪映/CapCut Draft 格式为商业软件私有）
+    isolation: L2
+    used_by: 计划——JianYing/CapCut ExporterAdapter（docs/modules/42 §10）
+    note: >
+      VF-310 只落地 OTIO/FCPXML 真文件写入（纯 stdlib，无 pip 依赖）；剪映/CapCut Adapter 属
+      experimental，新版本 Draft 加密时降级为"包+README 说明"（§10 底线：导出失败不影响 MP4
+      最终渲染）。真实 pyJianYingDraft/pyCapCut 接入前须评审版本矩阵与许可条款，标 L2 延后。
   - name: OpenTimelineIO
     license: Apache-2.0
     isolation: L0

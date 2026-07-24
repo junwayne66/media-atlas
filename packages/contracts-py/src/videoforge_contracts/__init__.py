@@ -31,6 +31,8 @@ from videoforge_contracts.enums import (
     CreationMode,
     EditOpKind,
     ExecutionPolicy,
+    ExporterKind,
+    ExporterStatus,
     FrameSampleReason,
     HealthState,
     HighlightLabel,
@@ -51,6 +53,7 @@ from videoforge_contracts.enums import (
     TrendStage,
     VisualBeatKind,
 )
+from videoforge_contracts.exporter import ExportEntry, ExporterReport
 from videoforge_contracts.highlight import (
     HighlightCandidate,
     HighlightFeatures,
@@ -141,6 +144,7 @@ CONTRACTS: dict[str, type[ContractModel]] = {
     "render-manifest": RenderManifest,
     "remotion-render-manifest": RemotionRenderManifest,
     "qa-report": QAReport,
+    "exporter-report": ExporterReport,
 }
 
 __all__ = [
@@ -174,6 +178,10 @@ __all__ = [
     "EditOpKind",
     "EvidenceSpan",
     "ExecutionPolicy",
+    "ExportEntry",
+    "ExporterKind",
+    "ExporterReport",
+    "ExporterStatus",
     "FfmpegRenderGraph",
     "FilterGraph",
     "FilterNode",

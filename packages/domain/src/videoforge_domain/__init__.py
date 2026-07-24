@@ -36,6 +36,14 @@ from videoforge_domain.dedup import (
     find_duplicate_groups,
 )
 from videoforge_domain.errors import DomainError, InsufficientSnapshots
+from videoforge_domain.exporters import (
+    export_all,
+    read_otio_file,
+    write_capcut_package,
+    write_fcpxml_file,
+    write_jianying_package,
+    write_otio_file,
+)
 from videoforge_domain.ffmpeg_compiler import (
     CompileConfig,
     UnsafeInputPath,
@@ -209,6 +217,7 @@ __all__ = [
     "dhash_from_gray",
     "engagement_efficiency",
     "estimate_duration_ms",
+    "export_all",
     "find_duplicate_groups",
     "from_otio_mapping",
     "hamming",
@@ -230,6 +239,7 @@ __all__ = [
     "overlap_ratio",
     "phash_sequence_similarity",
     "rank_highlights",
+    "read_otio_file",
     "remotion_manifest_cache_key",
     "render_manifest_cache_key",
     "rescore_cluster",
@@ -251,4 +261,8 @@ __all__ = [
     "validate_script",
     "validate_timeline",
     "vote_text",
+    "write_capcut_package",
+    "write_fcpxml_file",
+    "write_jianying_package",
+    "write_otio_file",
 ]

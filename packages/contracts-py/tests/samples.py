@@ -30,6 +30,10 @@ from videoforge_contracts import (
     EditOp,
     EditOpKind,
     EvidenceSpan,
+    ExportEntry,
+    ExporterKind,
+    ExporterReport,
+    ExporterStatus,
     FfmpegRenderGraph,
     FilterGraph,
     FilterNode,
@@ -749,6 +753,31 @@ def make_qa_report() -> QAReport:
     )
 
 
+def make_exporter_report() -> ExporterReport:
+    return ExporterReport(
+        id="01J2ZK3AC9V6XW8YQ4R5T6U7ZT",
+        timeline_id="01J2ZK3AC9V6XW8YQ4R5T6U7ZN",
+        entries=[
+            ExportEntry(kind=ExporterKind.OTIO_FILE, status=ExporterStatus.OK,
+                         output_path="/output/timeline.otio",
+                         tool_version="videoforge.otio.writer@0.1.0",
+                         bytes_written=2048),
+            ExportEntry(kind=ExporterKind.FCPXML, status=ExporterStatus.OK,
+                         output_path="/output/timeline.fcpxml",
+                         tool_version="videoforge.fcpxml.writer@0.1.0",
+                         bytes_written=4096),
+            ExportEntry(kind=ExporterKind.JIANYING, status=ExporterStatus.PARTIAL,
+                         output_path="/output/jianying-package/",
+                         tool_version="videoforge.jianying.writer@0.1.0-experimental",
+                         warnings=["新版本 Draft 加密；已产出包+README 说明供人工导入"]),
+            ExportEntry(kind=ExporterKind.CAPCUT, status=ExporterStatus.UNSUPPORTED,
+                         tool_version="videoforge.capcut.writer@0.1.0-experimental",
+                         errors=["CapCut Draft Adapter 尚未支持该模板"]),
+        ],
+        created_at=_T0,
+    )
+
+
 SAMPLES: dict[str, ContractModel] = {
     "project": make_project(),
     "artifact": make_artifact(),
@@ -773,4 +802,5 @@ SAMPLES: dict[str, ContractModel] = {
     "render-manifest": make_render_manifest(),
     "remotion-render-manifest": make_remotion_render_manifest(),
     "qa-report": make_qa_report(),
+    "exporter-report": make_exporter_report(),
 }
