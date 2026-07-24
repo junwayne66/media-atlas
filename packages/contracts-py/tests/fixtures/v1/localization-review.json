@@ -1,0 +1,24 @@
+{
+  "created_at": "2026-07-21T08:00:00Z",
+  "decisions": [
+    {
+      "edited_text": null,
+      "note": null,
+      "reviewer": "editor-a",
+      "schema_version": "1",
+      "sentence_id": "ls-0",
+      "state": "APPROVED"
+    },
+    {
+      "edited_text": "端侧 AI 芯片把推理带到本地。",
+      "note": "更贴近平台口语",
+      "reviewer": "editor-a",
+      "schema_version": "1",
+      "sentence_id": "ls-1",
+      "state": "EDITED"
+    }
+  ],
+  "id": "01J2ZK3AC9V6XW8YQ4R5T6U7LR01",
+  "localization_variant_id": "01J2ZK3AC9V6XW8YQ4R5T6U7ZLV",
+  "schema_version": "1"
+}

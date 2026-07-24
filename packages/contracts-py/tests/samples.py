@@ -68,6 +68,10 @@ from videoforge_contracts import (
     LipSyncQAReport,
     LipSyncReviewReason,
     LipSyncSegmentDecision,
+    LocalizationQACheck,
+    LocalizationQAFinding,
+    LocalizationQAReport,
+    LocalizationReview,
     LocalizationVariant,
     LocalizedSentence,
     LoudnessTarget,
@@ -98,12 +102,14 @@ from videoforge_contracts import (
     RenderTargetKind,
     ResolvedAsset,
     ResourceLimits,
+    ReviewState,
     RhetoricalBeat,
     RhetoricalBeatKind,
     SafeAreaSpec,
     ScriptSentence,
     ScriptVersion,
     Segment,
+    SentenceReviewDecision,
     StorageRef,
     SubtitleCue,
     SubtitleLine,
@@ -936,6 +942,41 @@ def make_lipsync_plan() -> LipSyncPlan:
     )
 
 
+def make_localization_qa_report() -> LocalizationQAReport:
+    return LocalizationQAReport(
+        id="01J2ZK3AC9V6XW8YQ4R5T6U7LQ01",
+        localization_variant_id="01J2ZK3AC9V6XW8YQ4R5T6U7ZLV",
+        findings=[
+            LocalizationQAFinding(
+                sentence_id="ls-0", check=LocalizationQACheck.SUBTITLE_READING_SPEED,
+                severity=QASeverity.MINOR,
+                detail="英文 CPS 略高，建议缩短或延长该 cue",
+            ),
+        ],
+        reviewed_sentence_ids=["ls-0", "ls-1"],
+        pass_or_block=True,  # 仅 MINOR，无 BLOCKER
+        created_at=_T0,
+    )
+
+
+def make_localization_review() -> LocalizationReview:
+    return LocalizationReview(
+        id="01J2ZK3AC9V6XW8YQ4R5T6U7LR01",
+        localization_variant_id="01J2ZK3AC9V6XW8YQ4R5T6U7ZLV",
+        decisions=[
+            SentenceReviewDecision(
+                sentence_id="ls-0", state=ReviewState.APPROVED, reviewer="editor-a",
+            ),
+            SentenceReviewDecision(
+                sentence_id="ls-1", state=ReviewState.EDITED, reviewer="editor-a",
+                edited_text="端侧 AI 芯片把推理带到本地。",
+                note="更贴近平台口语",
+            ),
+        ],
+        created_at=_T0,
+    )
+
+
 def make_reedit_plan() -> ReeditPlan:
     return ReeditPlan(
         id="01J2ZK3AC9V6XW8YQ4R5T6U7ZK",
@@ -1203,6 +1244,8 @@ SAMPLES: dict[str, ContractModel] = {
     "duration-fit-plan": make_duration_fit_plan(),
     "audio-mix-plan": make_audio_mix_plan(),
     "lipsync-plan": make_lipsync_plan(),
+    "localization-qa-report": make_localization_qa_report(),
+    "localization-review": make_localization_review(),
     "reedit-plan": make_reedit_plan(),
     "asset-plan": make_asset_plan(),
     "creative-timeline": make_creative_timeline(),
