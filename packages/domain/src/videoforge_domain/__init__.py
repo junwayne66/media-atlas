@@ -9,6 +9,14 @@ from videoforge_domain.asset_plan import (
     resolve_asset_plan,
     validate_asset_plan,
 )
+from videoforge_domain.audio_mix import (
+    AudioMixIssue,
+    AudioMixIssueKind,
+    build_audio_mix_plan,
+    default_ducking_policy,
+    is_valid_audio_mix_plan,
+    validate_audio_mix_plan,
+)
 from videoforge_domain.blueprint import (
     BlueprintIssue,
     BlueprintIssueKind,
@@ -34,6 +42,17 @@ from videoforge_domain.dedup import (
     DuplicateLayer,
     DuplicateMatch,
     find_duplicate_groups,
+)
+from videoforge_domain.duration_fit import (
+    DEFAULT_STRETCH_MAX_ABS_RATIO,
+    DEFAULT_UNCHANGED_TOLERANCE,
+    DurationFitInput,
+    DurationFitIssue,
+    DurationFitIssueKind,
+    decide_duration_fit,
+    is_valid_duration_fit_plan,
+    plan_duration_fit,
+    validate_duration_fit_plan,
 )
 from videoforge_domain.errors import DomainError, InsufficientSnapshots
 from videoforge_domain.exporters import (
@@ -353,4 +372,19 @@ __all__ = [
     "text_hash_of",
     "validate_tts_manifest",
     "validate_voice_profile",
+    "DEFAULT_STRETCH_MAX_ABS_RATIO",
+    "DEFAULT_UNCHANGED_TOLERANCE",
+    "DurationFitInput",
+    "DurationFitIssue",
+    "DurationFitIssueKind",
+    "decide_duration_fit",
+    "is_valid_duration_fit_plan",
+    "plan_duration_fit",
+    "validate_duration_fit_plan",
+    "AudioMixIssue",
+    "AudioMixIssueKind",
+    "build_audio_mix_plan",
+    "default_ducking_policy",
+    "is_valid_audio_mix_plan",
+    "validate_audio_mix_plan",
 ]

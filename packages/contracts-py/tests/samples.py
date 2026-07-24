@@ -10,6 +10,9 @@ from videoforge_contracts import (
     AssetPlanSlot,
     AssetRole,
     AssetSource,
+    AudioMixPlan,
+    AudioMixTrack,
+    AudioMixTrackKind,
     BBox,
     BeatSlot,
     BeatTemplate,
@@ -32,6 +35,12 @@ from videoforge_contracts import (
     CreativeBrief,
     CreativeOpportunity,
     CreativeTimeline,
+    DuckingPolicy,
+    DuckingSidechain,
+    DurationFitDecision,
+    DurationFitPlan,
+    DurationFitStatus,
+    DurationFitStrategy,
     EditOp,
     EditOpKind,
     EvidenceSpan,
@@ -53,6 +62,7 @@ from videoforge_contracts import (
     HighlightSet,
     LocalizationVariant,
     LocalizedSentence,
+    LoudnessTarget,
     MediaProbe,
     ProblemDetail,
     ProducedBy,
@@ -833,6 +843,59 @@ def make_tts_manifest() -> TTSManifest:
     )
 
 
+def make_duration_fit_plan() -> DurationFitPlan:
+    return DurationFitPlan(
+        id="01J2ZK3AC9V6XW8YQ4R5T6U7DF01",
+        localization_variant_id="01J2ZK3AC9V6XW8YQ4R5T6U7ZLV",
+        decisions=[
+            DurationFitDecision(
+                sentence_id="ls-0", estimated_ms=3200, target_ms=3000,
+                fit_method=DurationFitStrategy.TTS_SPEED,
+                final_ratio=1.067,
+                status=DurationFitStatus.OK_FITTED,
+                rationale="TTS 语速 1.07x 在自然区间 [0.92, 1.08]，命中",
+            ),
+            DurationFitDecision(
+                sentence_id="ls-1", estimated_ms=5000, target_ms=5000,
+                final_ratio=1.0,
+                status=DurationFitStatus.OK_UNCHANGED,
+                rationale="估算已等于预算，无需拟合",
+            ),
+        ],
+        created_at=_T0,
+    )
+
+
+def make_audio_mix_plan() -> AudioMixPlan:
+    return AudioMixPlan(
+        id="01J2ZK3AC9V6XW8YQ4R5T6U7AM01",
+        tracks=[
+            AudioMixTrack(
+                id="voice-dub", kind=AudioMixTrackKind.VOICE_DUB,
+                tts_manifest_id="01J2ZK3AC9V6XW8YQ4R5T6U7TTS3",
+                start_ms=0, end_ms=8200, gain_db=0.0,
+            ),
+            AudioMixTrack(
+                id="music", kind=AudioMixTrackKind.MUSIC,
+                source_artifact_id="artifact://music/bg.mp3",
+                start_ms=0, end_ms=8200, gain_db=-6.0,
+                ducked_by="voice-dub",
+            ),
+        ],
+        ducking=DuckingPolicy(
+            sidechain=DuckingSidechain.VOICE_ACTIVITY,
+            threshold_db=-20.0, ratio=8.0,
+            attack_ms=20, release_ms=300, reduction_db=-8.0,
+        ),
+        loudness_target=LoudnessTarget(
+            lufs=-14.0, lufs_tolerance=2.0, true_peak_max_dbtp=-1.0,
+        ),
+        room_tone_artifact_id="artifact://ambience/room.wav",
+        total_duration_ms=8200,
+        created_at=_T0,
+    )
+
+
 def make_reedit_plan() -> ReeditPlan:
     return ReeditPlan(
         id="01J2ZK3AC9V6XW8YQ4R5T6U7ZK",
@@ -1097,6 +1160,8 @@ SAMPLES: dict[str, ContractModel] = {
     "voice-profile": make_voice_profile(),
     "pronunciation-lexicon": make_pronunciation_lexicon(),
     "tts-manifest": make_tts_manifest(),
+    "duration-fit-plan": make_duration_fit_plan(),
+    "audio-mix-plan": make_audio_mix_plan(),
     "reedit-plan": make_reedit_plan(),
     "asset-plan": make_asset_plan(),
     "creative-timeline": make_creative_timeline(),

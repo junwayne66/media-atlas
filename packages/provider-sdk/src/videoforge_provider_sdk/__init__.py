@@ -35,6 +35,16 @@ from videoforge_provider_sdk.asset import (
     FakeAssetSourceProvider,
     UnconfiguredAssetSourceProvider,
 )
+from videoforge_provider_sdk.audio_mix import (
+    AudioMixErrorCode,
+    AudioMixProvider,
+    AudioMixRequest,
+    AudioMixResult,
+    AudioMixStatus,
+    FakeAudioMixProvider,
+    MeasuredLoudness,
+    UnconfiguredAudioMixProvider,
+)
 from videoforge_provider_sdk.base import FakeProvider, Provider, ProviderInvokeError
 from videoforge_provider_sdk.blueprint_fusion import (
     BlueprintFusionErrorCode,
@@ -85,6 +95,16 @@ from videoforge_provider_sdk.download_router import (
     DownloadAttempt,
     DownloadRouter,
     DownloadRouteResult,
+)
+from videoforge_provider_sdk.duration_fit import (
+    DurationRewriteDirection,
+    DurationRewriteErrorCode,
+    DurationRewriteProvider,
+    DurationRewriteRequest,
+    DurationRewriteResult,
+    DurationRewriteStatus,
+    FakeDurationRewriteProvider,
+    UnconfiguredDurationRewriteProvider,
 )
 from videoforge_provider_sdk.fetcher import (
     DiscoveryFetcher,
@@ -421,4 +441,20 @@ __all__ = [
     "sha256_file",
     "status_for_download_error",
     "status_for_error",
+    "DurationRewriteDirection",
+    "DurationRewriteErrorCode",
+    "DurationRewriteProvider",
+    "DurationRewriteRequest",
+    "DurationRewriteResult",
+    "DurationRewriteStatus",
+    "FakeDurationRewriteProvider",
+    "UnconfiguredDurationRewriteProvider",
+    "AudioMixErrorCode",
+    "AudioMixProvider",
+    "AudioMixRequest",
+    "AudioMixResult",
+    "AudioMixStatus",
+    "FakeAudioMixProvider",
+    "MeasuredLoudness",
+    "UnconfiguredAudioMixProvider",
 ]

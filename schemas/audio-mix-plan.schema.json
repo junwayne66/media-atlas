@@ -1,0 +1,264 @@
+{
+  "$defs": {
+    "AudioMixTrack": {
+      "additionalProperties": false,
+      "description": "一条参与合成的音轨。",
+      "properties": {
+        "ducked_by": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "被哪条轨 Ducking 的 track id；一般 MUSIC/AMBIENCE 被 VOICE_* 压",
+          "title": "Ducked By"
+        },
+        "end_ms": {
+          "minimum": 0,
+          "title": "End Ms",
+          "type": "integer"
+        },
+        "gain_db": {
+          "default": 0.0,
+          "title": "Gain Db",
+          "type": "number"
+        },
+        "id": {
+          "minLength": 1,
+          "title": "Id",
+          "type": "string"
+        },
+        "kind": {
+          "$ref": "#/$defs/AudioMixTrackKind"
+        },
+        "schema_version": {
+          "default": "1",
+          "description": "合同 schema 版本；Reader 需兼容当前与前一版本",
+          "title": "Schema Version",
+          "type": "string"
+        },
+        "source_artifact_id": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "音频 artifact；VOICE_DUB 常来自 TTSManifest",
+          "title": "Source Artifact Id"
+        },
+        "start_ms": {
+          "minimum": 0,
+          "title": "Start Ms",
+          "type": "integer"
+        },
+        "tts_manifest_id": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "VOICE_DUB 关联 TTS Manifest（可选）",
+          "title": "Tts Manifest Id"
+        }
+      },
+      "required": [
+        "id",
+        "kind",
+        "start_ms",
+        "end_ms"
+      ],
+      "title": "AudioMixTrack",
+      "type": "object"
+    },
+    "AudioMixTrackKind": {
+      "description": "分轨类型（§9 分轨设计）。",
+      "enum": [
+        "ORIGINAL_VOICE",
+        "VOICE_DUB",
+        "MUSIC",
+        "SFX",
+        "AMBIENCE"
+      ],
+      "title": "AudioMixTrackKind",
+      "type": "string"
+    },
+    "DuckingPolicy": {
+      "additionalProperties": false,
+      "description": "Ducking 参数（单位与 ffmpeg sidechaincompress 兼容）。",
+      "properties": {
+        "attack_ms": {
+          "default": 20,
+          "minimum": 0,
+          "title": "Attack Ms",
+          "type": "integer"
+        },
+        "ratio": {
+          "default": 8.0,
+          "description": "压缩比 ≥ 1",
+          "minimum": 1.0,
+          "title": "Ratio",
+          "type": "number"
+        },
+        "reduction_db": {
+          "default": -8.0,
+          "description": "被压轨下探目标（-8dB 常见）",
+          "maximum": 0.0,
+          "title": "Reduction Db",
+          "type": "number"
+        },
+        "release_ms": {
+          "default": 300,
+          "minimum": 0,
+          "title": "Release Ms",
+          "type": "integer"
+        },
+        "schema_version": {
+          "default": "1",
+          "description": "合同 schema 版本；Reader 需兼容当前与前一版本",
+          "title": "Schema Version",
+          "type": "string"
+        },
+        "sidechain": {
+          "$ref": "#/$defs/DuckingSidechain"
+        },
+        "threshold_db": {
+          "default": -20.0,
+          "description": "触发阈值（dB）",
+          "maximum": 0.0,
+          "title": "Threshold Db",
+          "type": "number"
+        }
+      },
+      "required": [
+        "sidechain"
+      ],
+      "title": "DuckingPolicy",
+      "type": "object"
+    },
+    "DuckingSidechain": {
+      "description": "Ducking sidechain 触发源。",
+      "enum": [
+        "VOICE_ACTIVITY",
+        "CUT_POINT",
+        "NONE"
+      ],
+      "title": "DuckingSidechain",
+      "type": "string"
+    },
+    "LoudnessTarget": {
+      "additionalProperties": false,
+      "description": "响度目标（§9 平台/模板配置）。True Peak Gate = 硬顶（QA BLOCKER 已定义）。",
+      "properties": {
+        "lufs": {
+          "default": -14.0,
+          "description": "整体积分响度目标（LUFS）",
+          "title": "Lufs",
+          "type": "number"
+        },
+        "lufs_tolerance": {
+          "default": 2.0,
+          "description": "±LUFS 容差",
+          "minimum": 0.0,
+          "title": "Lufs Tolerance",
+          "type": "number"
+        },
+        "schema_version": {
+          "default": "1",
+          "description": "合同 schema 版本；Reader 需兼容当前与前一版本",
+          "title": "Schema Version",
+          "type": "string"
+        },
+        "true_peak_max_dbtp": {
+          "default": -1.0,
+          "description": "True Peak 硬顶（dBTP）；QA TRUE_PEAK_CLIP 触发 BLOCKER",
+          "maximum": 0.0,
+          "title": "True Peak Max Dbtp",
+          "type": "number"
+        }
+      },
+      "title": "LoudnessTarget",
+      "type": "object"
+    }
+  },
+  "$id": "https://videoforge.dev/schemas/audio-mix-plan.schema.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "description": "一次音频合成计划。tracks + ducking + loudness_target + room_tone。",
+  "properties": {
+    "created_at": {
+      "format": "date-time",
+      "title": "Created At",
+      "type": "string"
+    },
+    "ducking": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/DuckingPolicy"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null
+    },
+    "id": {
+      "minLength": 1,
+      "title": "Id",
+      "type": "string"
+    },
+    "loudness_target": {
+      "$ref": "#/$defs/LoudnessTarget"
+    },
+    "room_tone_artifact_id": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "description": "配音段间的背景噪；空则允许绝对静音",
+      "title": "Room Tone Artifact Id"
+    },
+    "schema_version": {
+      "default": "1",
+      "description": "合同 schema 版本；Reader 需兼容当前与前一版本",
+      "title": "Schema Version",
+      "type": "string"
+    },
+    "total_duration_ms": {
+      "exclusiveMinimum": 0,
+      "title": "Total Duration Ms",
+      "type": "integer"
+    },
+    "tracks": {
+      "items": {
+        "$ref": "#/$defs/AudioMixTrack"
+      },
+      "title": "Tracks",
+      "type": "array"
+    }
+  },
+  "required": [
+    "id",
+    "loudness_target",
+    "total_duration_ms",
+    "created_at"
+  ],
+  "title": "AudioMixPlan",
+  "type": "object"
+}

@@ -1,0 +1,33 @@
+{
+  "created_at": "2026-07-21T08:00:00Z",
+  "decisions": [
+    {
+      "estimated_ms": 3200,
+      "final_ratio": 1.067,
+      "fit_method": "TTS_SPEED",
+      "rationale": "TTS 语速 1.07x 在自然区间 [0.92, 1.08]，命中",
+      "review_reasons": [],
+      "schema_version": "1",
+      "sentence_id": "ls-0",
+      "status": "OK_FITTED",
+      "target_ms": 3000
+    },
+    {
+      "estimated_ms": 5000,
+      "final_ratio": 1.0,
+      "fit_method": null,
+      "rationale": "估算已等于预算，无需拟合",
+      "review_reasons": [],
+      "schema_version": "1",
+      "sentence_id": "ls-1",
+      "status": "OK_UNCHANGED",
+      "target_ms": 5000
+    }
+  ],
+  "id": "01J2ZK3AC9V6XW8YQ4R5T6U7DF01",
+  "localization_variant_id": "01J2ZK3AC9V6XW8YQ4R5T6U7ZLV",
+  "natural_speed_max": 1.08,
+  "natural_speed_min": 0.92,
+  "schema_version": "1",
+  "stretch_max_abs_ratio": 0.05
+}

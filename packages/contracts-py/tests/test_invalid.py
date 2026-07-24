@@ -450,6 +450,61 @@ INVALID_OVERRIDES: list[tuple[str, str, dict[str, Any]]] = [
     ("tts-manifest", "text_hash 空被拒", {"text_hash": ""}),
     # TTS：manifest speed_used 非正
     ("tts-manifest", "speed_used ≤ 0 被拒", {"speed_used": 0.0}),
+    # 时长拟合：decisions 内 sentence_id 重复
+    ("duration-fit-plan", "重复 sentence_id 被拒", {
+        "decisions": [
+            {"sentence_id": "a", "estimated_ms": 3000, "target_ms": 3000,
+             "final_ratio": 1.0, "status": "OK_UNCHANGED", "rationale": "x"},
+            {"sentence_id": "a", "estimated_ms": 3100, "target_ms": 3000,
+             "final_ratio": 1.03, "status": "OK_FITTED", "fit_method": "TTS_SPEED",
+             "rationale": "y"},
+        ],
+    }),
+    # 时长拟合：final_ratio 非正
+    ("duration-fit-plan", "final_ratio ≤ 0 被拒", {
+        "decisions": [
+            {"sentence_id": "a", "estimated_ms": 3000, "target_ms": 3000,
+             "final_ratio": 0.0, "status": "OK_UNCHANGED", "rationale": "x"},
+        ],
+    }),
+    # 时长拟合：target_ms 非正
+    ("duration-fit-plan", "target_ms ≤ 0 被拒", {
+        "decisions": [
+            {"sentence_id": "a", "estimated_ms": 3000, "target_ms": 0,
+             "final_ratio": 1.0, "status": "OK_UNCHANGED", "rationale": "x"},
+        ],
+    }),
+    # 音频合成：tracks id 重复
+    ("audio-mix-plan", "tracks id 重复被拒", {
+        "tracks": [
+            {"id": "t", "kind": "VOICE_DUB", "start_ms": 0, "end_ms": 100},
+            {"id": "t", "kind": "MUSIC", "start_ms": 0, "end_ms": 100},
+        ],
+    }),
+    # 音频合成：ducked_by 指向不存在的轨
+    ("audio-mix-plan", "ducked_by 悬空被拒", {
+        "tracks": [
+            {"id": "dub", "kind": "VOICE_DUB", "start_ms": 0, "end_ms": 100},
+            {"id": "m", "kind": "MUSIC", "start_ms": 0, "end_ms": 100,
+             "ducked_by": "ghost"},
+        ],
+    }),
+    # 音频合成：轨自己 Ducking 自己
+    ("audio-mix-plan", "自 Ducking 被拒", {
+        "tracks": [
+            {"id": "dub", "kind": "VOICE_DUB", "start_ms": 0, "end_ms": 100,
+             "ducked_by": "dub"},
+        ],
+    }),
+    # 音频合成：track end < start
+    ("audio-mix-plan", "track end < start 被拒", {
+        "tracks": [
+            {"id": "t", "kind": "VOICE_DUB", "start_ms": 500, "end_ms": 100},
+        ],
+    }),
+    # 音频合成：True Peak 硬顶不能为正
+    ("audio-mix-plan", "true_peak_max_dbtp > 0 被拒",
+     {"loudness_target": {"true_peak_max_dbtp": 1.0}}),
     ("exporter-report", "未知字段被拒", {"unexpected_field": 1}),
     ("exporter-report", "非法 ExporterKind 被拒",
      {"entries": [{"kind": "PREMIERE_XML", "status": "OK"}]}),
