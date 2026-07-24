@@ -1,0 +1,114 @@
+{
+  "$defs": {
+    "PronunciationEntry": {
+      "additionalProperties": false,
+      "description": "发音词典的一条：surface（原文形式）→ ipa / pinyin / hint。",
+      "properties": {
+        "notes": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Notes"
+        },
+        "pronunciation": {
+          "description": "IPA / 拼音 / provider 支持的任何标注（provider 决定语法）",
+          "minLength": 1,
+          "title": "Pronunciation",
+          "type": "string"
+        },
+        "schema_version": {
+          "default": "1",
+          "description": "合同 schema 版本；Reader 需兼容当前与前一版本",
+          "title": "Schema Version",
+          "type": "string"
+        },
+        "surface": {
+          "minLength": 1,
+          "title": "Surface",
+          "type": "string"
+        }
+      },
+      "required": [
+        "surface",
+        "pronunciation"
+      ],
+      "title": "PronunciationEntry",
+      "type": "object"
+    },
+    "TTSProviderTier": {
+      "description": "provider 分层（供路由用）。云端最高质，系统最低但预览便宜。",
+      "enum": [
+        "CLOUD_HIGH_QUALITY",
+        "SELF_HOSTED",
+        "SYSTEM_PREVIEW"
+      ],
+      "title": "TTSProviderTier",
+      "type": "string"
+    }
+  },
+  "$id": "https://videoforge.dev/schemas/pronunciation-lexicon.schema.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "description": "一对（provider, language）的发音词典。entries surface 唯一。",
+  "properties": {
+    "created_at": {
+      "format": "date-time",
+      "title": "Created At",
+      "type": "string"
+    },
+    "entries": {
+      "items": {
+        "$ref": "#/$defs/PronunciationEntry"
+      },
+      "title": "Entries",
+      "type": "array"
+    },
+    "id": {
+      "minLength": 1,
+      "title": "Id",
+      "type": "string"
+    },
+    "language": {
+      "minLength": 1,
+      "title": "Language",
+      "type": "string"
+    },
+    "provider_tier": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/TTSProviderTier"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "description": "null 表示跨 provider 通用；有值即绑定该层的标注格式"
+    },
+    "schema_version": {
+      "default": "1",
+      "description": "合同 schema 版本；Reader 需兼容当前与前一版本",
+      "title": "Schema Version",
+      "type": "string"
+    },
+    "version": {
+      "default": 1,
+      "minimum": 1,
+      "title": "Version",
+      "type": "integer"
+    }
+  },
+  "required": [
+    "id",
+    "language",
+    "created_at"
+  ],
+  "title": "PronunciationLexicon",
+  "type": "object"
+}

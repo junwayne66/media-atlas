@@ -176,6 +176,23 @@ from videoforge_domain.transcript import (
     mark_low_confidence,
     needs_review,
 )
+from videoforge_domain.tts import (
+    NATURAL_SPEED_MAX,
+    NATURAL_SPEED_MIN,
+    TTSManifestIssue,
+    TTSManifestIssueKind,
+    TTSSynthesisJob,
+    VoiceProfileIssue,
+    VoiceProfileIssueKind,
+    is_authorized_for_synthesis,
+    is_valid_tts_manifest,
+    is_valid_voice_profile,
+    plan_tts_synthesis,
+    suggest_speed,
+    text_hash_of,
+    validate_tts_manifest,
+    validate_voice_profile,
+)
 
 __all__ = [
     "DEFAULT_THRESHOLDS",
@@ -321,4 +338,19 @@ __all__ = [
     "write_fcpxml_file",
     "write_jianying_package",
     "write_otio_file",
+    "NATURAL_SPEED_MAX",
+    "NATURAL_SPEED_MIN",
+    "TTSManifestIssue",
+    "TTSManifestIssueKind",
+    "TTSSynthesisJob",
+    "VoiceProfileIssue",
+    "VoiceProfileIssueKind",
+    "is_authorized_for_synthesis",
+    "is_valid_tts_manifest",
+    "is_valid_voice_profile",
+    "plan_tts_synthesis",
+    "suggest_speed",
+    "text_hash_of",
+    "validate_tts_manifest",
+    "validate_voice_profile",
 ]

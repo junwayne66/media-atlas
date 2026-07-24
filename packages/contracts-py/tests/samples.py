@@ -57,6 +57,8 @@ from videoforge_contracts import (
     ProblemDetail,
     ProducedBy,
     Project,
+    PronunciationEntry,
+    PronunciationLexicon,
     ProviderDescriptor,
     ProviderHealth,
     QAFinding,
@@ -110,11 +112,17 @@ from videoforge_contracts import (
     TrendItemSnapshot,
     TrendStage,
     TrendSubScores,
+    TTSManifest,
+    TTSProviderTier,
+    TTSWordTiming,
     VideoBlueprint,
     VisualAnalysis,
     VisualBeat,
     VisualBeatKind,
     VisualMix,
+    VoiceKind,
+    VoiceLicenseStatus,
+    VoiceProfile,
 )
 
 _T0 = datetime(2026, 7, 21, 8, 0, 0, tzinfo=UTC)
@@ -770,6 +778,61 @@ def make_text_localization_plan() -> TextLocalizationPlan:
     )
 
 
+def make_voice_profile() -> VoiceProfile:
+    return VoiceProfile(
+        id="01J2ZK3AC9V6XW8YQ4R5T6U7TTS1",
+        display_name="Anchor A（Cloud HQ）",
+        language="zh-CN",
+        voice_kind=VoiceKind.CLONED,
+        license_status=VoiceLicenseStatus.AUTHORIZED,
+        provider_tier=TTSProviderTier.CLOUD_HIGH_QUALITY,
+        provider_voice_id="azure-neural-female-1",
+        sample_source_ref="artifact://sample/anchor-a-consent-2026.wav",
+        consent_ref="consent://anchor-a-2026-signed",
+        notes="Anchor A cloned voice; 6-month license",
+        created_at=_T0,
+    )
+
+
+def make_pronunciation_lexicon() -> PronunciationLexicon:
+    return PronunciationLexicon(
+        id="01J2ZK3AC9V6XW8YQ4R5T6U7TTS2",
+        language="en-US",
+        provider_tier=TTSProviderTier.CLOUD_HIGH_QUALITY,
+        entries=[
+            PronunciationEntry(surface="Qwen", pronunciation="/tʃwɛn/",
+                                  notes="product name"),
+            PronunciationEntry(surface="LoRA", pronunciation="/ˈloʊ.rə/"),
+        ],
+        version=1, created_at=_T0,
+    )
+
+
+def make_tts_manifest() -> TTSManifest:
+    return TTSManifest(
+        id="01J2ZK3AC9V6XW8YQ4R5T6U7TTS3",
+        sentence_id="ls-0",
+        voice_profile_id="01J2ZK3AC9V6XW8YQ4R5T6U7TTS1",
+        language="en-US",
+        text_hash="a" * 64,
+        provider="tts.cloud.fake",
+        provider_tier=TTSProviderTier.CLOUD_HIGH_QUALITY,
+        tool_version="fake-tts-1.0",
+        audio_artifact_id="artifact://tts/ls-0.wav",
+        duration_ms=3200,
+        word_timings=[
+            TTSWordTiming(text="This", start_ms=0, end_ms=280, confidence=0.98),
+            TTSWordTiming(text="on-device", start_ms=280, end_ms=1200,
+                             confidence=0.97),
+            TTSWordTiming(text="model", start_ms=1200, end_ms=1720,
+                             confidence=0.97),
+        ],
+        speed_used=1.0,
+        seed=42,
+        created_at=_T0,
+    )
+
+
 def make_reedit_plan() -> ReeditPlan:
     return ReeditPlan(
         id="01J2ZK3AC9V6XW8YQ4R5T6U7ZK",
@@ -1031,6 +1094,9 @@ SAMPLES: dict[str, ContractModel] = {
     "subtitle-template": make_subtitle_template(),
     "subtitle-track": make_subtitle_track(),
     "text-localization-plan": make_text_localization_plan(),
+    "voice-profile": make_voice_profile(),
+    "pronunciation-lexicon": make_pronunciation_lexicon(),
+    "tts-manifest": make_tts_manifest(),
     "reedit-plan": make_reedit_plan(),
     "asset-plan": make_asset_plan(),
     "creative-timeline": make_creative_timeline(),

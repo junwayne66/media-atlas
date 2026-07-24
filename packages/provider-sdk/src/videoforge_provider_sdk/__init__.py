@@ -204,6 +204,16 @@ from videoforge_provider_sdk.timeline_exporter import (
     TimelineExportResult,
     UnconfiguredTimelineExporter,
 )
+from videoforge_provider_sdk.tts import (
+    FakeTTSProvider,
+    TTSErrorCode,
+    TTSProvider,
+    TTSRequest,
+    TTSResult,
+    TTSRouter,
+    TTSStatus,
+    UnconfiguredTTSProvider,
+)
 from videoforge_provider_sdk.url_resolver import (
     FixtureShortLinkExpander,
     ShortLinkExpander,
@@ -287,6 +297,14 @@ __all__ = [
     "FakeStructureRewriteProvider",
     "FakeCleanPlateProvider",
     "FakeTextRedrawProvider",
+    "FakeTTSProvider",
+    "TTSErrorCode",
+    "TTSProvider",
+    "TTSRequest",
+    "TTSResult",
+    "TTSRouter",
+    "TTSStatus",
+    "UnconfiguredTTSProvider",
     "CleanPlateErrorCode",
     "CleanPlateProvider",
     "CleanPlateResult",

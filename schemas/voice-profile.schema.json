@@ -1,0 +1,154 @@
+{
+  "$defs": {
+    "TTSProviderTier": {
+      "description": "provider 分层（供路由用）。云端最高质，系统最低但预览便宜。",
+      "enum": [
+        "CLOUD_HIGH_QUALITY",
+        "SELF_HOSTED",
+        "SYSTEM_PREVIEW"
+      ],
+      "title": "TTSProviderTier",
+      "type": "string"
+    },
+    "VoiceKind": {
+      "description": "声音种类。",
+      "enum": [
+        "CLONED",
+        "PRESET",
+        "SYSTEM"
+      ],
+      "title": "VoiceKind",
+      "type": "string"
+    },
+    "VoiceLicenseStatus": {
+      "description": "Voice Profile 授权状态。**只有 AUTHORIZED 可用于合成**。",
+      "enum": [
+        "AUTHORIZED",
+        "PENDING",
+        "DENIED",
+        "UNCONFIRMED",
+        "EXPIRED"
+      ],
+      "title": "VoiceLicenseStatus",
+      "type": "string"
+    }
+  },
+  "$id": "https://videoforge.dev/schemas/voice-profile.schema.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "description": "一个可复用的声音配置文件。\n\n`voice_kind=CLONED` 必须有 `sample_source_ref`（原始采样来源引用）+ `consent_ref`\n（说话人同意书引用）；否则合同层拒（§7 硬红线）。`license_status=AUTHORIZED` 是使用\n合成的**必要**条件——合同层与 provider 层双检；expiration 到期后 provider 应刷新到\nEXPIRED（合同层不能自动判断时间）。",
+  "properties": {
+    "consent_ref": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "description": "说话人授权同意书引用；CLONED 必填",
+      "title": "Consent Ref"
+    },
+    "created_at": {
+      "format": "date-time",
+      "title": "Created At",
+      "type": "string"
+    },
+    "display_name": {
+      "minLength": 1,
+      "title": "Display Name",
+      "type": "string"
+    },
+    "expires_at": {
+      "anyOf": [
+        {
+          "format": "date-time",
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "description": "授权到期时间（可选）",
+      "title": "Expires At"
+    },
+    "id": {
+      "minLength": 1,
+      "title": "Id",
+      "type": "string"
+    },
+    "language": {
+      "description": "主语言，如 zh-CN；跨语言由 provider 处理",
+      "minLength": 1,
+      "title": "Language",
+      "type": "string"
+    },
+    "license_status": {
+      "$ref": "#/$defs/VoiceLicenseStatus",
+      "default": "UNCONFIRMED"
+    },
+    "notes": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Notes"
+    },
+    "provider_tier": {
+      "$ref": "#/$defs/TTSProviderTier",
+      "default": "CLOUD_HIGH_QUALITY"
+    },
+    "provider_voice_id": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "description": "provider 侧的具体 voice id（云端/自托管返回值）",
+      "title": "Provider Voice Id"
+    },
+    "sample_source_ref": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "description": "原始采样来源引用（artifact id / URL）；CLONED 必填",
+      "title": "Sample Source Ref"
+    },
+    "schema_version": {
+      "default": "1",
+      "description": "合同 schema 版本；Reader 需兼容当前与前一版本",
+      "title": "Schema Version",
+      "type": "string"
+    },
+    "voice_kind": {
+      "$ref": "#/$defs/VoiceKind"
+    }
+  },
+  "required": [
+    "id",
+    "display_name",
+    "language",
+    "voice_kind",
+    "created_at"
+  ],
+  "title": "VoiceProfile",
+  "type": "object"
+}

@@ -1,0 +1,39 @@
+{
+  "audio_artifact_id": "artifact://tts/ls-0.wav",
+  "created_at": "2026-07-21T08:00:00Z",
+  "duration_ms": 3200,
+  "id": "01J2ZK3AC9V6XW8YQ4R5T6U7TTS3",
+  "language": "en-US",
+  "provider": "tts.cloud.fake",
+  "provider_tier": "CLOUD_HIGH_QUALITY",
+  "schema_version": "1",
+  "seed": 42,
+  "sentence_id": "ls-0",
+  "speed_used": 1.0,
+  "text_hash": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+  "tool_version": "fake-tts-1.0",
+  "voice_profile_id": "01J2ZK3AC9V6XW8YQ4R5T6U7TTS1",
+  "word_timings": [
+    {
+      "confidence": 0.98,
+      "end_ms": 280,
+      "schema_version": "1",
+      "start_ms": 0,
+      "text": "This"
+    },
+    {
+      "confidence": 0.97,
+      "end_ms": 1200,
+      "schema_version": "1",
+      "start_ms": 280,
+      "text": "on-device"
+    },
+    {
+      "confidence": 0.97,
+      "end_ms": 1720,
+      "schema_version": "1",
+      "start_ms": 1200,
+      "text": "model"
+    }
+  ]
+}

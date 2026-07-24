@@ -417,6 +417,39 @@ INVALID_OVERRIDES: list[tuple[str, str, dict[str, Any]]] = [
             "strategy": "SKIP", "rationale": "",  # 空
         }],
     }),
+    # TTS：CLONED voice 无 sample_source_ref 被拒（§7 硬红线）
+    ("voice-profile", "CLONED 无 sample_source_ref 被拒", {
+        "voice_kind": "CLONED", "sample_source_ref": None,
+        "consent_ref": "consent://x",
+    }),
+    # TTS：CLONED voice 无 consent_ref 被拒
+    ("voice-profile", "CLONED 无 consent_ref 被拒", {
+        "voice_kind": "CLONED",
+        "sample_source_ref": "artifact://sample.wav",
+        "consent_ref": None,
+    }),
+    # TTS：非法 VoiceLicenseStatus
+    ("voice-profile", "非法 license_status 被拒",
+     {"license_status": "APPROVED"}),
+    # TTS：display_name 空
+    ("voice-profile", "display_name 空被拒", {"display_name": ""}),
+    # TTS：非法 voice_kind
+    ("voice-profile", "非法 voice_kind 被拒", {"voice_kind": "SAMPLED"}),
+    # TTS：pronunciation-lexicon entries surface 重复
+    ("pronunciation-lexicon", "entries surface 重复被拒", {
+        "entries": [
+            {"surface": "Qwen", "pronunciation": "/a/"},
+            {"surface": "Qwen", "pronunciation": "/b/"},
+        ],
+    }),
+    # TTS：word_timing end < start
+    ("tts-manifest", "word_timing 时间倒序被拒", {
+        "word_timings": [{"text": "x", "start_ms": 500, "end_ms": 100}],
+    }),
+    # TTS：manifest text_hash 空
+    ("tts-manifest", "text_hash 空被拒", {"text_hash": ""}),
+    # TTS：manifest speed_used 非正
+    ("tts-manifest", "speed_used ≤ 0 被拒", {"speed_used": 0.0}),
     ("exporter-report", "未知字段被拒", {"unexpected_field": 1}),
     ("exporter-report", "非法 ExporterKind 被拒",
      {"entries": [{"kind": "PREMIERE_XML", "status": "OK"}]}),
