@@ -573,6 +573,31 @@ INVALID_OVERRIDES: list[tuple[str, str, dict[str, Any]]] = [
             {"sentence_id": "s", "state": "PENDING"},
         ],
     }),
+    # 审核：signature 不能为空
+    ("review-decision", "signature 空被拒", {"signature": ""}),
+    # 审核：entity_version 必须 ≥ 1
+    ("review-decision", "entity_version < 1 被拒", {"entity_version": 0}),
+    # 审核：content_digest 不能为空
+    ("review-decision", "content_digest 空被拒", {"content_digest": ""}),
+    # 模板受信：recent_fatal_count 不能超过 recent_window
+    ("template-trust-state", "recent_fatal 超窗口被拒", {
+        "stats": {
+            "approved_render_count": 5, "recent_fatal_count": 99,
+            "recent_error_rate": 0.0, "qa_meets_standard": True,
+            "publish_success_ok": True, "duplicate_publish_ok": True,
+            "owner_approved": True,
+        },
+        "criteria": {"recent_window": 20},
+    }),
+    # 模板受信：error_rate 超 [0,1]
+    ("template-trust-state", "error_rate 越界被拒", {
+        "stats": {
+            "approved_render_count": 5, "recent_fatal_count": 0,
+            "recent_error_rate": 1.5, "qa_meets_standard": True,
+            "publish_success_ok": True, "duplicate_publish_ok": True,
+            "owner_approved": True,
+        },
+    }),
     ("exporter-report", "未知字段被拒", {"unexpected_field": 1}),
     ("exporter-report", "非法 ExporterKind 被拒",
      {"entries": [{"kind": "PREMIERE_XML", "status": "OK"}]}),

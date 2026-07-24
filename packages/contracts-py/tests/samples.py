@@ -102,6 +102,11 @@ from videoforge_contracts import (
     RenderTargetKind,
     ResolvedAsset,
     ResourceLimits,
+    ReviewDecision,
+    ReviewDecisionKind,
+    ReviewPolicy,
+    ReviewPolicyMode,
+    ReviewScope,
     ReviewState,
     RhetoricalBeat,
     RhetoricalBeatKind,
@@ -118,6 +123,10 @@ from videoforge_contracts import (
     SubtitleTrack,
     SubtitleWord,
     TaskEnvelope,
+    TemplateTrustCriteria,
+    TemplateTrustLevel,
+    TemplateTrustState,
+    TemplateTrustStats,
     TextLocalizationPlan,
     TextLocalizationStrategy,
     TextObservation,
@@ -977,6 +986,51 @@ def make_localization_review() -> LocalizationReview:
     )
 
 
+def make_review_decision() -> ReviewDecision:
+    return ReviewDecision(
+        id="01J2ZK3AC9V6XW8YQ4R5T6U7RD01",
+        decision=ReviewDecisionKind.APPROVED,
+        scope=ReviewScope.VARIANT,
+        entity_id="var_123",
+        entity_version=7,
+        content_digest="c" * 64,
+        reviewer_id="usr_1",
+        policy_snapshot_id="pol_2",
+        qc_report_ids=["qc_9"],
+        signature="deadbeef" * 8,
+        created_at=_T0,
+    )
+
+
+def make_review_policy() -> ReviewPolicy:
+    return ReviewPolicy(
+        id="pol_2",
+        mode=ReviewPolicyMode.NEW_TEMPLATE_ONLY,
+        warning_blocks=False,
+        version=1,
+        created_at=_T0,
+    )
+
+
+def make_template_trust_state() -> TemplateTrustState:
+    return TemplateTrustState(
+        template_id="tpl_ai_zh_en",
+        template_version=3,
+        level=TemplateTrustLevel.TRUSTED,
+        stats=TemplateTrustStats(
+            approved_render_count=24,
+            recent_fatal_count=0,
+            recent_error_rate=0.02,
+            qa_meets_standard=True,
+            publish_success_ok=True,
+            duplicate_publish_ok=True,
+            owner_approved=True,
+        ),
+        criteria=TemplateTrustCriteria(),
+        updated_at=_T0,
+    )
+
+
 def make_reedit_plan() -> ReeditPlan:
     return ReeditPlan(
         id="01J2ZK3AC9V6XW8YQ4R5T6U7ZK",
@@ -1246,6 +1300,9 @@ SAMPLES: dict[str, ContractModel] = {
     "lipsync-plan": make_lipsync_plan(),
     "localization-qa-report": make_localization_qa_report(),
     "localization-review": make_localization_review(),
+    "review-decision": make_review_decision(),
+    "review-policy": make_review_policy(),
+    "template-trust-state": make_template_trust_state(),
     "reedit-plan": make_reedit_plan(),
     "asset-plan": make_asset_plan(),
     "creative-timeline": make_creative_timeline(),
