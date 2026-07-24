@@ -248,6 +248,24 @@ class RenderTargetKind(StrEnum):
     WEBM_VP9 = "WEBM_VP9"
 
 
+class ExporterKind(StrEnum):
+    """时间线导出格式（docs/modules/42 §10）。DaVinci 优先 OTIO/FCPXML；剪映/CapCut 走 Adapter。"""
+
+    OTIO_FILE = "OTIO_FILE"  # 纯 JSON，OTIO 官方交换格式
+    FCPXML = "FCPXML"  # Apple Final Cut Pro XML
+    JIANYING = "JIANYING"  # 剪映 Draft，experimental；新版本加密时降级为"包+说明"
+    CAPCUT = "CAPCUT"  # CapCut Draft，experimental
+
+
+class ExporterStatus(StrEnum):
+    """单个 Exporter 结果状态（docs/modules/42 §10：失败不阻断 MP4 最终渲染）。"""
+
+    OK = "OK"
+    PARTIAL = "PARTIAL"  # 输出可用但有 warnings（e.g. 剪映版本降级为"包+说明"）
+    FAILED = "FAILED"  # 完全失败（记录 error，不阻断发布链路的其他 exporter）
+    UNSUPPORTED = "UNSUPPORTED"  # 该 kind 不适用当前 timeline（如 CapCut 不接某模板）
+
+
 class QASeverity(StrEnum):
     """QA 严重级（docs/modules/42 §11）。BLOCKER 一处即拒；MAJOR 超阈升级；MINOR/INFO 记录。"""
 
