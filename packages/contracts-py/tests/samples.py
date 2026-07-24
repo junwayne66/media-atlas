@@ -14,7 +14,10 @@ from videoforge_contracts import (
     BeatSlot,
     BeatTemplate,
     BriefHook,
+    CanonicalScript,
+    CanonicalSentence,
     Claim,
+    ClaimDiff,
     ClaimSourceStatus,
     ClaimTable,
     ClaimTableEntry,
@@ -39,11 +42,15 @@ from videoforge_contracts import (
     FilterNode,
     FrameAnalysis,
     FrameSampleReason,
+    Glossary,
+    GlossaryEntry,
     HighlightCandidate,
     HighlightFeatures,
     HighlightLabel,
     HighlightReason,
     HighlightSet,
+    LocalizationVariant,
+    LocalizedSentence,
     MediaProbe,
     ProblemDetail,
     ProducedBy,
@@ -86,6 +93,7 @@ from videoforge_contracts import (
     TranscriptModels,
     TranscriptSegment,
     TranscriptWord,
+    TranslateReflectAdaptResult,
     TrendCluster,
     TrendItemSnapshot,
     TrendStage,
@@ -542,6 +550,105 @@ def make_highlight_set() -> HighlightSet:
     )
 
 
+def make_canonical_script() -> CanonicalScript:
+    return CanonicalScript(
+        id="01J2ZK3AC9V6XW8YQ4R5T6U7ZLC",
+        script_version_id="01J2ZK3AC9V6XW8YQ4R5T6U7ZG",
+        source_language="zh-CN",
+        sentences=[
+            CanonicalSentence(
+                id="cs-0", beat_slot_id="slot-0", role=RhetoricalBeatKind.HOOK,
+                speaker_id="host", source_language="zh-CN",
+                source_text="这款端侧模型能在 2GB 内存里跑起来",
+                semantic_intent="强调关键性能钩子：小内存也能跑",
+                claim_ids=["c-hook-0"],
+                source_time_range_start_ms=0, source_time_range_end_ms=3000,
+                target_duration_ms=3000,
+                must_keep_terms=["2GB"], edit_flexibility=0.15,
+            ),
+            CanonicalSentence(
+                id="cs-1", beat_slot_id="slot-1", role=RhetoricalBeatKind.EVIDENCE,
+                source_language="zh-CN",
+                source_text="实测推理时延 20ms，比上一代降低四成",
+                semantic_intent="证据：延时与降幅",
+                claim_ids=["c-evidence-0"],
+                source_time_range_start_ms=3000, source_time_range_end_ms=8000,
+                target_duration_ms=5000,
+                must_keep_terms=["20ms"], edit_flexibility=0.1,
+            ),
+        ],
+        total_duration_ms=8000,
+        created_at=_T0,
+    )
+
+
+def make_glossary() -> Glossary:
+    return Glossary(
+        id="01J2ZK3AC9V6XW8YQ4R5T6U7ZLG",
+        source_language="zh-CN", target_language="en-US",
+        entries=[
+            GlossaryEntry(source_term="2GB", target_term="2 GB",
+                            preserve_source=False, notes="英文加空格"),
+            GlossaryEntry(source_term="端侧", target_term="on-device"),
+            GlossaryEntry(source_term="20ms", target_term="20 ms",
+                            preserve_source=False),
+            GlossaryEntry(source_term="Qwen", target_term="Qwen",
+                            preserve_source=True, pronunciation="/tʃwɛn/",
+                            notes="产品名不译"),
+        ],
+        version=1, created_at=_T0,
+    )
+
+
+def make_translate_reflect_adapt_result() -> TranslateReflectAdaptResult:
+    return TranslateReflectAdaptResult(
+        canonical_sentence_id="cs-1",
+        target_language="en-US",
+        draft_text="Measured inference latency is 20 milliseconds, 40% lower than last gen.",
+        reflected_notes=["数值单位符合术语表", "'lower than' 语义与源一致"],
+        adapted_text="Inference clocks in at 20 ms — 40% lower than last gen.",
+        alternatives=["Inference now runs at 20 ms, a 40% drop from last gen."],
+        semantic_similarity=0.94,
+        duration_estimate_ms=5000,
+        claim_diff=ClaimDiff(
+            source_claim_ids=["c-evidence-0"],
+            localized_claim_ids=["c-evidence-0"],
+            deltas=[],
+        ),
+        provider="tra.fake",
+    )
+
+
+def make_localization_variant() -> LocalizationVariant:
+    return LocalizationVariant(
+        id="01J2ZK3AC9V6XW8YQ4R5T6U7ZLV",
+        canonical_script_id="01J2ZK3AC9V6XW8YQ4R5T6U7ZLC",
+        target_language="en-US",
+        glossary_id="01J2ZK3AC9V6XW8YQ4R5T6U7ZLG",
+        sentences=[
+            LocalizedSentence(
+                id="ls-0", canonical_sentence_id="cs-0", target_language="en-US",
+                text="This on-device model runs in just 2 GB of RAM.",
+                claim_ids=["c-hook-0"],
+                claim_source_status=ClaimSourceStatus.VERIFIED,
+                duration_estimate_ms=3200, semantic_similarity=0.92,
+                needs_review=False, review_reasons=[],
+            ),
+            LocalizedSentence(
+                id="ls-1", canonical_sentence_id="cs-1", target_language="en-US",
+                text="Inference clocks in at 20 ms — 40% lower than last gen.",
+                claim_ids=["c-evidence-0"],
+                claim_source_status=ClaimSourceStatus.VERIFIED,
+                duration_estimate_ms=5000, semantic_similarity=0.94,
+                needs_review=False,
+            ),
+        ],
+        provider="tra.fake",
+        total_duration_estimate_ms=8200,
+        created_at=_T0,
+    )
+
+
 def make_reedit_plan() -> ReeditPlan:
     return ReeditPlan(
         id="01J2ZK3AC9V6XW8YQ4R5T6U7ZK",
@@ -796,6 +903,10 @@ SAMPLES: dict[str, ContractModel] = {
     "beat-template": make_beat_template(),
     "script-version": make_script_version(),
     "highlight-set": make_highlight_set(),
+    "canonical-script": make_canonical_script(),
+    "glossary": make_glossary(),
+    "translate-reflect-adapt-result": make_translate_reflect_adapt_result(),
+    "localization-variant": make_localization_variant(),
     "reedit-plan": make_reedit_plan(),
     "asset-plan": make_asset_plan(),
     "creative-timeline": make_creative_timeline(),

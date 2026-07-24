@@ -101,6 +101,15 @@ from videoforge_provider_sdk.highlight import (
     HighlightWindowSpec,
     UnconfiguredHighlightFeatureProvider,
 )
+from videoforge_provider_sdk.localization import (
+    FakeTRAProvider,
+    TRAErrorCode,
+    TranslateReflectAdaptProvider,
+    TRARequest,
+    TRAResult,
+    TRAStatus,
+    UnconfiguredTRAProvider,
+)
 from videoforge_provider_sdk.media_analyzer import (
     AudioWindow,
     CaptionBBox,
@@ -249,6 +258,7 @@ __all__ = [
     "FakeProvider",
     "FakeRemotionRenderProvider",
     "FakeSegmentJudgeProvider",
+    "FakeTRAProvider",
     "FakeStructureRewriteProvider",
     "FakeVLMProvider",
     "FixtureFetcher",
@@ -299,6 +309,11 @@ __all__ = [
     "SegmentSpec",
     "ShortLinkExpander",
     "StructureRewriteProvider",
+    "TRAErrorCode",
+    "TRARequest",
+    "TRAResult",
+    "TRAStatus",
+    "TranslateReflectAdaptProvider",
     "TimelineExportRequest",
     "TimelineExportResult",
     "TimelineExporter",
@@ -317,6 +332,7 @@ __all__ = [
     "UnconfiguredSegmentJudgeProvider",
     "UnconfiguredShortLinkExpander",
     "UnconfiguredStructureRewriteProvider",
+    "UnconfiguredTRAProvider",
     "UnconfiguredTimelineExporter",
     "UnconfiguredVLMProvider",
     "UnresolvableUrl",

@@ -1,0 +1,156 @@
+{
+  "$defs": {
+    "ClaimDelta": {
+      "additionalProperties": false,
+      "description": "一次 Claim 层面的变化。reason 供 QA/人工快速判断（漏译/添加事实/否定翻转 等）。",
+      "properties": {
+        "claim_id": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Claim Id"
+        },
+        "detail": {
+          "minLength": 1,
+          "title": "Detail",
+          "type": "string"
+        },
+        "kind": {
+          "description": "ADDED / REMOVED / MUTATED / NEGATION_FLIP / NUMBER_MISMATCH",
+          "minLength": 1,
+          "title": "Kind",
+          "type": "string"
+        },
+        "schema_version": {
+          "default": "1",
+          "description": "合同 schema 版本；Reader 需兼容当前与前一版本",
+          "title": "Schema Version",
+          "type": "string"
+        }
+      },
+      "required": [
+        "kind",
+        "detail"
+      ],
+      "title": "ClaimDelta",
+      "type": "object"
+    },
+    "ClaimDiff": {
+      "additionalProperties": false,
+      "description": "source_claims 与 localized_claims 的差异汇总（§4.3）。empty → 与源一致。",
+      "properties": {
+        "deltas": {
+          "items": {
+            "$ref": "#/$defs/ClaimDelta"
+          },
+          "title": "Deltas",
+          "type": "array"
+        },
+        "localized_claim_ids": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Localized Claim Ids",
+          "type": "array"
+        },
+        "schema_version": {
+          "default": "1",
+          "description": "合同 schema 版本；Reader 需兼容当前与前一版本",
+          "title": "Schema Version",
+          "type": "string"
+        },
+        "source_claim_ids": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Source Claim Ids",
+          "type": "array"
+        }
+      },
+      "title": "ClaimDiff",
+      "type": "object"
+    }
+  },
+  "$id": "https://videoforge.dev/schemas/translate-reflect-adapt-result.schema.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "description": "TRA 三阶段的合同产出（§4）。\n\n- draft_text：Translate 的初译。\n- reflected_notes：Reflect 阶段的问题清单（漏译/事实/否定/因果/文风），非阻断。\n- adapted_text：Adapt 阶段的最终稿；不改 Claim，控语速/句长/钩子/口语度。\n- semantic_similarity ∈ [0,1]：adapted 与源的语义相似度估计（Provider 自评）。\n- duration_estimate_ms：按目标语言语速估算的时长。\n- claim_diff：不为空必须走人工审核（§4.3）。\n- alternatives：为目标时长生成的 A/B 候选文本（0..N）。",
+  "properties": {
+    "adapted_text": {
+      "minLength": 1,
+      "title": "Adapted Text",
+      "type": "string"
+    },
+    "alternatives": {
+      "items": {
+        "type": "string"
+      },
+      "title": "Alternatives",
+      "type": "array"
+    },
+    "canonical_sentence_id": {
+      "minLength": 1,
+      "title": "Canonical Sentence Id",
+      "type": "string"
+    },
+    "claim_diff": {
+      "$ref": "#/$defs/ClaimDiff"
+    },
+    "draft_text": {
+      "minLength": 1,
+      "title": "Draft Text",
+      "type": "string"
+    },
+    "duration_estimate_ms": {
+      "minimum": 0,
+      "title": "Duration Estimate Ms",
+      "type": "integer"
+    },
+    "provider": {
+      "minLength": 1,
+      "title": "Provider",
+      "type": "string"
+    },
+    "reflected_notes": {
+      "items": {
+        "type": "string"
+      },
+      "title": "Reflected Notes",
+      "type": "array"
+    },
+    "schema_version": {
+      "default": "1",
+      "description": "合同 schema 版本；Reader 需兼容当前与前一版本",
+      "title": "Schema Version",
+      "type": "string"
+    },
+    "semantic_similarity": {
+      "maximum": 1.0,
+      "minimum": 0.0,
+      "title": "Semantic Similarity",
+      "type": "number"
+    },
+    "target_language": {
+      "minLength": 1,
+      "title": "Target Language",
+      "type": "string"
+    }
+  },
+  "required": [
+    "canonical_sentence_id",
+    "target_language",
+    "draft_text",
+    "adapted_text",
+    "semantic_similarity",
+    "duration_estimate_ms",
+    "provider"
+  ],
+  "title": "TranslateReflectAdaptResult",
+  "type": "object"
+}

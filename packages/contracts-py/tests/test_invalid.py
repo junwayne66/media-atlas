@@ -281,6 +281,53 @@ INVALID_OVERRIDES: list[tuple[str, str, dict[str, Any]]] = [
          {"id": "same", "kind": "FROZEN_FRAME", "severity": "MINOR", "at_ms": 100},
      ]}),
     ("qa-report", "measured_duration_ms 不能为负", {"measured_duration_ms": -1}),
+    # 本地化：CanonicalSentence 时间跨度倒序被拒
+    ("canonical-script", "sentence 时间跨度倒序被拒",
+     {"sentences": [{
+         "id": "cs-x", "beat_slot_id": "b", "role": "HOOK",
+         "source_language": "zh-CN", "source_text": "x", "semantic_intent": "i",
+         "source_time_range_start_ms": 100, "source_time_range_end_ms": 0,
+         "target_duration_ms": 100,
+     }]}),
+    # 本地化：CanonicalSentence source_text 空
+    ("canonical-script", "sentence source_text 空被拒",
+     {"sentences": [{
+         "id": "cs-x", "beat_slot_id": "b", "role": "HOOK",
+         "source_language": "zh-CN", "source_text": "", "semantic_intent": "i",
+         "source_time_range_start_ms": 0, "source_time_range_end_ms": 100,
+         "target_duration_ms": 100,
+     }]}),
+    # 本地化：CanonicalSentence edit_flexibility 越界（>1）
+    ("canonical-script", "edit_flexibility 越界被拒",
+     {"sentences": [{
+         "id": "cs-x", "beat_slot_id": "b", "role": "HOOK",
+         "source_language": "zh-CN", "source_text": "x", "semantic_intent": "i",
+         "source_time_range_start_ms": 0, "source_time_range_end_ms": 100,
+         "target_duration_ms": 100, "edit_flexibility": 1.2,
+     }]}),
+    # 术语表：GlossaryEntry preserve_source=True 但 target_term ≠ source
+    ("glossary", "preserve_source 与 target_term 不一致被拒",
+     {"entries": [{"source_term": "Qwen", "target_term": "QwenX",
+                     "preserve_source": True}]}),
+    # 术语表：entries source_term 重复被拒
+    ("glossary", "entries source_term 重复被拒",
+     {"entries": [
+         {"source_term": "端侧", "target_term": "on-device"},
+         {"source_term": "端侧", "target_term": "edge"},
+     ]}),
+    # TRA 结果：semantic_similarity 越界（>1）
+    ("translate-reflect-adapt-result", "semantic_similarity 越界被拒",
+     {"semantic_similarity": 1.05}),
+    # TRA 结果：adapted_text 空被拒
+    ("translate-reflect-adapt-result", "adapted_text 空被拒", {"adapted_text": ""}),
+    # LocalizationVariant：target_language 空被拒
+    ("localization-variant", "target_language 空被拒", {"target_language": ""}),
+    # LocalizedSentence：semantic_similarity 越界（<0）
+    ("localization-variant", "sentence semantic_similarity 负值被拒",
+     {"sentences": [{
+         "id": "ls-x", "canonical_sentence_id": "cs-0", "target_language": "en-US",
+         "text": "x", "duration_estimate_ms": 100, "semantic_similarity": -0.1,
+     }]}),
     ("exporter-report", "未知字段被拒", {"unexpected_field": 1}),
     ("exporter-report", "非法 ExporterKind 被拒",
      {"entries": [{"kind": "PREMIERE_XML", "status": "OK"}]}),
