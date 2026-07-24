@@ -194,14 +194,20 @@ from videoforge_provider_sdk.publish_connector import (
     PublishConnector,
     UnconfiguredPublishConnector,
 )
+from videoforge_provider_sdk.publish_errors import (
+    PublishErrorMapping,
+    map_publish_error,
+)
 from videoforge_provider_sdk.publish_executor import (
     CreatorInfoResult,
+    FakeDouyinPublishExecutor,
     FakeTikTokPublishExecutor,
     PublishExecErrorCode,
     PublishExecStatus,
     PublishExecutor,
     StatusResult,
     SubmitResult,
+    UnconfiguredDouyinPublishExecutor,
     UnconfiguredTikTokPublishExecutor,
 )
 from videoforge_provider_sdk.reedit import (
@@ -508,11 +514,15 @@ __all__ = [
     "PublishConnector",
     "UnconfiguredPublishConnector",
     "CreatorInfoResult",
+    "FakeDouyinPublishExecutor",
     "FakeTikTokPublishExecutor",
+    "PublishErrorMapping",
     "PublishExecErrorCode",
     "PublishExecStatus",
     "PublishExecutor",
     "StatusResult",
     "SubmitResult",
+    "UnconfiguredDouyinPublishExecutor",
     "UnconfiguredTikTokPublishExecutor",
+    "map_publish_error",
 ]

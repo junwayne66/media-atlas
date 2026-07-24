@@ -77,24 +77,29 @@ class PublishExecutor(Protocol):
     def query_status(self, job: PublishJob) -> StatusResult: ...
 
 
-class UnconfiguredTikTokPublishExecutor:
-    """诚实占位：无真实平台账号/凭据/应用审核 → 恒 UNCONFIGURED，绝不发布，零 live network。"""
+class _UnconfiguredPublishExecutorBase:
+    """诚实占位基类：无真实平台账号/凭据/应用审核 → 恒 UNCONFIGURED，绝不发布，零 live network。"""
 
-    def __init__(self, *, name: str = "publish.tiktok.unconfigured") -> None:
+    _PLATFORM = "平台"
+
+    def __init__(self, *, name: str) -> None:
         self.name = name
 
     def creator_info(self) -> CreatorInfoResult:
         return CreatorInfoResult(
             status=PublishExecStatus.UNCONFIGURED,
             error_code=PublishExecErrorCode.ENGINE_UNAVAILABLE,
-            detail="未配置真实 TikTok 官方 API（需账号 + 应用审核 + 凭据，stop-condition）",
+            detail=(
+                f"未配置真实{self._PLATFORM}官方 API"
+                "（需账号 + 应用审核 + 凭据，stop-condition）"
+            ),
         )
 
     def submit(self, job: PublishJob) -> SubmitResult:
         return SubmitResult(
             status=PublishExecStatus.UNCONFIGURED,
             error_code=PublishExecErrorCode.ENGINE_UNAVAILABLE,
-            detail="未配置真实 TikTok 发布，绝不触真实平台",
+            detail=f"未配置真实{self._PLATFORM}发布，绝不触真实平台",
         )
 
     def query_status(self, job: PublishJob) -> StatusResult:
@@ -104,30 +109,62 @@ class UnconfiguredTikTokPublishExecutor:
         )
 
 
-class FakeTikTokPublishExecutor:
-    """确定性 Fake：零网络，按 idempotency_key 幂等。
+class UnconfiguredTikTokPublishExecutor(_UnconfiguredPublishExecutorBase):
+    _PLATFORM = "TikTok"
 
-    - `challenge`/`auth_required` 可注入 → submit 返回 CHALLENGE/AUTH_REQUIRED（上层转人工）。
+    def __init__(self, *, name: str = "publish.tiktok.unconfigured") -> None:
+        super().__init__(name=name)
+
+
+class UnconfiguredDouyinPublishExecutor(_UnconfiguredPublishExecutorBase):
+    _PLATFORM = "抖音"
+
+    def __init__(self, *, name: str = "publish.douyin.unconfigured") -> None:
+        super().__init__(name=name)
+
+
+class _FakePublishExecutorBase:
+    """确定性 Fake 基类：零网络，按 idempotency_key 幂等。
+
+    - `challenge`/`auth_required`/`rate_limited` 可注入 → submit 返回对应状态（上层转人工/退避）。
     - 否则首次 submit 生成确定性 external_post_id 并按 idempotency_key 记住；**同 key 再 submit
       返回同一 id 且 `idempotent_replay=True`**（不产生第二个帖子）。
     - `preexisting`：模拟"提交前平台已有匹配帖子"（用于对账 SUCCEEDED_RECONCILED）。
     """
 
-    def __init__(self, *, name: str = "publish.tiktok.fake",
-                  challenge: bool = False, auth_required: bool = False,
+    _LABEL = "Fake"
+
+    def _post_url(self, post_id: str) -> str:
+        return f"https://example.com/{post_id}"
+
+    def __init__(self, *, name: str, challenge: bool = False,
+                  auth_required: bool = False, rate_limited: bool = False,
                   preexisting: bool = False) -> None:
         self.name = name
         self.challenge = challenge
         self.auth_required = auth_required
+        self.rate_limited = rate_limited
         self.preexisting = preexisting
         self._posted: dict[str, str] = {}  # idempotency_key -> external_post_id
+
+    def _injected_error(self) -> tuple[PublishExecStatus, PublishExecErrorCode, str] | None:
+        if self.auth_required:
+            return (PublishExecStatus.AUTH_REQUIRED,
+                    PublishExecErrorCode.AUTH_REQUIRED, "需授权")
+        if self.challenge:
+            return (PublishExecStatus.CHALLENGE,
+                    PublishExecErrorCode.CHALLENGE, "风控挑战")
+        if self.rate_limited:
+            return (PublishExecStatus.FAILED,
+                    PublishExecErrorCode.RATE_LIMITED, "限流")
+        return None
 
     def creator_info(self) -> CreatorInfoResult:
         if self.auth_required:
             return CreatorInfoResult(
                 status=PublishExecStatus.AUTH_REQUIRED,
                 error_code=PublishExecErrorCode.AUTH_REQUIRED,
-                detail="Fake：需授权",
+                detail=f"{self._LABEL}：需授权",
             )
         return CreatorInfoResult(
             status=PublishExecStatus.OK, can_post=True,
@@ -135,14 +172,11 @@ class FakeTikTokPublishExecutor:
         )
 
     def submit(self, job: PublishJob) -> SubmitResult:
-        if self.auth_required:
-            return SubmitResult(
-                status=PublishExecStatus.AUTH_REQUIRED,
-                error_code=PublishExecErrorCode.AUTH_REQUIRED, detail="Fake：需授权")
-        if self.challenge:
-            return SubmitResult(
-                status=PublishExecStatus.CHALLENGE,
-                error_code=PublishExecErrorCode.CHALLENGE, detail="Fake：风控挑战")
+        err = self._injected_error()
+        if err is not None:
+            status, code, detail = err
+            return SubmitResult(status=status, error_code=code,
+                                 detail=f"{self._LABEL}：{detail}")
         key = job.idempotency_key
         if key in self._posted:  # 幂等：已提交过 → 返回同一帖子，不重复发布
             return SubmitResult(
@@ -157,7 +191,7 @@ class FakeTikTokPublishExecutor:
         return SubmitResult(
             status=PublishExecStatus.OK, external_post_id=external_post_id,
             external_post_token=f"tok-{key[:12]}",
-            warnings=["Fake TikTok：非真实发布"],
+            warnings=[f"{self._LABEL}：非真实发布"],
         )
 
     def query_status(self, job: PublishJob) -> StatusResult:
@@ -166,19 +200,46 @@ class FakeTikTokPublishExecutor:
             post_id = self._posted.get(key, f"fake-post-{key[:16]}")
             return StatusResult(
                 status=PublishExecStatus.OK, found_post=True,
-                external_post_id=post_id,
-                external_url=f"https://www.tiktok.com/@fake/video/{post_id}",
+                external_post_id=post_id, external_url=self._post_url(post_id),
             )
         return StatusResult(status=PublishExecStatus.OK, found_post=False)
 
 
+class FakeTikTokPublishExecutor(_FakePublishExecutorBase):
+    _LABEL = "Fake TikTok"
+
+    def _post_url(self, post_id: str) -> str:
+        return f"https://www.tiktok.com/@fake/video/{post_id}"
+
+    def __init__(self, *, name: str = "publish.tiktok.fake",
+                  challenge: bool = False, auth_required: bool = False,
+                  rate_limited: bool = False, preexisting: bool = False) -> None:
+        super().__init__(name=name, challenge=challenge, auth_required=auth_required,
+                          rate_limited=rate_limited, preexisting=preexisting)
+
+
+class FakeDouyinPublishExecutor(_FakePublishExecutorBase):
+    _LABEL = "Fake 抖音"
+
+    def _post_url(self, post_id: str) -> str:
+        return f"https://www.douyin.com/video/{post_id}"
+
+    def __init__(self, *, name: str = "publish.douyin.fake",
+                  challenge: bool = False, auth_required: bool = False,
+                  rate_limited: bool = False, preexisting: bool = False) -> None:
+        super().__init__(name=name, challenge=challenge, auth_required=auth_required,
+                          rate_limited=rate_limited, preexisting=preexisting)
+
+
 __all__ = [
     "CreatorInfoResult",
+    "FakeDouyinPublishExecutor",
     "FakeTikTokPublishExecutor",
     "PublishExecErrorCode",
     "PublishExecStatus",
     "PublishExecutor",
     "StatusResult",
     "SubmitResult",
+    "UnconfiguredDouyinPublishExecutor",
     "UnconfiguredTikTokPublishExecutor",
 ]
