@@ -60,6 +60,14 @@ from videoforge_contracts import (
     HighlightLabel,
     HighlightReason,
     HighlightSet,
+    LipSyncEligibilityCriteria,
+    LipSyncIneligibleReason,
+    LipSyncMethod,
+    LipSyncMode,
+    LipSyncPlan,
+    LipSyncQAReport,
+    LipSyncReviewReason,
+    LipSyncSegmentDecision,
     LocalizationVariant,
     LocalizedSentence,
     LoudnessTarget,
@@ -896,6 +904,38 @@ def make_audio_mix_plan() -> AudioMixPlan:
     )
 
 
+def make_lipsync_plan() -> LipSyncPlan:
+    return LipSyncPlan(
+        id="01J2ZK3AC9V6XW8YQ4R5T6U7LS01",
+        localization_variant_id="01J2ZK3AC9V6XW8YQ4R5T6U7ZLV",
+        mode=LipSyncMode.AUTO_ELIGIBLE,
+        criteria=LipSyncEligibilityCriteria(),
+        decisions=[
+            LipSyncSegmentDecision(
+                segment_id="ls-0", start_ms=0, end_ms=3000,
+                eligible=True,
+                method=LipSyncMethod.GPU_SYNTHESIS,
+                synthesized_artifact_id="artifact://lipsync/ls-0.mp4",
+                qa=LipSyncQAReport(
+                    boundary_score=0.92, skin_tone_score=0.9,
+                    motion_score=0.88, identity_score=0.95, passed=True,
+                ),
+                rationale="单主脸、遮挡小、配音已对齐 → GPU 合成，QA 通过",
+            ),
+            LipSyncSegmentDecision(
+                segment_id="ls-1", start_ms=3000, end_ms=6000,
+                eligible=False,
+                ineligible_reasons=[LipSyncIneligibleReason.MULTIPLE_FACES],
+                method=LipSyncMethod.BROLL_COVER,
+                needs_review=True,
+                review_reasons=[LipSyncReviewReason.FALLBACK_USED],
+                rationale="多脸不合格 → 无相近原 Take，插 B-roll 覆盖",
+            ),
+        ],
+        created_at=_T0,
+    )
+
+
 def make_reedit_plan() -> ReeditPlan:
     return ReeditPlan(
         id="01J2ZK3AC9V6XW8YQ4R5T6U7ZK",
@@ -1162,6 +1202,7 @@ SAMPLES: dict[str, ContractModel] = {
     "tts-manifest": make_tts_manifest(),
     "duration-fit-plan": make_duration_fit_plan(),
     "audio-mix-plan": make_audio_mix_plan(),
+    "lipsync-plan": make_lipsync_plan(),
     "reedit-plan": make_reedit_plan(),
     "asset-plan": make_asset_plan(),
     "creative-timeline": make_creative_timeline(),

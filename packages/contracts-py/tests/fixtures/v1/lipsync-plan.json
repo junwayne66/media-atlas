@@ -1,0 +1,62 @@
+{
+  "created_at": "2026-07-21T08:00:00Z",
+  "criteria": {
+    "max_duration_ms": 30000,
+    "max_faces": 1,
+    "max_head_turn_deg": 35.0,
+    "max_occlusion_ratio": 0.2,
+    "min_duration_ms": 400,
+    "min_face_height_ratio": 0.15,
+    "min_speaker_probability": 0.6,
+    "require_dub_aligned": true,
+    "schema_version": "1"
+  },
+  "decisions": [
+    {
+      "eligible": true,
+      "end_ms": 3000,
+      "fallback_from": null,
+      "ineligible_reasons": [],
+      "method": "GPU_SYNTHESIS",
+      "needs_review": false,
+      "qa": {
+        "boundary_score": 0.92,
+        "identity_score": 0.95,
+        "motion_score": 0.88,
+        "passed": true,
+        "schema_version": "1",
+        "skin_tone_score": 0.9
+      },
+      "rationale": "单主脸、遮挡小、配音已对齐 → GPU 合成，QA 通过",
+      "review_reasons": [],
+      "schema_version": "1",
+      "segment_id": "ls-0",
+      "start_ms": 0,
+      "synthesized_artifact_id": "artifact://lipsync/ls-0.mp4"
+    },
+    {
+      "eligible": false,
+      "end_ms": 6000,
+      "fallback_from": null,
+      "ineligible_reasons": [
+        "MULTIPLE_FACES"
+      ],
+      "method": "BROLL_COVER",
+      "needs_review": true,
+      "qa": null,
+      "rationale": "多脸不合格 → 无相近原 Take，插 B-roll 覆盖",
+      "review_reasons": [
+        "FALLBACK_USED"
+      ],
+      "schema_version": "1",
+      "segment_id": "ls-1",
+      "start_ms": 3000,
+      "synthesized_artifact_id": null
+    }
+  ],
+  "id": "01J2ZK3AC9V6XW8YQ4R5T6U7LS01",
+  "localization_variant_id": "01J2ZK3AC9V6XW8YQ4R5T6U7ZLV",
+  "mode": "AUTO_ELIGIBLE",
+  "provider": null,
+  "schema_version": "1"
+}
