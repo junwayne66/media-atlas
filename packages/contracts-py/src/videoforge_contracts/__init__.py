@@ -71,6 +71,16 @@ from videoforge_contracts.localization import (
     LocalizedSentence,
     TranslateReflectAdaptResult,
 )
+from videoforge_contracts.onscreen_text import (
+    CleanPlateMethod,
+    CleanPlateRequest,
+    TextLocalizationKindPolicy,
+    TextLocalizationPlan,
+    TextLocalizationPolicy,
+    TextLocalizationReviewReason,
+    TextLocalizationStrategy,
+    TextTrackLocalizationDecision,
+)
 from videoforge_contracts.problem import ProblemDetail
 from videoforge_contracts.project import Project
 from videoforge_contracts.provider import CostModel, ProviderDescriptor, ProviderHealth
@@ -166,6 +176,7 @@ CONTRACTS: dict[str, type[ContractModel]] = {
     "reedit-plan": ReeditPlan,
     "subtitle-template": SubtitleTemplate,
     "subtitle-track": SubtitleTrack,
+    "text-localization-plan": TextLocalizationPlan,
     "asset-plan": AssetPlan,
     "creative-timeline": CreativeTimeline,
     "render-manifest": RenderManifest,
@@ -272,6 +283,14 @@ __all__ = [
     "SubtitleTemplate",
     "SubtitleTrack",
     "SubtitleWord",
+    "CleanPlateMethod",
+    "CleanPlateRequest",
+    "TextLocalizationKindPolicy",
+    "TextLocalizationPlan",
+    "TextLocalizationPolicy",
+    "TextLocalizationReviewReason",
+    "TextLocalizationStrategy",
+    "TextTrackLocalizationDecision",
     "SegmentEffect",
     "SegmentJudgment",
     "StorageBackend",

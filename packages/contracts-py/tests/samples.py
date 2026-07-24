@@ -21,6 +21,8 @@ from videoforge_contracts import (
     ClaimSourceStatus,
     ClaimTable,
     ClaimTableEntry,
+    CleanPlateMethod,
+    CleanPlateRequest,
     CompositionSpec,
     ContinuityNote,
     ContinuityRuleKind,
@@ -90,9 +92,12 @@ from videoforge_contracts import (
     SubtitleTrack,
     SubtitleWord,
     TaskEnvelope,
+    TextLocalizationPlan,
+    TextLocalizationStrategy,
     TextObservation,
     TextTrack,
     TextTrackKind,
+    TextTrackLocalizationDecision,
     TextTrackSet,
     Track,
     TrackKind,
@@ -714,6 +719,57 @@ def make_subtitle_track() -> SubtitleTrack:
     )
 
 
+def make_text_localization_plan() -> TextLocalizationPlan:
+    return TextLocalizationPlan(
+        id="01J2ZK3AC9V6XW8YQ4R5T6U7OTX1",
+        source_text_track_set_id="01J2ZK3AC9V6XW8YQ4R5T6U7Y5",
+        policy_id="01J2ZK3AC9V6XW8YQ4R5T6U7OTX0",
+        target_language="en-US",
+        decisions=[
+            TextTrackLocalizationDecision(
+                source_track_id="tt-caption-0",
+                source_text="端侧推理 20ms 完成",
+                source_kind=TextTrackKind.CAPTION,
+                target_language="en-US",
+                strategy=TextLocalizationStrategy.REDRAW,
+                translated_text="On-device inference in 20 ms",
+                clean_plate_request_id="cp-0",
+                layout_expansion_ratio=1.15,
+                rationale="CAPTION 默认重绘，遮挡低且授权无限制",
+            ),
+            TextTrackLocalizationDecision(
+                source_track_id="tt-brand-1",
+                source_text="Qwen Logo",
+                source_kind=TextTrackKind.BRAND_MARK,
+                target_language="en-US",
+                strategy=TextLocalizationStrategy.SKIP,
+                translated_text=None,
+                needs_review=True,
+                rationale="BRAND_MARK 未授权，交人工确认（§6.1 红线）",
+            ),
+            TextTrackLocalizationDecision(
+                source_track_id="tt-scene-2",
+                source_text="Coffee",
+                source_kind=TextTrackKind.SCENE_TEXT,
+                target_language="en-US",
+                strategy=TextLocalizationStrategy.KEEP_AS_IS,
+                translated_text=None,
+                rationale="SCENE_TEXT 不重要，默认保留",
+            ),
+        ],
+        clean_plate_requests=[
+            CleanPlateRequest(
+                id="cp-0", source_track_id="tt-caption-0",
+                source_artifact_id="01J2ZK3AC9V6XW8YQ4R5T6U7W1",
+                frame_start_ms=120, frame_end_ms=2480,
+                method=CleanPlateMethod.BACKGROUND_ESTIMATE,
+            ),
+        ],
+        created_at=_T0,
+        provider="onscreen_text.fake",
+    )
+
+
 def make_reedit_plan() -> ReeditPlan:
     return ReeditPlan(
         id="01J2ZK3AC9V6XW8YQ4R5T6U7ZK",
@@ -974,6 +1030,7 @@ SAMPLES: dict[str, ContractModel] = {
     "localization-variant": make_localization_variant(),
     "subtitle-template": make_subtitle_template(),
     "subtitle-track": make_subtitle_track(),
+    "text-localization-plan": make_text_localization_plan(),
     "reedit-plan": make_reedit_plan(),
     "asset-plan": make_asset_plan(),
     "creative-timeline": make_creative_timeline(),

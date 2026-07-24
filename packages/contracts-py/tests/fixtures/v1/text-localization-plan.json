@@ -1,0 +1,65 @@
+{
+  "clean_plate_requests": [
+    {
+      "frame_end_ms": 2480,
+      "frame_start_ms": 120,
+      "id": "cp-0",
+      "license_ref": null,
+      "method": "BACKGROUND_ESTIMATE",
+      "schema_version": "1",
+      "source_artifact_id": "01J2ZK3AC9V6XW8YQ4R5T6U7W1",
+      "source_track_id": "tt-caption-0"
+    }
+  ],
+  "created_at": "2026-07-21T08:00:00Z",
+  "decisions": [
+    {
+      "clean_plate_request_id": "cp-0",
+      "layout_expansion_ratio": 1.15,
+      "needs_review": false,
+      "rationale": "CAPTION 默认重绘，遮挡低且授权无限制",
+      "review_reasons": [],
+      "schema_version": "1",
+      "source_kind": "CAPTION",
+      "source_text": "端侧推理 20ms 完成",
+      "source_track_id": "tt-caption-0",
+      "strategy": "REDRAW",
+      "target_language": "en-US",
+      "translated_text": "On-device inference in 20 ms"
+    },
+    {
+      "clean_plate_request_id": null,
+      "layout_expansion_ratio": null,
+      "needs_review": true,
+      "rationale": "BRAND_MARK 未授权，交人工确认（§6.1 红线）",
+      "review_reasons": [],
+      "schema_version": "1",
+      "source_kind": "BRAND_MARK",
+      "source_text": "Qwen Logo",
+      "source_track_id": "tt-brand-1",
+      "strategy": "SKIP",
+      "target_language": "en-US",
+      "translated_text": null
+    },
+    {
+      "clean_plate_request_id": null,
+      "layout_expansion_ratio": null,
+      "needs_review": false,
+      "rationale": "SCENE_TEXT 不重要，默认保留",
+      "review_reasons": [],
+      "schema_version": "1",
+      "source_kind": "SCENE_TEXT",
+      "source_text": "Coffee",
+      "source_track_id": "tt-scene-2",
+      "strategy": "KEEP_AS_IS",
+      "target_language": "en-US",
+      "translated_text": null
+    }
+  ],
+  "id": "01J2ZK3AC9V6XW8YQ4R5T6U7OTX1",
+  "policy_id": "01J2ZK3AC9V6XW8YQ4R5T6U7OTX0",
+  "provider": "onscreen_text.fake",
+  "schema_version": "1",
+  "source_text_track_set_id": "01J2ZK3AC9V6XW8YQ4R5T6U7Y5",
+  "target_language": "en-US"
+}
