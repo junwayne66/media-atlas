@@ -3,6 +3,7 @@
 from datetime import UTC, datetime
 
 from videoforge_contracts import (
+    AccountStatus,
     Artifact,
     AssetLicense,
     AssetLicenseType,
@@ -13,6 +14,7 @@ from videoforge_contracts import (
     AudioMixPlan,
     AudioMixTrack,
     AudioMixTrackKind,
+    AuthStatus,
     BBox,
     BeatSlot,
     BeatTemplate,
@@ -26,6 +28,7 @@ from videoforge_contracts import (
     ClaimTableEntry,
     CleanPlateMethod,
     CleanPlateRequest,
+    ClientReviewStatus,
     CompositionSpec,
     ContinuityNote,
     ContinuityRuleKind,
@@ -76,6 +79,10 @@ from videoforge_contracts import (
     LocalizedSentence,
     LoudnessTarget,
     MediaProbe,
+    PlatformPublishSpec,
+    PreflightCheck,
+    PreflightFinding,
+    PreflightReport,
     ProblemDetail,
     ProducedBy,
     Project,
@@ -83,6 +90,9 @@ from videoforge_contracts import (
     PronunciationLexicon,
     ProviderDescriptor,
     ProviderHealth,
+    PublishConnectorCapability,
+    PublishMethod,
+    PublishPlatform,
     QAFinding,
     QAFindingKind,
     QAReport,
@@ -107,6 +117,7 @@ from videoforge_contracts import (
     ReviewPolicy,
     ReviewPolicyMode,
     ReviewScope,
+    ReviewSeverity,
     ReviewState,
     RhetoricalBeat,
     RhetoricalBeatKind,
@@ -1031,6 +1042,53 @@ def make_template_trust_state() -> TemplateTrustState:
     )
 
 
+def make_platform_publish_spec() -> PlatformPublishSpec:
+    return PlatformPublishSpec(
+        platform=PublishPlatform.TIKTOK,
+        allowed_aspect_ratios=["9:16"],
+        min_width=360, min_height=640, max_width=1080, max_height=1920,
+        allowed_video_codecs=["h264", "h265"],
+        allowed_audio_codecs=["aac"],
+        allowed_containers=["mp4", "mov"],
+        max_file_size_bytes=500_000_000,
+        min_duration_ms=3000, max_duration_ms=600_000,
+        title_max_len=150, description_max_len=2200,
+        max_tags=20, tag_max_len=100,
+        banned_title_chars=["<", ">"],
+    )
+
+
+def make_publish_connector_capability() -> PublishConnectorCapability:
+    return PublishConnectorCapability(
+        platform=PublishPlatform.TIKTOK,
+        method=PublishMethod.OFFICIAL_API,
+        available=True,
+        direct_post=True,
+        auth_status=AuthStatus.AUTHORIZED,
+        client_review_status=ClientReviewStatus.APPROVED,
+        account_status=AccountStatus.ACTIVE,
+        supported_containers=["mp4", "mov"],
+        max_file_size_bytes=500_000_000,
+    )
+
+
+def make_preflight_report() -> PreflightReport:
+    return PreflightReport(
+        id="01J2ZK3AC9V6XW8YQ4R5T6U7PF01",
+        platform=PublishPlatform.TIKTOK,
+        method=PublishMethod.OFFICIAL_API,
+        findings=[
+            PreflightFinding(
+                check=PreflightCheck.REVIEW_STATUS,
+                severity=ReviewSeverity.INFO,
+                detail="客户端已审核，无可见性限制",
+            ),
+        ],
+        publishable=True,
+        created_at=_T0,
+    )
+
+
 def make_reedit_plan() -> ReeditPlan:
     return ReeditPlan(
         id="01J2ZK3AC9V6XW8YQ4R5T6U7ZK",
@@ -1303,6 +1361,9 @@ SAMPLES: dict[str, ContractModel] = {
     "review-decision": make_review_decision(),
     "review-policy": make_review_policy(),
     "template-trust-state": make_template_trust_state(),
+    "platform-publish-spec": make_platform_publish_spec(),
+    "publish-connector-capability": make_publish_connector_capability(),
+    "preflight-report": make_preflight_report(),
     "reedit-plan": make_reedit_plan(),
     "asset-plan": make_asset_plan(),
     "creative-timeline": make_creative_timeline(),

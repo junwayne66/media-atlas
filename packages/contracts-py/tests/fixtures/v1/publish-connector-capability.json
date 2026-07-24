@@ -1,0 +1,16 @@
+{
+  "account_status": "ACTIVE",
+  "auth_status": "AUTHORIZED",
+  "available": true,
+  "client_review_status": "APPROVED",
+  "direct_post": true,
+  "max_file_size_bytes": 500000000,
+  "method": "OFFICIAL_API",
+  "notes": null,
+  "platform": "TIKTOK",
+  "schema_version": "1",
+  "supported_containers": [
+    "mp4",
+    "mov"
+  ]
+}

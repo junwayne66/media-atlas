@@ -1,0 +1,139 @@
+{
+  "$defs": {
+    "PreflightCheck": {
+      "enum": [
+        "RESOLUTION",
+        "ASPECT_RATIO",
+        "VIDEO_CODEC",
+        "AUDIO_CODEC",
+        "CONTAINER",
+        "FILE_SIZE",
+        "DURATION",
+        "TITLE_LENGTH",
+        "TITLE_BANNED_CHARS",
+        "DESCRIPTION_LENGTH",
+        "TAG_COUNT",
+        "TAG_LENGTH",
+        "AUTH_STATUS",
+        "REVIEW_STATUS",
+        "ACCOUNT_STATUS",
+        "METHOD_UNAVAILABLE"
+      ],
+      "title": "PreflightCheck",
+      "type": "string"
+    },
+    "PreflightFinding": {
+      "additionalProperties": false,
+      "properties": {
+        "check": {
+          "$ref": "#/$defs/PreflightCheck"
+        },
+        "detail": {
+          "minLength": 1,
+          "title": "Detail",
+          "type": "string"
+        },
+        "evidence": {
+          "additionalProperties": true,
+          "title": "Evidence",
+          "type": "object"
+        },
+        "schema_version": {
+          "default": "1",
+          "description": "合同 schema 版本；Reader 需兼容当前与前一版本",
+          "title": "Schema Version",
+          "type": "string"
+        },
+        "severity": {
+          "$ref": "#/$defs/ReviewSeverity"
+        }
+      },
+      "required": [
+        "check",
+        "severity",
+        "detail"
+      ],
+      "title": "PreflightFinding",
+      "type": "object"
+    },
+    "PublishMethod": {
+      "description": "§3 发布连接器优先级阶梯。",
+      "enum": [
+        "OFFICIAL_API",
+        "OFFICIAL_SHARE_SDK",
+        "BROWSER_AUTOMATION",
+        "ANDROID_DEVICE",
+        "MANUAL_EXPORT"
+      ],
+      "title": "PublishMethod",
+      "type": "string"
+    },
+    "PublishPlatform": {
+      "enum": [
+        "TIKTOK",
+        "DOUYIN"
+      ],
+      "title": "PublishPlatform",
+      "type": "string"
+    },
+    "ReviewSeverity": {
+      "description": "§2 审核/发布严重级别（区别于 VF-309 QA 的 BLOCKER/MAJOR/MINOR/INFO 尺度）。",
+      "enum": [
+        "INFO",
+        "WARNING",
+        "ERROR",
+        "FATAL"
+      ],
+      "title": "ReviewSeverity",
+      "type": "string"
+    }
+  },
+  "$id": "https://videoforge.dev/schemas/preflight-report.schema.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "description": "发布前检查报告。`publishable` 必须由 domain 计算；交叉校验拒绝 publishable=True\n与任何 ERROR/FATAL 发现并存（手工报告骗不过发布前门）。",
+  "properties": {
+    "created_at": {
+      "format": "date-time",
+      "title": "Created At",
+      "type": "string"
+    },
+    "findings": {
+      "items": {
+        "$ref": "#/$defs/PreflightFinding"
+      },
+      "title": "Findings",
+      "type": "array"
+    },
+    "id": {
+      "minLength": 1,
+      "title": "Id",
+      "type": "string"
+    },
+    "method": {
+      "$ref": "#/$defs/PublishMethod"
+    },
+    "platform": {
+      "$ref": "#/$defs/PublishPlatform"
+    },
+    "publishable": {
+      "title": "Publishable",
+      "type": "boolean"
+    },
+    "schema_version": {
+      "default": "1",
+      "description": "合同 schema 版本；Reader 需兼容当前与前一版本",
+      "title": "Schema Version",
+      "type": "string"
+    }
+  },
+  "required": [
+    "id",
+    "platform",
+    "method",
+    "publishable",
+    "created_at"
+  ],
+  "title": "PreflightReport",
+  "type": "object"
+}
