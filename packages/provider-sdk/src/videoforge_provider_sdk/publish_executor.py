@@ -231,8 +231,65 @@ class FakeDouyinPublishExecutor(_FakePublishExecutorBase):
                           rate_limited=rate_limited, preexisting=preexisting)
 
 
+class UnconfiguredBrowserPublishExecutor(_UnconfiguredPublishExecutorBase):
+    _PLATFORM = "浏览器发布"
+
+    def __init__(self, *, name: str = "publish.browser.unconfigured") -> None:
+        super().__init__(name=name)
+
+
+class FakeBrowserPublishExecutor(_FakePublishExecutorBase):
+    """浏览器发布 Adapter Fake（§6，Fake-first，不驱动真实浏览器）。
+
+    - `allowed=False`（目标域名不在连接器白名单）→ submit 直接 FAILED，绝不发布（§6）。
+    - `challenge_signal`（登录失效/验证码/设备确认/内容警告等）→ CHALLENGE，转人工，
+      **绝不自动绕过**（§6/§13）。domain.classify_browser_challenge 负责分类信号。
+    - 否则走幂等提交核心。
+    """
+
+    _LABEL = "Fake Browser"
+
+    def _post_url(self, post_id: str) -> str:
+        return f"https://www.tiktok.com/@fake/video/{post_id}"
+
+    def __init__(self, *, name: str = "publish.browser.fake", allowed: bool = True,
+                  challenge_signal: str | None = None,
+                  preexisting: bool = False) -> None:
+        super().__init__(name=name, preexisting=preexisting)
+        self.allowed = allowed
+        self.challenge_signal = challenge_signal
+
+    def creator_info(self) -> CreatorInfoResult:
+        if not self.allowed:
+            return CreatorInfoResult(
+                status=PublishExecStatus.FAILED,
+                error_code=PublishExecErrorCode.UNKNOWN,
+                detail="目标域名不在连接器白名单（§6）",
+            )
+        return super().creator_info()
+
+    def submit(self, job: PublishJob) -> SubmitResult:
+        if not self.allowed:
+            return SubmitResult(
+                status=PublishExecStatus.FAILED,
+                error_code=PublishExecErrorCode.UNKNOWN,
+                detail="目标域名不在连接器白名单，拒绝浏览器发布（§6）",
+            )
+        if self.challenge_signal:
+            return SubmitResult(
+                status=PublishExecStatus.CHALLENGE,
+                error_code=PublishExecErrorCode.CHALLENGE,
+                detail=(
+                    f"浏览器遇挑战信号 {self.challenge_signal!r} → 转人工"
+                    "（绝不自动绕过，§6/§13）"
+                ),
+            )
+        return super().submit(job)
+
+
 __all__ = [
     "CreatorInfoResult",
+    "FakeBrowserPublishExecutor",
     "FakeDouyinPublishExecutor",
     "FakeTikTokPublishExecutor",
     "PublishExecErrorCode",
@@ -240,6 +297,7 @@ __all__ = [
     "PublishExecutor",
     "StatusResult",
     "SubmitResult",
+    "UnconfiguredBrowserPublishExecutor",
     "UnconfiguredDouyinPublishExecutor",
     "UnconfiguredTikTokPublishExecutor",
 ]

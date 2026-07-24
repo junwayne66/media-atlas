@@ -34,6 +34,16 @@ from videoforge_domain.brief import (
     is_valid_brief,
     validate_brief,
 )
+from videoforge_domain.browser_publish import (
+    BrowserChallengeKind,
+    SelectorStrategy,
+    canary_ok,
+    classify_browser_challenge,
+    is_blocking_challenge,
+    is_domain_allowed,
+    preferred_selector,
+    should_disable_connector,
+)
 from videoforge_domain.cluster_scoring import compute_sub_scores, rescore_cluster
 from videoforge_domain.dedup import (
     AssetFingerprint,
@@ -523,4 +533,12 @@ __all__ = [
     "record_submission",
     "to_waiting_for_human",
     "validate_publish_job",
+    "BrowserChallengeKind",
+    "SelectorStrategy",
+    "canary_ok",
+    "classify_browser_challenge",
+    "is_blocking_challenge",
+    "is_domain_allowed",
+    "preferred_selector",
+    "should_disable_connector",
 ]
