@@ -139,6 +139,15 @@ from videoforge_provider_sdk.localization import (
     TRAStatus,
     UnconfiguredTRAProvider,
 )
+from videoforge_provider_sdk.localization_review import (
+    ConsistencyCheckRequest,
+    ConsistencyCheckResult,
+    ConsistencyErrorCode,
+    ConsistencyStatus,
+    FakeLocalizationConsistencyProvider,
+    LocalizationConsistencyProvider,
+    UnconfiguredLocalizationConsistencyProvider,
+)
 from videoforge_provider_sdk.media_analyzer import (
     AudioWindow,
     CaptionBBox,
@@ -473,4 +482,11 @@ __all__ = [
     "LipSyncResult",
     "LipSyncStatus",
     "UnconfiguredLipSyncProvider",
+    "ConsistencyCheckRequest",
+    "ConsistencyCheckResult",
+    "ConsistencyErrorCode",
+    "ConsistencyStatus",
+    "FakeLocalizationConsistencyProvider",
+    "LocalizationConsistencyProvider",
+    "UnconfiguredLocalizationConsistencyProvider",
 ]

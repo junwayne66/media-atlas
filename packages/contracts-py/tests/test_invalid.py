@@ -548,6 +548,31 @@ INVALID_OVERRIDES: list[tuple[str, str, dict[str, Any]]] = [
                    "motion_score": 0.9, "identity_score": 0.9, "passed": True},
         }],
     }),
+    # 本地化审核：pass_or_block=True 不能与 BLOCKER 并存（发布门红线）
+    ("localization-qa-report", "pass 却含 BLOCKER 被拒", {
+        "pass_or_block": True,
+        "findings": [{
+            "sentence_id": "s", "check": "NUMBER_CONSISTENCY", "severity": "BLOCKER",
+            "detail": "数字不一致",
+        }],
+    }),
+    # 本地化审核：EDITED 必须携带 edited_text
+    ("localization-review", "EDITED 无 edited_text 被拒", {
+        "decisions": [{"sentence_id": "s", "state": "EDITED"}],
+    }),
+    # 本地化审核：非 EDITED 不能携带 edited_text
+    ("localization-review", "非 EDITED 带 edited_text 被拒", {
+        "decisions": [{
+            "sentence_id": "s", "state": "APPROVED", "edited_text": "x",
+        }],
+    }),
+    # 本地化审核：sentence_id 重复
+    ("localization-review", "重复 sentence_id 被拒", {
+        "decisions": [
+            {"sentence_id": "s", "state": "APPROVED"},
+            {"sentence_id": "s", "state": "PENDING"},
+        ],
+    }),
     ("exporter-report", "未知字段被拒", {"unexpected_field": 1}),
     ("exporter-report", "非法 ExporterKind 被拒",
      {"entries": [{"kind": "PREMIERE_XML", "status": "OK"}]}),

@@ -1,0 +1,136 @@
+{
+  "$defs": {
+    "LocalizationQACheck": {
+      "description": "§12 语言 QA 自动检查项。",
+      "enum": [
+        "CLAIM_CONSISTENCY",
+        "NUMBER_CONSISTENCY",
+        "PROPER_NOUN_CONSISTENCY",
+        "NEGATION_CONSISTENCY",
+        "GLOSSARY",
+        "PRONUNCIATION",
+        "UNTRANSLATED_TEXT",
+        "SUBTITLE_LINE_LENGTH",
+        "SUBTITLE_READING_SPEED",
+        "SUBTITLE_OVERLAP",
+        "SUBTITLE_SAFE_AREA",
+        "TTS_GAP",
+        "TTS_REPEAT",
+        "TTS_TRUNCATION",
+        "TTS_LEVEL",
+        "TTS_CLIP",
+        "DURATION_EXCEEDED",
+        "EXTREME_SPEED",
+        "LIPSYNC_SYNC",
+        "AV_SYNC"
+      ],
+      "title": "LocalizationQACheck",
+      "type": "string"
+    },
+    "LocalizationQAFinding": {
+      "additionalProperties": false,
+      "description": "一条逐句 QA 发现。",
+      "properties": {
+        "check": {
+          "$ref": "#/$defs/LocalizationQACheck"
+        },
+        "detail": {
+          "minLength": 1,
+          "title": "Detail",
+          "type": "string"
+        },
+        "evidence": {
+          "additionalProperties": true,
+          "title": "Evidence",
+          "type": "object"
+        },
+        "schema_version": {
+          "default": "1",
+          "description": "合同 schema 版本；Reader 需兼容当前与前一版本",
+          "title": "Schema Version",
+          "type": "string"
+        },
+        "sentence_id": {
+          "minLength": 1,
+          "title": "Sentence Id",
+          "type": "string"
+        },
+        "severity": {
+          "$ref": "#/$defs/QASeverity"
+        }
+      },
+      "required": [
+        "sentence_id",
+        "check",
+        "severity",
+        "detail"
+      ],
+      "title": "LocalizationQAFinding",
+      "type": "object"
+    },
+    "QASeverity": {
+      "description": "QA 严重级（docs/modules/42 §11）。BLOCKER 一处即拒；MAJOR 超阈升级；MINOR/INFO 记录。",
+      "enum": [
+        "BLOCKER",
+        "MAJOR",
+        "MINOR",
+        "INFO"
+      ],
+      "title": "QASeverity",
+      "type": "string"
+    }
+  },
+  "$id": "https://videoforge.dev/schemas/localization-qa-report.schema.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "description": "一个 LocalizationVariant 的语言 QA 报告。\n\n`pass_or_block` 必须由 domain 的发布门计算；合同层交叉校验拒绝\n`pass_or_block=True` 与任何 BLOCKER 并存——手工构造的报告骗不过门。",
+  "properties": {
+    "created_at": {
+      "format": "date-time",
+      "title": "Created At",
+      "type": "string"
+    },
+    "findings": {
+      "items": {
+        "$ref": "#/$defs/LocalizationQAFinding"
+      },
+      "title": "Findings",
+      "type": "array"
+    },
+    "id": {
+      "minLength": 1,
+      "title": "Id",
+      "type": "string"
+    },
+    "localization_variant_id": {
+      "minLength": 1,
+      "title": "Localization Variant Id",
+      "type": "string"
+    },
+    "pass_or_block": {
+      "title": "Pass Or Block",
+      "type": "boolean"
+    },
+    "reviewed_sentence_ids": {
+      "items": {
+        "type": "string"
+      },
+      "title": "Reviewed Sentence Ids",
+      "type": "array"
+    },
+    "schema_version": {
+      "default": "1",
+      "description": "合同 schema 版本；Reader 需兼容当前与前一版本",
+      "title": "Schema Version",
+      "type": "string"
+    }
+  },
+  "required": [
+    "id",
+    "localization_variant_id",
+    "pass_or_block",
+    "created_at"
+  ],
+  "title": "LocalizationQAReport",
+  "type": "object"
+}

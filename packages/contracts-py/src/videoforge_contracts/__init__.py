@@ -95,6 +95,15 @@ from videoforge_contracts.localization import (
     LocalizedSentence,
     TranslateReflectAdaptResult,
 )
+from videoforge_contracts.localization_review import (
+    LocalizationQACheck,
+    LocalizationQAFinding,
+    LocalizationQAReport,
+    LocalizationReview,
+    ReRunStage,
+    ReviewState,
+    SentenceReviewDecision,
+)
 from videoforge_contracts.onscreen_text import (
     CleanPlateMethod,
     CleanPlateRequest,
@@ -218,6 +227,8 @@ CONTRACTS: dict[str, type[ContractModel]] = {
     "duration-fit-plan": DurationFitPlan,
     "audio-mix-plan": AudioMixPlan,
     "lipsync-plan": LipSyncPlan,
+    "localization-qa-report": LocalizationQAReport,
+    "localization-review": LocalizationReview,
     "asset-plan": AssetPlan,
     "creative-timeline": CreativeTimeline,
     "render-manifest": RenderManifest,
@@ -359,6 +370,13 @@ __all__ = [
     "LipSyncQAReport",
     "LipSyncReviewReason",
     "LipSyncSegmentDecision",
+    "LocalizationQACheck",
+    "LocalizationQAFinding",
+    "LocalizationQAReport",
+    "LocalizationReview",
+    "ReRunStage",
+    "ReviewState",
+    "SentenceReviewDecision",
     "SegmentEffect",
     "SegmentJudgment",
     "StorageBackend",
