@@ -173,6 +173,7 @@ from videoforge_domain.publish_job import (
     confirm_success,
     has_submitted,
     is_valid_publish_job,
+    mark_manually_completed,
     new_publish_job,
     reconcile_publish,
     record_submission,
@@ -188,6 +189,12 @@ from videoforge_domain.publish_preflight import (
     run_preflight,
     select_publish_method,
     validate_preflight_report,
+)
+from videoforge_domain.publish_schedule import (
+    compute_copy_idempotency_key,
+    is_within_publishing_window,
+    next_publish_time,
+    parse_publishing_window,
 )
 from videoforge_domain.qa import (
     DEFAULT_THRESHOLDS,
@@ -538,11 +545,16 @@ __all__ = [
     "confirm_success",
     "has_submitted",
     "is_valid_publish_job",
+    "mark_manually_completed",
     "new_publish_job",
     "reconcile_publish",
     "record_submission",
     "to_waiting_for_human",
     "validate_publish_job",
+    "compute_copy_idempotency_key",
+    "is_within_publishing_window",
+    "next_publish_time",
+    "parse_publishing_window",
     "BrowserChallengeKind",
     "SelectorStrategy",
     "canary_ok",

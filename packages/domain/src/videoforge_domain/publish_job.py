@@ -55,10 +55,12 @@ PUBLISH_TRANSITIONS: dict[PublishState, frozenset[PublishState]] = {
         PublishState.SUCCEEDED, PublishState.SUCCEEDED_RECONCILED,
         PublishState.WAITING_FOR_HUMAN, PublishState.FAILED,
     }),
-    # 人工恢复：前提交→UPLOADING / 后提交→VERIFYING；直连 SUBMITTED 由 can_submit 拦
+    # 人工恢复：前提交→UPLOADING / 后提交→VERIFYING；直连 SUBMITTED 由 can_submit 拦。
+    # 人工完成（§5 手工完成 / 对账到已存在帖子）→ SUCCEEDED*（含 external_id，不重发）。
     PublishState.WAITING_FOR_HUMAN: frozenset({
         PublishState.UPLOADING, PublishState.VERIFYING,
         PublishState.AWAITING_AUTH, PublishState.FAILED,
+        PublishState.SUCCEEDED, PublishState.SUCCEEDED_RECONCILED,
     }),
     PublishState.SUCCEEDED: frozenset(),
     PublishState.SUCCEEDED_RECONCILED: frozenset(),
@@ -217,6 +219,28 @@ def confirm_success(
     return job.model_copy(update={
         "state": PublishState.SUCCEEDED, "external_post_id": external_id,
         "external_url": external_url, "content_fingerprint": content_fingerprint,
+        "updated_at": now,
+    })
+
+
+def mark_manually_completed(
+    job: PublishJob, *, external_id: str, now: datetime,
+    external_url: str | None = None,
+) -> PublishJob:
+    """§5 手工完成：人工在系统外发布了（或对账确认已存在）→ SUCCEEDED_RECONCILED，
+    记录人工提供的 external_id。**绝不触发系统再发布**。
+
+    只用于 WAITING_FOR_HUMAN 的 Job（暂停等人工的场景）。"""
+    if not external_id:
+        raise ValueError("mark_manually_completed 必须提供 external_id")
+    if job.state is not PublishState.WAITING_FOR_HUMAN:
+        raise IllegalPublishTransition(
+            f"手工完成只用于 WAITING_FOR_HUMAN 的 Job，当前 {job.state.value}"
+        )
+    assert_transition(job.state, PublishState.SUCCEEDED_RECONCILED)
+    return job.model_copy(update={
+        "state": PublishState.SUCCEEDED_RECONCILED,
+        "external_post_id": external_id, "external_url": external_url,
         "updated_at": now,
     })
 
