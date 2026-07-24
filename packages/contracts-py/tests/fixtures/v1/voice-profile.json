@@ -1,0 +1,15 @@
+{
+  "consent_ref": "consent://anchor-a-2026-signed",
+  "created_at": "2026-07-21T08:00:00Z",
+  "display_name": "Anchor A（Cloud HQ）",
+  "expires_at": null,
+  "id": "01J2ZK3AC9V6XW8YQ4R5T6U7TTS1",
+  "language": "zh-CN",
+  "license_status": "AUTHORIZED",
+  "notes": "Anchor A cloned voice; 6-month license",
+  "provider_tier": "CLOUD_HIGH_QUALITY",
+  "provider_voice_id": "azure-neural-female-1",
+  "sample_source_ref": "artifact://sample/anchor-a-consent-2026.wav",
+  "schema_version": "1",
+  "voice_kind": "CLONED"
+}

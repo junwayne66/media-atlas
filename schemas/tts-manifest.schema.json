@@ -1,0 +1,197 @@
+{
+  "$defs": {
+    "TTSProviderTier": {
+      "description": "provider 分层（供路由用）。云端最高质，系统最低但预览便宜。",
+      "enum": [
+        "CLOUD_HIGH_QUALITY",
+        "SELF_HOSTED",
+        "SYSTEM_PREVIEW"
+      ],
+      "title": "TTSProviderTier",
+      "type": "string"
+    },
+    "TTSWordTiming": {
+      "additionalProperties": false,
+      "description": "合成后的词级时间；跟 VF-402 SubtitleWord 不同——TTS 直接产 word onset，不\n需 forced alignment。confidence 通常来自 provider 内部对齐质量估计。",
+      "properties": {
+        "confidence": {
+          "anyOf": [
+            {
+              "maximum": 1.0,
+              "minimum": 0.0,
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Confidence"
+        },
+        "end_ms": {
+          "minimum": 0,
+          "title": "End Ms",
+          "type": "integer"
+        },
+        "schema_version": {
+          "default": "1",
+          "description": "合同 schema 版本；Reader 需兼容当前与前一版本",
+          "title": "Schema Version",
+          "type": "string"
+        },
+        "start_ms": {
+          "minimum": 0,
+          "title": "Start Ms",
+          "type": "integer"
+        },
+        "text": {
+          "minLength": 1,
+          "title": "Text",
+          "type": "string"
+        }
+      },
+      "required": [
+        "text",
+        "start_ms",
+        "end_ms"
+      ],
+      "title": "TTSWordTiming",
+      "type": "object"
+    }
+  },
+  "$id": "https://videoforge.dev/schemas/tts-manifest.schema.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "description": "一次 TTS 合成的可重放 manifest（同 41 §11 精神：input digest + provider +\ntool_version + config → activity cache key）。\n\ninput_text_hash 就是本次合成文本 + 语言 + voice_profile_id + style + target_duration\n+ lexicon_id + seed 的组合哈希；由 domain 侧算出。",
+  "properties": {
+    "audio_artifact_id": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "description": "合成音频 artifact id；FAILED/UNCONFIGURED 时为 None",
+      "title": "Audio Artifact Id"
+    },
+    "created_at": {
+      "format": "date-time",
+      "title": "Created At",
+      "type": "string"
+    },
+    "duration_ms": {
+      "anyOf": [
+        {
+          "minimum": 0,
+          "type": "integer"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Duration Ms"
+    },
+    "id": {
+      "minLength": 1,
+      "title": "Id",
+      "type": "string"
+    },
+    "language": {
+      "minLength": 1,
+      "title": "Language",
+      "type": "string"
+    },
+    "provider": {
+      "minLength": 1,
+      "title": "Provider",
+      "type": "string"
+    },
+    "provider_tier": {
+      "$ref": "#/$defs/TTSProviderTier"
+    },
+    "schema_version": {
+      "default": "1",
+      "description": "合同 schema 版本；Reader 需兼容当前与前一版本",
+      "title": "Schema Version",
+      "type": "string"
+    },
+    "seed": {
+      "anyOf": [
+        {
+          "type": "integer"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Seed"
+    },
+    "sentence_id": {
+      "description": "源脚本句 id 或翻译句 id",
+      "minLength": 1,
+      "title": "Sentence Id",
+      "type": "string"
+    },
+    "speed_used": {
+      "anyOf": [
+        {
+          "exclusiveMinimum": 0.0,
+          "type": "number"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "description": "实际使用的语速倍数（time fit 后）",
+      "title": "Speed Used"
+    },
+    "text_hash": {
+      "description": "input text+config 的哈希",
+      "minLength": 1,
+      "title": "Text Hash",
+      "type": "string"
+    },
+    "tool_version": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Tool Version"
+    },
+    "voice_profile_id": {
+      "minLength": 1,
+      "title": "Voice Profile Id",
+      "type": "string"
+    },
+    "word_timings": {
+      "items": {
+        "$ref": "#/$defs/TTSWordTiming"
+      },
+      "title": "Word Timings",
+      "type": "array"
+    }
+  },
+  "required": [
+    "id",
+    "sentence_id",
+    "voice_profile_id",
+    "language",
+    "text_hash",
+    "provider",
+    "provider_tier",
+    "created_at"
+  ],
+  "title": "TTSManifest",
+  "type": "object"
+}

@@ -148,6 +148,17 @@ from videoforge_contracts.trend import (
     TrendItemSnapshot,
     TrendSubScores,
 )
+from videoforge_contracts.tts import (
+    PronunciationEntry,
+    PronunciationLexicon,
+    TTSManifest,
+    TTSProviderTier,
+    TTSWordTiming,
+    VoiceKind,
+    VoiceLicenseStatus,
+    VoiceProfile,
+    VoiceStyle,
+)
 from videoforge_contracts.vlm import FrameAnalysis, VisualAnalysis
 
 # schemas/<name>.schema.json 与顶层合同的对应表（导出与漂移检查共用）
@@ -177,6 +188,9 @@ CONTRACTS: dict[str, type[ContractModel]] = {
     "subtitle-template": SubtitleTemplate,
     "subtitle-track": SubtitleTrack,
     "text-localization-plan": TextLocalizationPlan,
+    "voice-profile": VoiceProfile,
+    "pronunciation-lexicon": PronunciationLexicon,
+    "tts-manifest": TTSManifest,
     "asset-plan": AssetPlan,
     "creative-timeline": CreativeTimeline,
     "render-manifest": RenderManifest,
@@ -291,6 +305,15 @@ __all__ = [
     "TextLocalizationReviewReason",
     "TextLocalizationStrategy",
     "TextTrackLocalizationDecision",
+    "PronunciationEntry",
+    "PronunciationLexicon",
+    "TTSManifest",
+    "TTSProviderTier",
+    "TTSWordTiming",
+    "VoiceKind",
+    "VoiceLicenseStatus",
+    "VoiceProfile",
+    "VoiceStyle",
     "SegmentEffect",
     "SegmentJudgment",
     "StorageBackend",
