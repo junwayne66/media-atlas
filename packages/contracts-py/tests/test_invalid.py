@@ -630,6 +630,19 @@ INVALID_OVERRIDES: list[tuple[str, str, dict[str, Any]]] = [
         "attempts": [{"attempt": 0, "request_digest": "r",
                        "at": "2026-07-25T00:00:00Z"}],
     }),
+    # 账号：credential_ref 像明文 JWT 被拒（§8 无 secret 红线）
+    ("platform-account", "credential_ref 像 JWT 被拒",
+     {"credential_ref": "eyJhbGciOiJIUzI1NiJ9.payload.sig"}),
+    # 账号：credential_ref 像 Bearer token 被拒
+    ("platform-account", "credential_ref 像 Bearer 被拒",
+     {"credential_ref": "Bearer sk-secret-123"}),
+    # 账号：credential_ref 不能空
+    ("platform-account", "credential_ref 空被拒", {"credential_ref": ""}),
+    # 账号：前缀包裹的 JWT 也被拒（verifier 揭示的嵌入绕过——子串扫描）
+    ("platform-account", "handle 前缀包裹的 JWT 被拒",
+     {"credential_ref": "ch-eyJhbGciOiJIUzI1NiJ9.payload.sig"}),
+    ("platform-account", "内嵌 refresh_token 被拒",
+     {"credential_ref": "handle_refresh_token_abc"}),
     ("exporter-report", "未知字段被拒", {"unexpected_field": 1}),
     ("exporter-report", "非法 ExporterKind 被拒",
      {"entries": [{"kind": "PREMIERE_XML", "status": "OK"}]}),

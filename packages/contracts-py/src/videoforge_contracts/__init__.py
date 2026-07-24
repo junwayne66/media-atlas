@@ -117,6 +117,10 @@ from videoforge_contracts.onscreen_text import (
 from videoforge_contracts.problem import ProblemDetail
 from videoforge_contracts.project import Project
 from videoforge_contracts.provider import CostModel, ProviderDescriptor, ProviderHealth
+from videoforge_contracts.publish_account import (
+    AccountBinding,
+    PlatformAccount,
+)
 from videoforge_contracts.publish_job import (
     PublishAttempt,
     PublishJob,
@@ -267,6 +271,7 @@ CONTRACTS: dict[str, type[ContractModel]] = {
     "publish-connector-capability": PublishConnectorCapability,
     "preflight-report": PreflightReport,
     "publish-job": PublishJob,
+    "platform-account": PlatformAccount,
     "asset-plan": AssetPlan,
     "creative-timeline": CreativeTimeline,
     "render-manifest": RenderManifest,
@@ -440,6 +445,8 @@ __all__ = [
     "PublishAttempt",
     "PublishJob",
     "PublishState",
+    "AccountBinding",
+    "PlatformAccount",
     "SegmentEffect",
     "SegmentJudgment",
     "StorageBackend",

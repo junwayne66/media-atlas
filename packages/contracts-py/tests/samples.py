@@ -3,6 +3,7 @@
 from datetime import UTC, datetime
 
 from videoforge_contracts import (
+    AccountBinding,
     AccountStatus,
     Artifact,
     AssetLicense,
@@ -79,6 +80,7 @@ from videoforge_contracts import (
     LocalizedSentence,
     LoudnessTarget,
     MediaProbe,
+    PlatformAccount,
     PlatformPublishSpec,
     PreflightCheck,
     PreflightFinding,
@@ -1118,6 +1120,24 @@ def make_publish_job() -> PublishJob:
     )
 
 
+def make_platform_account() -> PlatformAccount:
+    return PlatformAccount(
+        id="acct_tt_9",
+        platform=PublishPlatform.TIKTOK,
+        display_name="AI 科技二创号",
+        external_account_id="tt_uid_778899",
+        credential_ref="ch-9f2e-encrypted-handle",
+        binding=AccountBinding.SERVER_ENCRYPTED,
+        connector_preferences=[PublishMethod.OFFICIAL_API, PublishMethod.ANDROID_DEVICE],
+        review_policy_id="pol_2",
+        publishing_window="18:00-22:00",
+        locale="zh-CN",
+        status=AccountStatus.ACTIVE,
+        last_verified_at=_T0,
+        device_binding_id="dev_pixel_7",
+    )
+
+
 def make_reedit_plan() -> ReeditPlan:
     return ReeditPlan(
         id="01J2ZK3AC9V6XW8YQ4R5T6U7ZK",
@@ -1390,6 +1410,7 @@ SAMPLES: dict[str, ContractModel] = {
     "review-decision": make_review_decision(),
     "review-policy": make_review_policy(),
     "template-trust-state": make_template_trust_state(),
+    "platform-account": make_platform_account(),
     "platform-publish-spec": make_platform_publish_spec(),
     "publish-connector-capability": make_publish_connector_capability(),
     "preflight-report": make_preflight_report(),
