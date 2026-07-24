@@ -200,6 +200,7 @@ from videoforge_provider_sdk.publish_errors import (
 )
 from videoforge_provider_sdk.publish_executor import (
     CreatorInfoResult,
+    FakeBrowserPublishExecutor,
     FakeDouyinPublishExecutor,
     FakeTikTokPublishExecutor,
     PublishExecErrorCode,
@@ -207,6 +208,7 @@ from videoforge_provider_sdk.publish_executor import (
     PublishExecutor,
     StatusResult,
     SubmitResult,
+    UnconfiguredBrowserPublishExecutor,
     UnconfiguredDouyinPublishExecutor,
     UnconfiguredTikTokPublishExecutor,
 )
@@ -514,6 +516,7 @@ __all__ = [
     "PublishConnector",
     "UnconfiguredPublishConnector",
     "CreatorInfoResult",
+    "FakeBrowserPublishExecutor",
     "FakeDouyinPublishExecutor",
     "FakeTikTokPublishExecutor",
     "PublishErrorMapping",
@@ -522,6 +525,7 @@ __all__ = [
     "PublishExecutor",
     "StatusResult",
     "SubmitResult",
+    "UnconfiguredBrowserPublishExecutor",
     "UnconfiguredDouyinPublishExecutor",
     "UnconfiguredTikTokPublishExecutor",
     "map_publish_error",
