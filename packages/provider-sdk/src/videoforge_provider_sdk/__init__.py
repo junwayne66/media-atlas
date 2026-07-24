@@ -121,6 +121,15 @@ from videoforge_provider_sdk.highlight import (
     HighlightWindowSpec,
     UnconfiguredHighlightFeatureProvider,
 )
+from videoforge_provider_sdk.lipsync import (
+    FakeLipSyncProvider,
+    LipSyncErrorCode,
+    LipSyncProvider,
+    LipSyncRequest,
+    LipSyncResult,
+    LipSyncStatus,
+    UnconfiguredLipSyncProvider,
+)
 from videoforge_provider_sdk.localization import (
     FakeTRAProvider,
     TRAErrorCode,
@@ -457,4 +466,11 @@ __all__ = [
     "FakeAudioMixProvider",
     "MeasuredLoudness",
     "UnconfiguredAudioMixProvider",
+    "FakeLipSyncProvider",
+    "LipSyncErrorCode",
+    "LipSyncProvider",
+    "LipSyncRequest",
+    "LipSyncResult",
+    "LipSyncStatus",
+    "UnconfiguredLipSyncProvider",
 ]

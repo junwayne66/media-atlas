@@ -220,6 +220,17 @@ python:
       分析/VLM 或训练模型（停止条件），默认 UnconfiguredSegmentJudgeProvider 返回 UNCONFIGURED。
       计划生成/护栏是纯域确定性逻辑：操作边界不切句、KEEP 不重叠、变速仅在允许区间、每处 jump cut
       都须有连续性处理。
+  - name: GPU LipSync（MuseTalk 类局部脸区口型合成模型 + GPU 推理）
+    license: 视具体模型（MuseTalk 等，另核；含模型权重许可，接入前专项评审）
+    isolation: L2
+    used_by: 计划——LipSyncProvider（docs/modules/43 §10）
+    note: >
+      VF-406 只落地 LipSyncPlan 合同 + 资格判断/回退阶梯/非阻塞护栏（纯域）+ 口型端口 + Fake。
+      真实 GPU 局部脸区合成（MuseTalk 类）需 GPU + 模型权重 + 许可评审（停止条件），默认
+      UnconfiguredLipSyncProvider 返回 UNCONFIGURED；FakeLipSyncProvider 零 GPU/模型/subprocess
+      导入，不伪造真实口型。安全红线：口型**非阻塞**——资格不符/合成失败/QA 不过一律自动降级
+      （原口型相近 Take → 插 B-roll/屏录 → 加快切镜 → 保留非口型配音），KEEP_UNSYNCED 终局永远
+      可用，绝不让 Workflow 永久卡住（§10.2 + §13）。
 
 javascript:
   - name: vue

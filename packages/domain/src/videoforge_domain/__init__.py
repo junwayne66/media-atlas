@@ -94,6 +94,19 @@ from videoforge_domain.kinematics import (
     series_acceleration,
     series_velocity,
 )
+from videoforge_domain.lipsync import (
+    LipSyncAvailability,
+    LipSyncIssue,
+    LipSyncIssueKind,
+    LipSyncSegmentFeatures,
+    LipSyncSegmentInput,
+    assess_eligibility,
+    decide_lipsync,
+    is_valid_lipsync_plan,
+    plan_lipsync,
+    resolve_fallback,
+    validate_lipsync_plan,
+)
 from videoforge_domain.localization import (
     LocalizationIssue,
     LocalizationIssueKind,
@@ -387,4 +400,15 @@ __all__ = [
     "default_ducking_policy",
     "is_valid_audio_mix_plan",
     "validate_audio_mix_plan",
+    "LipSyncAvailability",
+    "LipSyncIssue",
+    "LipSyncIssueKind",
+    "LipSyncSegmentFeatures",
+    "LipSyncSegmentInput",
+    "assess_eligibility",
+    "decide_lipsync",
+    "is_valid_lipsync_plan",
+    "plan_lipsync",
+    "resolve_fallback",
+    "validate_lipsync_plan",
 ]

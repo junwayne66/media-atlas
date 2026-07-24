@@ -505,6 +505,49 @@ INVALID_OVERRIDES: list[tuple[str, str, dict[str, Any]]] = [
     # 音频合成：True Peak 硬顶不能为正
     ("audio-mix-plan", "true_peak_max_dbtp > 0 被拒",
      {"loudness_target": {"true_peak_max_dbtp": 1.0}}),
+    # 口型：GPU_SYNTHESIS 只能用于合格片段
+    ("lipsync-plan", "GPU_SYNTHESIS 用于不合格片段被拒", {
+        "decisions": [{
+            "segment_id": "a", "start_ms": 0, "end_ms": 100, "eligible": False,
+            "ineligible_reasons": ["MULTIPLE_FACES"], "method": "GPU_SYNTHESIS",
+            "rationale": "x",
+        }],
+    }),
+    # 口型：eligible=False 必须记录原因
+    ("lipsync-plan", "不合格无原因被拒", {
+        "decisions": [{
+            "segment_id": "a", "start_ms": 0, "end_ms": 100, "eligible": False,
+            "method": "KEEP_UNSYNCED", "rationale": "x",
+        }],
+    }),
+    # 口型：end < start
+    ("lipsync-plan", "decision end < start 被拒", {
+        "decisions": [{
+            "segment_id": "a", "start_ms": 500, "end_ms": 100, "eligible": True,
+            "method": "GPU_SYNTHESIS", "rationale": "x",
+        }],
+    }),
+    # 口型：segment_id 重复
+    ("lipsync-plan", "重复 segment_id 被拒", {
+        "decisions": [
+            {"segment_id": "a", "start_ms": 0, "end_ms": 100, "eligible": True,
+             "method": "GPU_SYNTHESIS", "rationale": "x"},
+            {"segment_id": "a", "start_ms": 100, "end_ms": 200, "eligible": True,
+             "method": "GPU_SYNTHESIS", "rationale": "y"},
+        ],
+    }),
+    # 口型：criteria min_duration > max_duration
+    ("lipsync-plan", "criteria 时长下界 > 上界被拒",
+     {"criteria": {"min_duration_ms": 5000, "max_duration_ms": 1000}}),
+    # 口型：QA 分数超 [0,1]
+    ("lipsync-plan", "QA 分数越界被拒", {
+        "decisions": [{
+            "segment_id": "a", "start_ms": 0, "end_ms": 100, "eligible": True,
+            "method": "GPU_SYNTHESIS", "rationale": "x",
+            "qa": {"boundary_score": 1.5, "skin_tone_score": 0.9,
+                   "motion_score": 0.9, "identity_score": 0.9, "passed": True},
+        }],
+    }),
     ("exporter-report", "未知字段被拒", {"unexpected_field": 1}),
     ("exporter-report", "非法 ExporterKind 被拒",
      {"entries": [{"kind": "PREMIERE_XML", "status": "OK"}]}),
