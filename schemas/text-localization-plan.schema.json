@@ -1,0 +1,292 @@
+{
+  "$defs": {
+    "CleanPlateMethod": {
+      "description": "Clean Plate 生成方法（§6.2）。",
+      "enum": [
+        "BACKGROUND_ESTIMATE",
+        "AUTHORIZED_INPAINT",
+        "SKIP"
+      ],
+      "title": "CleanPlateMethod",
+      "type": "string"
+    },
+    "CleanPlateRequest": {
+      "additionalProperties": false,
+      "description": "一次 Clean Plate 请求（供 provider-sdk CleanPlateProvider 消费）。",
+      "properties": {
+        "frame_end_ms": {
+          "minimum": 0,
+          "title": "Frame End Ms",
+          "type": "integer"
+        },
+        "frame_start_ms": {
+          "minimum": 0,
+          "title": "Frame Start Ms",
+          "type": "integer"
+        },
+        "id": {
+          "minLength": 1,
+          "title": "Id",
+          "type": "string"
+        },
+        "license_ref": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "AUTHORIZED_INPAINT 的授权凭证引用",
+          "title": "License Ref"
+        },
+        "method": {
+          "$ref": "#/$defs/CleanPlateMethod"
+        },
+        "schema_version": {
+          "default": "1",
+          "description": "合同 schema 版本；Reader 需兼容当前与前一版本",
+          "title": "Schema Version",
+          "type": "string"
+        },
+        "source_artifact_id": {
+          "minLength": 1,
+          "title": "Source Artifact Id",
+          "type": "string"
+        },
+        "source_track_id": {
+          "minLength": 1,
+          "title": "Source Track Id",
+          "type": "string"
+        }
+      },
+      "required": [
+        "id",
+        "source_track_id",
+        "source_artifact_id",
+        "frame_start_ms",
+        "frame_end_ms",
+        "method"
+      ],
+      "title": "CleanPlateRequest",
+      "type": "object"
+    },
+    "TextLocalizationReviewReason": {
+      "description": "需人工审核的原因（provider 与 domain 都可能置）。",
+      "enum": [
+        "LOW_OCR_CONFIDENCE",
+        "OCCLUSION_HIGH",
+        "MOTION_UNSUPPORTED",
+        "LICENSE_UNCONFIRMED",
+        "LAYOUT_OVERFLOW",
+        "CLEAN_PLATE_FAILED",
+        "GLOSSARY_MISS",
+        "UNKNOWN_KIND"
+      ],
+      "title": "TextLocalizationReviewReason",
+      "type": "string"
+    },
+    "TextLocalizationStrategy": {
+      "description": "一条 TextTrack 的本地化策略。",
+      "enum": [
+        "REDRAW",
+        "REPLACE_OVERLAY",
+        "INFO_CARD_FALLBACK",
+        "KEEP_AS_IS",
+        "SKIP",
+        "LOCALIZE_ANNOTATION"
+      ],
+      "title": "TextLocalizationStrategy",
+      "type": "string"
+    },
+    "TextTrackKind": {
+      "description": "文本轨类型（docs/modules/41 §8）。区分字幕/标题/UI/品牌水印/场景文字。",
+      "enum": [
+        "CAPTION",
+        "TITLE",
+        "LOWER_THIRD",
+        "UI",
+        "SCENE_TEXT",
+        "BRAND_MARK",
+        "UNKNOWN"
+      ],
+      "title": "TextTrackKind",
+      "type": "string"
+    },
+    "TextTrackLocalizationDecision": {
+      "additionalProperties": false,
+      "description": "对一条 TextTrack 的本地化决策。",
+      "properties": {
+        "clean_plate_request_id": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "策略需要 Clean Plate 时引用其 id",
+          "title": "Clean Plate Request Id"
+        },
+        "layout_expansion_ratio": {
+          "anyOf": [
+            {
+              "minimum": 0.0,
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "翻译后文本长度 / 源长度；> policy.max 走回退",
+          "title": "Layout Expansion Ratio"
+        },
+        "needs_review": {
+          "default": false,
+          "title": "Needs Review",
+          "type": "boolean"
+        },
+        "rationale": {
+          "description": "选择该策略的原因（人可读）",
+          "minLength": 1,
+          "title": "Rationale",
+          "type": "string"
+        },
+        "review_reasons": {
+          "items": {
+            "$ref": "#/$defs/TextLocalizationReviewReason"
+          },
+          "title": "Review Reasons",
+          "type": "array"
+        },
+        "schema_version": {
+          "default": "1",
+          "description": "合同 schema 版本；Reader 需兼容当前与前一版本",
+          "title": "Schema Version",
+          "type": "string"
+        },
+        "source_kind": {
+          "$ref": "#/$defs/TextTrackKind"
+        },
+        "source_text": {
+          "minLength": 1,
+          "title": "Source Text",
+          "type": "string"
+        },
+        "source_track_id": {
+          "minLength": 1,
+          "title": "Source Track Id",
+          "type": "string"
+        },
+        "strategy": {
+          "$ref": "#/$defs/TextLocalizationStrategy"
+        },
+        "target_language": {
+          "minLength": 1,
+          "title": "Target Language",
+          "type": "string"
+        },
+        "translated_text": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "KEEP_AS_IS / SKIP / BRAND_MARK 未授权时可为 None",
+          "title": "Translated Text"
+        }
+      },
+      "required": [
+        "source_track_id",
+        "source_text",
+        "source_kind",
+        "target_language",
+        "strategy",
+        "rationale"
+      ],
+      "title": "TextTrackLocalizationDecision",
+      "type": "object"
+    }
+  },
+  "$id": "https://videoforge.dev/schemas/text-localization-plan.schema.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "description": "一次画面文字本地化计划（多轨决策 + Clean Plate 请求集合）。",
+  "properties": {
+    "clean_plate_requests": {
+      "items": {
+        "$ref": "#/$defs/CleanPlateRequest"
+      },
+      "title": "Clean Plate Requests",
+      "type": "array"
+    },
+    "created_at": {
+      "format": "date-time",
+      "title": "Created At",
+      "type": "string"
+    },
+    "decisions": {
+      "items": {
+        "$ref": "#/$defs/TextTrackLocalizationDecision"
+      },
+      "title": "Decisions",
+      "type": "array"
+    },
+    "id": {
+      "minLength": 1,
+      "title": "Id",
+      "type": "string"
+    },
+    "policy_id": {
+      "minLength": 1,
+      "title": "Policy Id",
+      "type": "string"
+    },
+    "provider": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Provider"
+    },
+    "schema_version": {
+      "default": "1",
+      "description": "合同 schema 版本；Reader 需兼容当前与前一版本",
+      "title": "Schema Version",
+      "type": "string"
+    },
+    "source_text_track_set_id": {
+      "minLength": 1,
+      "title": "Source Text Track Set Id",
+      "type": "string"
+    },
+    "target_language": {
+      "minLength": 1,
+      "title": "Target Language",
+      "type": "string"
+    }
+  },
+  "required": [
+    "id",
+    "source_text_track_set_id",
+    "policy_id",
+    "target_language",
+    "created_at"
+  ],
+  "title": "TextLocalizationPlan",
+  "type": "object"
+}

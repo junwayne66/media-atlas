@@ -369,6 +369,54 @@ INVALID_OVERRIDES: list[tuple[str, str, dict[str, Any]]] = [
             "words": [{"text": "x", "start_ms": 500, "end_ms": 200}],
         }]}],
     }),
+    # 画面文字：AUTHORIZED_INPAINT 缺 license_ref
+    ("text-localization-plan", "AUTHORIZED_INPAINT 无 license_ref 被拒", {
+        "clean_plate_requests": [{
+            "id": "cp-x", "source_track_id": "tt-0",
+            "source_artifact_id": "art-0",
+            "frame_start_ms": 0, "frame_end_ms": 1000,
+            "method": "AUTHORIZED_INPAINT",
+        }],
+    }),
+    # 画面文字：CleanPlateRequest 时间倒序
+    ("text-localization-plan", "clean plate 时间倒序被拒", {
+        "clean_plate_requests": [{
+            "id": "cp-x", "source_track_id": "tt-0",
+            "source_artifact_id": "art-0",
+            "frame_start_ms": 1000, "frame_end_ms": 500,
+            "method": "BACKGROUND_ESTIMATE",
+        }],
+    }),
+    # 画面文字：decision 引用不存在的 clean_plate_request_id
+    ("text-localization-plan", "decision 引用未知 clean_plate id 被拒", {
+        "decisions": [{
+            "source_track_id": "tt-x", "source_text": "x",
+            "source_kind": "CAPTION", "target_language": "en-US",
+            "strategy": "REDRAW", "translated_text": "y",
+            "clean_plate_request_id": "cp-ghost",
+            "rationale": "ok",
+        }],
+    }),
+    # 画面文字：同一 source_track_id 出现两次
+    ("text-localization-plan", "重复的 source_track_id 被拒", {
+        "decisions": [
+            {"source_track_id": "same", "source_text": "a",
+              "source_kind": "CAPTION", "target_language": "en-US",
+              "strategy": "SKIP", "rationale": "one"},
+            {"source_track_id": "same", "source_text": "b",
+              "source_kind": "UI", "target_language": "en-US",
+              "strategy": "SKIP", "rationale": "two"},
+        ],
+    }),
+    # 画面文字：max_layout_expansion_ratio ≤ 1
+    ("text-localization-plan", "policy expansion ratio ≤ 1 不属于本合同（by design "
+     "policy 独立），此处只测 decision.rationale 空", {
+        "decisions": [{
+            "source_track_id": "tt-x", "source_text": "x",
+            "source_kind": "CAPTION", "target_language": "en-US",
+            "strategy": "SKIP", "rationale": "",  # 空
+        }],
+    }),
     ("exporter-report", "未知字段被拒", {"unexpected_field": 1}),
     ("exporter-report", "非法 ExporterKind 被拒",
      {"entries": [{"kind": "PREMIERE_XML", "status": "OK"}]}),
