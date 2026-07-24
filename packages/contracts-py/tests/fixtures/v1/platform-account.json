@@ -1,0 +1,19 @@
+{
+  "binding": "SERVER_ENCRYPTED",
+  "connector_preferences": [
+    "OFFICIAL_API",
+    "ANDROID_DEVICE"
+  ],
+  "credential_ref": "ch-9f2e-encrypted-handle",
+  "device_binding_id": "dev_pixel_7",
+  "display_name": "AI 科技二创号",
+  "external_account_id": "tt_uid_778899",
+  "id": "acct_tt_9",
+  "last_verified_at": "2026-07-21T08:00:00Z",
+  "locale": "zh-CN",
+  "platform": "TIKTOK",
+  "publishing_window": "18:00-22:00",
+  "review_policy_id": "pol_2",
+  "schema_version": "1",
+  "status": "ACTIVE"
+}

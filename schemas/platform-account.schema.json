@@ -1,0 +1,159 @@
+{
+  "$defs": {
+    "AccountBinding": {
+      "description": "会话/凭据留存位置（§8）。",
+      "enum": [
+        "SERVER_ENCRYPTED",
+        "DESKTOP",
+        "DEVICE"
+      ],
+      "title": "AccountBinding",
+      "type": "string"
+    },
+    "AccountStatus": {
+      "enum": [
+        "ACTIVE",
+        "RESTRICTED",
+        "SUSPENDED",
+        "UNKNOWN"
+      ],
+      "title": "AccountStatus",
+      "type": "string"
+    },
+    "PublishMethod": {
+      "description": "§3 发布连接器优先级阶梯。",
+      "enum": [
+        "OFFICIAL_API",
+        "OFFICIAL_SHARE_SDK",
+        "BROWSER_AUTOMATION",
+        "ANDROID_DEVICE",
+        "MANUAL_EXPORT"
+      ],
+      "title": "PublishMethod",
+      "type": "string"
+    },
+    "PublishPlatform": {
+      "enum": [
+        "TIKTOK",
+        "DOUYIN"
+      ],
+      "title": "PublishPlatform",
+      "type": "string"
+    }
+  },
+  "$id": "https://videoforge.dev/schemas/platform-account.schema.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "description": "一个平台账号（§8）——**只存 handle，不存 secret**。",
+  "properties": {
+    "binding": {
+      "$ref": "#/$defs/AccountBinding",
+      "default": "SERVER_ENCRYPTED"
+    },
+    "connector_preferences": {
+      "items": {
+        "$ref": "#/$defs/PublishMethod"
+      },
+      "title": "Connector Preferences",
+      "type": "array"
+    },
+    "credential_ref": {
+      "description": "加密 Secret 存储的不透明 Handle——**绝不是** token/password 本体",
+      "minLength": 1,
+      "title": "Credential Ref",
+      "type": "string"
+    },
+    "device_binding_id": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Device Binding Id"
+    },
+    "display_name": {
+      "minLength": 1,
+      "title": "Display Name",
+      "type": "string"
+    },
+    "external_account_id": {
+      "minLength": 1,
+      "title": "External Account Id",
+      "type": "string"
+    },
+    "id": {
+      "minLength": 1,
+      "title": "Id",
+      "type": "string"
+    },
+    "last_verified_at": {
+      "anyOf": [
+        {
+          "format": "date-time",
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Last Verified At"
+    },
+    "locale": {
+      "minLength": 1,
+      "title": "Locale",
+      "type": "string"
+    },
+    "platform": {
+      "$ref": "#/$defs/PublishPlatform"
+    },
+    "publishing_window": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Publishing Window"
+    },
+    "review_policy_id": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Review Policy Id"
+    },
+    "schema_version": {
+      "default": "1",
+      "description": "合同 schema 版本；Reader 需兼容当前与前一版本",
+      "title": "Schema Version",
+      "type": "string"
+    },
+    "status": {
+      "$ref": "#/$defs/AccountStatus",
+      "default": "UNKNOWN"
+    }
+  },
+  "required": [
+    "id",
+    "platform",
+    "display_name",
+    "external_account_id",
+    "credential_ref",
+    "locale"
+  ],
+  "title": "PlatformAccount",
+  "type": "object"
+}

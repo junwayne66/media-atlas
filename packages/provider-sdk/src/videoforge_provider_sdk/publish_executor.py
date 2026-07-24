@@ -287,8 +287,53 @@ class FakeBrowserPublishExecutor(_FakePublishExecutorBase):
         return super().submit(job)
 
 
+class UnconfiguredAndroidPublishExecutor(_UnconfiguredPublishExecutorBase):
+    _PLATFORM = "Android 真机"
+
+    def __init__(self, *, name: str = "publish.android.unconfigured") -> None:
+        super().__init__(name=name)
+
+
+class FakeAndroidPublishExecutor(_FakePublishExecutorBase):
+    """Android 真机发布 Adapter Fake（§7，Fake-first，不驱动真实设备）。
+
+    - `device_ready=False`（就绪门未过，如前台账号错/电量低）→ submit FAILED，绝不发布（§7.2）。
+      设备就绪由 domain.check_device_readiness 判定后传入。
+    - `device_confirm_required`（§7.2 步 6：提交前请求最终确认）→ CHALLENGE，转人工。
+    - 否则走幂等提交核心。
+    """
+
+    _LABEL = "Fake Android"
+
+    def _post_url(self, post_id: str) -> str:
+        return f"https://www.tiktok.com/@fake/video/{post_id}"
+
+    def __init__(self, *, name: str = "publish.android.fake", device_ready: bool = True,
+                  device_confirm_required: bool = False,
+                  preexisting: bool = False) -> None:
+        super().__init__(name=name, preexisting=preexisting)
+        self.device_ready = device_ready
+        self.device_confirm_required = device_confirm_required
+
+    def submit(self, job: PublishJob) -> SubmitResult:
+        if not self.device_ready:
+            return SubmitResult(
+                status=PublishExecStatus.FAILED,
+                error_code=PublishExecErrorCode.UNKNOWN,
+                detail="设备就绪门未通过（电量/存储/网络/解锁/App/前台账号），拒绝发布（§7.2）",
+            )
+        if self.device_confirm_required:
+            return SubmitResult(
+                status=PublishExecStatus.CHALLENGE,
+                error_code=PublishExecErrorCode.CHALLENGE,
+                detail="提交前需最终人工确认（§7.2 步 6），转人工",
+            )
+        return super().submit(job)
+
+
 __all__ = [
     "CreatorInfoResult",
+    "FakeAndroidPublishExecutor",
     "FakeBrowserPublishExecutor",
     "FakeDouyinPublishExecutor",
     "FakeTikTokPublishExecutor",
@@ -297,6 +342,7 @@ __all__ = [
     "PublishExecutor",
     "StatusResult",
     "SubmitResult",
+    "UnconfiguredAndroidPublishExecutor",
     "UnconfiguredBrowserPublishExecutor",
     "UnconfiguredDouyinPublishExecutor",
     "UnconfiguredTikTokPublishExecutor",
