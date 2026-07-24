@@ -1,0 +1,27 @@
+{
+  "adapted_text": "Inference clocks in at 20 ms — 40% lower than last gen.",
+  "alternatives": [
+    "Inference now runs at 20 ms, a 40% drop from last gen."
+  ],
+  "canonical_sentence_id": "cs-1",
+  "claim_diff": {
+    "deltas": [],
+    "localized_claim_ids": [
+      "c-evidence-0"
+    ],
+    "schema_version": "1",
+    "source_claim_ids": [
+      "c-evidence-0"
+    ]
+  },
+  "draft_text": "Measured inference latency is 20 milliseconds, 40% lower than last gen.",
+  "duration_estimate_ms": 5000,
+  "provider": "tra.fake",
+  "reflected_notes": [
+    "数值单位符合术语表",
+    "'lower than' 语义与源一致"
+  ],
+  "schema_version": "1",
+  "semantic_similarity": 0.94,
+  "target_language": "en-US"
+}

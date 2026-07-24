@@ -1,0 +1,204 @@
+{
+  "$defs": {
+    "CanonicalSentence": {
+      "additionalProperties": false,
+      "description": "中性稿的一句：语言无关的语义 + 时长预算 + 引用 Claim + must_keep_terms（§3）。\n\n翻译修改不直接覆盖这里；派生 LocalizedSentence 承载译文。",
+      "properties": {
+        "beat_slot_id": {
+          "minLength": 1,
+          "title": "Beat Slot Id",
+          "type": "string"
+        },
+        "claim_ids": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Claim Ids",
+          "type": "array"
+        },
+        "edit_flexibility": {
+          "default": 0.15,
+          "description": "允许缩/扩比例（±%），供时长拟合",
+          "maximum": 1.0,
+          "minimum": 0.0,
+          "title": "Edit Flexibility",
+          "type": "number"
+        },
+        "id": {
+          "minLength": 1,
+          "title": "Id",
+          "type": "string"
+        },
+        "must_keep_terms": {
+          "description": "必须保留的术语（引用 Glossary.source_term）",
+          "items": {
+            "type": "string"
+          },
+          "title": "Must Keep Terms",
+          "type": "array"
+        },
+        "pronunciation_hints": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Pronunciation Hints",
+          "type": "array"
+        },
+        "role": {
+          "$ref": "#/$defs/RhetoricalBeatKind"
+        },
+        "schema_version": {
+          "default": "1",
+          "description": "合同 schema 版本；Reader 需兼容当前与前一版本",
+          "title": "Schema Version",
+          "type": "string"
+        },
+        "semantic_intent": {
+          "description": "本句的功能/意图（抽象，语言无关）",
+          "minLength": 1,
+          "title": "Semantic Intent",
+          "type": "string"
+        },
+        "source_language": {
+          "minLength": 1,
+          "title": "Source Language",
+          "type": "string"
+        },
+        "source_text": {
+          "minLength": 1,
+          "title": "Source Text",
+          "type": "string"
+        },
+        "source_time_range_end_ms": {
+          "minimum": 0,
+          "title": "Source Time Range End Ms",
+          "type": "integer"
+        },
+        "source_time_range_start_ms": {
+          "minimum": 0,
+          "title": "Source Time Range Start Ms",
+          "type": "integer"
+        },
+        "speaker_id": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Speaker Id"
+        },
+        "target_duration_ms": {
+          "minimum": 0,
+          "title": "Target Duration Ms",
+          "type": "integer"
+        },
+        "visual_dependencies": {
+          "description": "引用同期镜头/文本轨 id",
+          "items": {
+            "type": "string"
+          },
+          "title": "Visual Dependencies",
+          "type": "array"
+        }
+      },
+      "required": [
+        "id",
+        "beat_slot_id",
+        "role",
+        "source_language",
+        "source_text",
+        "semantic_intent",
+        "source_time_range_start_ms",
+        "source_time_range_end_ms",
+        "target_duration_ms"
+      ],
+      "title": "CanonicalSentence",
+      "type": "object"
+    },
+    "RhetoricalBeatKind": {
+      "description": "表达层节拍（docs/modules/41 §10.1）。UNCLASSIFIED 允许存在以保覆盖率。",
+      "enum": [
+        "HOOK",
+        "QUESTION",
+        "EVIDENCE",
+        "CONTRAST",
+        "DEMO",
+        "CONCLUSION",
+        "CTA",
+        "UNCLASSIFIED"
+      ],
+      "title": "RhetoricalBeatKind",
+      "type": "string"
+    }
+  },
+  "$id": "https://videoforge.dev/schemas/canonical-script.schema.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "description": "中性稿：单份、语言无关；每目标语言从此派生 LocalizationVariant。",
+  "properties": {
+    "created_at": {
+      "format": "date-time",
+      "title": "Created At",
+      "type": "string"
+    },
+    "id": {
+      "minLength": 1,
+      "title": "Id",
+      "type": "string"
+    },
+    "schema_version": {
+      "default": "1",
+      "description": "合同 schema 版本；Reader 需兼容当前与前一版本",
+      "title": "Schema Version",
+      "type": "string"
+    },
+    "script_version_id": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Script Version Id"
+    },
+    "sentences": {
+      "items": {
+        "$ref": "#/$defs/CanonicalSentence"
+      },
+      "title": "Sentences",
+      "type": "array"
+    },
+    "source_language": {
+      "minLength": 1,
+      "title": "Source Language",
+      "type": "string"
+    },
+    "total_duration_ms": {
+      "anyOf": [
+        {
+          "minimum": 0,
+          "type": "integer"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Total Duration Ms"
+    }
+  },
+  "required": [
+    "id",
+    "source_language",
+    "created_at"
+  ],
+  "title": "CanonicalScript",
+  "type": "object"
+}

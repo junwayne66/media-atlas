@@ -1,0 +1,54 @@
+{
+  "created_at": "2026-07-21T08:00:00Z",
+  "id": "01J2ZK3AC9V6XW8YQ4R5T6U7ZLC",
+  "schema_version": "1",
+  "script_version_id": "01J2ZK3AC9V6XW8YQ4R5T6U7ZG",
+  "sentences": [
+    {
+      "beat_slot_id": "slot-0",
+      "claim_ids": [
+        "c-hook-0"
+      ],
+      "edit_flexibility": 0.15,
+      "id": "cs-0",
+      "must_keep_terms": [
+        "2GB"
+      ],
+      "pronunciation_hints": [],
+      "role": "HOOK",
+      "schema_version": "1",
+      "semantic_intent": "强调关键性能钩子：小内存也能跑",
+      "source_language": "zh-CN",
+      "source_text": "这款端侧模型能在 2GB 内存里跑起来",
+      "source_time_range_end_ms": 3000,
+      "source_time_range_start_ms": 0,
+      "speaker_id": "host",
+      "target_duration_ms": 3000,
+      "visual_dependencies": []
+    },
+    {
+      "beat_slot_id": "slot-1",
+      "claim_ids": [
+        "c-evidence-0"
+      ],
+      "edit_flexibility": 0.1,
+      "id": "cs-1",
+      "must_keep_terms": [
+        "20ms"
+      ],
+      "pronunciation_hints": [],
+      "role": "EVIDENCE",
+      "schema_version": "1",
+      "semantic_intent": "证据：延时与降幅",
+      "source_language": "zh-CN",
+      "source_text": "实测推理时延 20ms，比上一代降低四成",
+      "source_time_range_end_ms": 8000,
+      "source_time_range_start_ms": 3000,
+      "speaker_id": null,
+      "target_duration_ms": 5000,
+      "visual_dependencies": []
+    }
+  ],
+  "source_language": "zh-CN",
+  "total_duration_ms": 8000
+}

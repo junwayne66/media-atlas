@@ -1,0 +1,42 @@
+{
+  "created_at": "2026-07-21T08:00:00Z",
+  "entries": [
+    {
+      "notes": "英文加空格",
+      "preserve_source": false,
+      "pronunciation": null,
+      "schema_version": "1",
+      "source_term": "2GB",
+      "target_term": "2 GB"
+    },
+    {
+      "notes": null,
+      "preserve_source": false,
+      "pronunciation": null,
+      "schema_version": "1",
+      "source_term": "端侧",
+      "target_term": "on-device"
+    },
+    {
+      "notes": null,
+      "preserve_source": false,
+      "pronunciation": null,
+      "schema_version": "1",
+      "source_term": "20ms",
+      "target_term": "20 ms"
+    },
+    {
+      "notes": "产品名不译",
+      "preserve_source": true,
+      "pronunciation": "/tʃwɛn/",
+      "schema_version": "1",
+      "source_term": "Qwen",
+      "target_term": "Qwen"
+    }
+  ],
+  "id": "01J2ZK3AC9V6XW8YQ4R5T6U7ZLG",
+  "schema_version": "1",
+  "source_language": "zh-CN",
+  "target_language": "en-US",
+  "version": 1
+}

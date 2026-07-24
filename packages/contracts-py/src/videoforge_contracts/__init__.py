@@ -60,6 +60,17 @@ from videoforge_contracts.highlight import (
     HighlightSet,
     HighlightWeights,
 )
+from videoforge_contracts.localization import (
+    CanonicalScript,
+    CanonicalSentence,
+    ClaimDelta,
+    ClaimDiff,
+    Glossary,
+    GlossaryEntry,
+    LocalizationVariant,
+    LocalizedSentence,
+    TranslateReflectAdaptResult,
+)
 from videoforge_contracts.problem import ProblemDetail
 from videoforge_contracts.project import Project
 from videoforge_contracts.provider import CostModel, ProviderDescriptor, ProviderHealth
@@ -138,6 +149,10 @@ CONTRACTS: dict[str, type[ContractModel]] = {
     "beat-template": BeatTemplate,
     "script-version": ScriptVersion,
     "highlight-set": HighlightSet,
+    "canonical-script": CanonicalScript,
+    "glossary": Glossary,
+    "translate-reflect-adapt-result": TranslateReflectAdaptResult,
+    "localization-variant": LocalizationVariant,
     "reedit-plan": ReeditPlan,
     "asset-plan": AssetPlan,
     "creative-timeline": CreativeTimeline,
@@ -196,7 +211,15 @@ __all__ = [
     "HighlightWeights",
     "HotScoreWeights",
     "IsolationLevel",
+    "CanonicalScript",
+    "CanonicalSentence",
+    "ClaimDelta",
+    "ClaimDiff",
+    "Glossary",
+    "GlossaryEntry",
     "LocalizationPolicy",
+    "LocalizationVariant",
+    "LocalizedSentence",
     "MediaProbe",
     "ProblemDetail",
     "ProducedBy",
@@ -244,6 +267,7 @@ __all__ = [
     "TranscriptModels",
     "TranscriptSegment",
     "TranscriptWord",
+    "TranslateReflectAdaptResult",
     "TrendCluster",
     "TrendItemSnapshot",
     "TrendStage",
