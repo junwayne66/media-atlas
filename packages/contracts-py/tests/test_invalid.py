@@ -617,6 +617,19 @@ INVALID_OVERRIDES: list[tuple[str, str, dict[str, Any]]] = [
     # 连接器能力：max_file_size_bytes 若给必须 > 0
     ("publish-connector-capability", "max_file_size_bytes ≤ 0 被拒",
      {"max_file_size_bytes": 0}),
+    # 发布任务：SUCCEEDED 必须携带 external_post_id
+    ("publish-job", "SUCCEEDED 无 external_post_id 被拒",
+     {"state": "SUCCEEDED", "external_post_id": None}),
+    # 发布任务：SUCCEEDED_RECONCILED 同理
+    ("publish-job", "SUCCEEDED_RECONCILED 无 external_post_id 被拒",
+     {"state": "SUCCEEDED_RECONCILED", "external_post_id": None}),
+    # 发布任务：idempotency_key 不能空
+    ("publish-job", "idempotency_key 空被拒", {"idempotency_key": ""}),
+    # 发布任务：attempt 必须 ≥ 1
+    ("publish-job", "attempt < 1 被拒", {
+        "attempts": [{"attempt": 0, "request_digest": "r",
+                       "at": "2026-07-25T00:00:00Z"}],
+    }),
     ("exporter-report", "未知字段被拒", {"unexpected_field": 1}),
     ("exporter-report", "非法 ExporterKind 被拒",
      {"entries": [{"kind": "PREMIERE_XML", "status": "OK"}]}),
