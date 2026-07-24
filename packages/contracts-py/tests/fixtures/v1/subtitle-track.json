@@ -1,0 +1,74 @@
+{
+  "alignment_provider": "asr.fake",
+  "created_at": "2026-07-21T08:00:00Z",
+  "cues": [
+    {
+      "end_ms": 2480,
+      "id": "cue-0",
+      "lines": [
+        {
+          "end_ms": 2480,
+          "language": "zh-CN",
+          "schema_version": "1",
+          "start_ms": 120,
+          "text": "今天带大家拆解这款 AI 芯片",
+          "words": [
+            {
+              "confidence": 0.95,
+              "end_ms": 520,
+              "schema_version": "1",
+              "start_ms": 120,
+              "text": "今天"
+            },
+            {
+              "confidence": 0.55,
+              "end_ms": 1720,
+              "schema_version": "1",
+              "start_ms": 1400,
+              "text": "AI"
+            },
+            {
+              "confidence": 0.9,
+              "end_ms": 2480,
+              "schema_version": "1",
+              "start_ms": 1720,
+              "text": "芯片"
+            }
+          ]
+        }
+      ],
+      "safe_area_hint": null,
+      "schema_version": "1",
+      "source_ref_id": "seg-0",
+      "source_ref_kind": "transcript_segment",
+      "start_ms": 120,
+      "style_ref": null
+    },
+    {
+      "end_ms": 5000,
+      "id": "cue-1",
+      "lines": [
+        {
+          "end_ms": 5000,
+          "language": "zh-CN",
+          "schema_version": "1",
+          "start_ms": 2600,
+          "text": "端侧推理只用了 20 毫秒",
+          "words": []
+        }
+      ],
+      "safe_area_hint": null,
+      "schema_version": "1",
+      "source_ref_id": "seg-1",
+      "source_ref_kind": "transcript_segment",
+      "start_ms": 2600,
+      "style_ref": null
+    }
+  ],
+  "id": "01J2ZK3AC9V6XW8YQ4R5T6U7SUB2",
+  "language": "zh-CN",
+  "schema_version": "1",
+  "source_localization_variant_id": null,
+  "source_transcript_id": "01J2ZK3AC9V6XW8YQ4R5T6U7Y0",
+  "template_id": "01J2ZK3AC9V6XW8YQ4R5T6U7SUB1"
+}

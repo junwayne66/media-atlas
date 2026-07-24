@@ -78,10 +78,17 @@ from videoforge_contracts import (
     ResourceLimits,
     RhetoricalBeat,
     RhetoricalBeatKind,
+    SafeAreaSpec,
     ScriptSentence,
     ScriptVersion,
     Segment,
     StorageRef,
+    SubtitleCue,
+    SubtitleLine,
+    SubtitleStyleHint,
+    SubtitleTemplate,
+    SubtitleTrack,
+    SubtitleWord,
     TaskEnvelope,
     TextObservation,
     TextTrack,
@@ -649,6 +656,64 @@ def make_localization_variant() -> LocalizationVariant:
     )
 
 
+def make_subtitle_template() -> SubtitleTemplate:
+    return SubtitleTemplate(
+        id="01J2ZK3AC9V6XW8YQ4R5T6U7SUB1",
+        language="zh-CN",
+        max_chars_per_line=16,
+        max_lines_per_cue=2,
+        cjk_chars_per_sec=8.0,
+        min_cue_duration_ms=800,
+        max_cue_duration_ms=6000,
+        safe_area=SafeAreaSpec(
+            left_min_pct=5.0, right_max_pct=95.0,
+            top_min_pct=5.0, bottom_max_pct=90.0,
+        ),
+        style_hint=SubtitleStyleHint(
+            font_family="Source Han Sans", font_size_pt=48, bold=True,
+            color="#FFFFFF", outline_color="#000000", outline_width=2.0,
+        ),
+        version=1, created_at=_T0,
+    )
+
+
+def make_subtitle_track() -> SubtitleTrack:
+    return SubtitleTrack(
+        id="01J2ZK3AC9V6XW8YQ4R5T6U7SUB2",
+        language="zh-CN",
+        template_id="01J2ZK3AC9V6XW8YQ4R5T6U7SUB1",
+        source_transcript_id="01J2ZK3AC9V6XW8YQ4R5T6U7Y0",
+        alignment_provider="asr.fake",
+        cues=[
+            SubtitleCue(
+                id="cue-0", start_ms=120, end_ms=2480,
+                lines=[SubtitleLine(
+                    text="今天带大家拆解这款 AI 芯片",
+                    start_ms=120, end_ms=2480, language="zh-CN",
+                    words=[
+                        SubtitleWord(text="今天", start_ms=120, end_ms=520,
+                                        confidence=0.95),
+                        SubtitleWord(text="AI", start_ms=1400, end_ms=1720,
+                                        confidence=0.55),
+                        SubtitleWord(text="芯片", start_ms=1720, end_ms=2480,
+                                        confidence=0.9),
+                    ],
+                )],
+                source_ref_kind="transcript_segment", source_ref_id="seg-0",
+            ),
+            SubtitleCue(
+                id="cue-1", start_ms=2600, end_ms=5000,
+                lines=[SubtitleLine(
+                    text="端侧推理只用了 20 毫秒",
+                    start_ms=2600, end_ms=5000, language="zh-CN",
+                )],
+                source_ref_kind="transcript_segment", source_ref_id="seg-1",
+            ),
+        ],
+        created_at=_T0,
+    )
+
+
 def make_reedit_plan() -> ReeditPlan:
     return ReeditPlan(
         id="01J2ZK3AC9V6XW8YQ4R5T6U7ZK",
@@ -907,6 +972,8 @@ SAMPLES: dict[str, ContractModel] = {
     "glossary": make_glossary(),
     "translate-reflect-adapt-result": make_translate_reflect_adapt_result(),
     "localization-variant": make_localization_variant(),
+    "subtitle-template": make_subtitle_template(),
+    "subtitle-track": make_subtitle_track(),
     "reedit-plan": make_reedit_plan(),
     "asset-plan": make_asset_plan(),
     "creative-timeline": make_creative_timeline(),

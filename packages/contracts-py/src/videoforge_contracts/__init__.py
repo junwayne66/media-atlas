@@ -100,6 +100,16 @@ from videoforge_contracts.rewrite import (
     ScriptSentence,
     ScriptVersion,
 )
+from videoforge_contracts.subtitle import (
+    SafeAreaSpec,
+    SubtitleCue,
+    SubtitleFormat,
+    SubtitleLine,
+    SubtitleStyleHint,
+    SubtitleTemplate,
+    SubtitleTrack,
+    SubtitleWord,
+)
 from videoforge_contracts.task_envelope import ResourceLimits, TaskEnvelope
 from videoforge_contracts.texttrack import (
     BBox,
@@ -154,6 +164,8 @@ CONTRACTS: dict[str, type[ContractModel]] = {
     "translate-reflect-adapt-result": TranslateReflectAdaptResult,
     "localization-variant": LocalizationVariant,
     "reedit-plan": ReeditPlan,
+    "subtitle-template": SubtitleTemplate,
+    "subtitle-track": SubtitleTrack,
     "asset-plan": AssetPlan,
     "creative-timeline": CreativeTimeline,
     "render-manifest": RenderManifest,
@@ -249,9 +261,17 @@ __all__ = [
     "ResourceLimits",
     "RhetoricalBeat",
     "RhetoricalBeatKind",
+    "SafeAreaSpec",
     "ScriptSentence",
     "ScriptVersion",
     "Segment",
+    "SubtitleCue",
+    "SubtitleFormat",
+    "SubtitleLine",
+    "SubtitleStyleHint",
+    "SubtitleTemplate",
+    "SubtitleTrack",
+    "SubtitleWord",
     "SegmentEffect",
     "SegmentJudgment",
     "StorageBackend",

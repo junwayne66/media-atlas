@@ -1,0 +1,318 @@
+{
+  "$defs": {
+    "SafeAreaSpec": {
+      "additionalProperties": false,
+      "description": "安全区约束（归一化百分比 0-100）；渲染/QA 消费。默认覆盖抖音/TikTok 底部 UI 占位。",
+      "properties": {
+        "bottom_max_pct": {
+          "default": 90.0,
+          "maximum": 100.0,
+          "minimum": 0.0,
+          "title": "Bottom Max Pct",
+          "type": "number"
+        },
+        "left_min_pct": {
+          "default": 5.0,
+          "maximum": 100.0,
+          "minimum": 0.0,
+          "title": "Left Min Pct",
+          "type": "number"
+        },
+        "right_max_pct": {
+          "default": 95.0,
+          "maximum": 100.0,
+          "minimum": 0.0,
+          "title": "Right Max Pct",
+          "type": "number"
+        },
+        "schema_version": {
+          "default": "1",
+          "description": "合同 schema 版本；Reader 需兼容当前与前一版本",
+          "title": "Schema Version",
+          "type": "string"
+        },
+        "top_min_pct": {
+          "default": 5.0,
+          "maximum": 100.0,
+          "minimum": 0.0,
+          "title": "Top Min Pct",
+          "type": "number"
+        }
+      },
+      "title": "SafeAreaSpec",
+      "type": "object"
+    },
+    "SubtitleCue": {
+      "additionalProperties": false,
+      "description": "一条 cue（同屏同时显示的整块字幕）。lines 数量应 ≤ template.max_lines_per_cue。",
+      "properties": {
+        "end_ms": {
+          "minimum": 0,
+          "title": "End Ms",
+          "type": "integer"
+        },
+        "id": {
+          "minLength": 1,
+          "title": "Id",
+          "type": "string"
+        },
+        "lines": {
+          "items": {
+            "$ref": "#/$defs/SubtitleLine"
+          },
+          "minItems": 1,
+          "title": "Lines",
+          "type": "array"
+        },
+        "safe_area_hint": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/SafeAreaSpec"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "按帧 occupied_regions 求解的安全区（若渲染层已算好可填）"
+        },
+        "schema_version": {
+          "default": "1",
+          "description": "合同 schema 版本；Reader 需兼容当前与前一版本",
+          "title": "Schema Version",
+          "type": "string"
+        },
+        "source_ref_id": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Source Ref Id"
+        },
+        "source_ref_kind": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "源引用类型：transcript_segment / localized_sentence",
+          "title": "Source Ref Kind"
+        },
+        "start_ms": {
+          "minimum": 0,
+          "title": "Start Ms",
+          "type": "integer"
+        },
+        "style_ref": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "引用 template.style_hint 或自定义",
+          "title": "Style Ref"
+        }
+      },
+      "required": [
+        "id",
+        "start_ms",
+        "end_ms",
+        "lines"
+      ],
+      "title": "SubtitleCue",
+      "type": "object"
+    },
+    "SubtitleLine": {
+      "additionalProperties": false,
+      "description": "一行字幕（cue 内多行的一条）。text 长度不宜超模板 max_chars_per_line（domain 校验）。",
+      "properties": {
+        "end_ms": {
+          "minimum": 0,
+          "title": "End Ms",
+          "type": "integer"
+        },
+        "language": {
+          "minLength": 1,
+          "title": "Language",
+          "type": "string"
+        },
+        "schema_version": {
+          "default": "1",
+          "description": "合同 schema 版本；Reader 需兼容当前与前一版本",
+          "title": "Schema Version",
+          "type": "string"
+        },
+        "start_ms": {
+          "minimum": 0,
+          "title": "Start Ms",
+          "type": "integer"
+        },
+        "text": {
+          "minLength": 1,
+          "title": "Text",
+          "type": "string"
+        },
+        "words": {
+          "items": {
+            "$ref": "#/$defs/SubtitleWord"
+          },
+          "title": "Words",
+          "type": "array"
+        }
+      },
+      "required": [
+        "text",
+        "start_ms",
+        "end_ms",
+        "language"
+      ],
+      "title": "SubtitleLine",
+      "type": "object"
+    },
+    "SubtitleWord": {
+      "additionalProperties": false,
+      "description": "一行内的词级时间（karaoke / 逐词高亮）。仅在词级置信度达标时启用（§5.2）。",
+      "properties": {
+        "confidence": {
+          "anyOf": [
+            {
+              "maximum": 1.0,
+              "minimum": 0.0,
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Confidence"
+        },
+        "end_ms": {
+          "minimum": 0,
+          "title": "End Ms",
+          "type": "integer"
+        },
+        "schema_version": {
+          "default": "1",
+          "description": "合同 schema 版本；Reader 需兼容当前与前一版本",
+          "title": "Schema Version",
+          "type": "string"
+        },
+        "start_ms": {
+          "minimum": 0,
+          "title": "Start Ms",
+          "type": "integer"
+        },
+        "text": {
+          "minLength": 1,
+          "title": "Text",
+          "type": "string"
+        }
+      },
+      "required": [
+        "text",
+        "start_ms",
+        "end_ms"
+      ],
+      "title": "SubtitleWord",
+      "type": "object"
+    }
+  },
+  "$id": "https://videoforge.dev/schemas/subtitle-track.schema.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "description": "一整轨字幕（同语言 + 同模板）。cues 应按 start_ms 严格排序、不重叠——由 domain 校验。",
+  "properties": {
+    "alignment_provider": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "description": "产生词级时间的 provider 名（ASR / TTS forced align）",
+      "title": "Alignment Provider"
+    },
+    "created_at": {
+      "format": "date-time",
+      "title": "Created At",
+      "type": "string"
+    },
+    "cues": {
+      "items": {
+        "$ref": "#/$defs/SubtitleCue"
+      },
+      "title": "Cues",
+      "type": "array"
+    },
+    "id": {
+      "minLength": 1,
+      "title": "Id",
+      "type": "string"
+    },
+    "language": {
+      "minLength": 1,
+      "title": "Language",
+      "type": "string"
+    },
+    "schema_version": {
+      "default": "1",
+      "description": "合同 schema 版本；Reader 需兼容当前与前一版本",
+      "title": "Schema Version",
+      "type": "string"
+    },
+    "source_localization_variant_id": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Source Localization Variant Id"
+    },
+    "source_transcript_id": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Source Transcript Id"
+    },
+    "template_id": {
+      "minLength": 1,
+      "title": "Template Id",
+      "type": "string"
+    }
+  },
+  "required": [
+    "id",
+    "language",
+    "template_id",
+    "created_at"
+  ],
+  "title": "SubtitleTrack",
+  "type": "object"
+}
