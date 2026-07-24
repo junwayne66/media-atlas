@@ -1,0 +1,33 @@
+{
+  "allowed_aspect_ratios": [
+    "9:16"
+  ],
+  "allowed_audio_codecs": [
+    "aac"
+  ],
+  "allowed_containers": [
+    "mp4",
+    "mov"
+  ],
+  "allowed_video_codecs": [
+    "h264",
+    "h265"
+  ],
+  "banned_title_chars": [
+    "<",
+    ">"
+  ],
+  "description_max_len": 2200,
+  "max_duration_ms": 600000,
+  "max_file_size_bytes": 500000000,
+  "max_height": 1920,
+  "max_tags": 20,
+  "max_width": 1080,
+  "min_duration_ms": 3000,
+  "min_height": 640,
+  "min_width": 360,
+  "platform": "TIKTOK",
+  "schema_version": "1",
+  "tag_max_len": 100,
+  "title_max_len": 150
+}

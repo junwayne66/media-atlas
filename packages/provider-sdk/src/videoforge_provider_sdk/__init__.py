@@ -189,6 +189,11 @@ from videoforge_provider_sdk.onscreen_text import (
     UnconfiguredCleanPlateProvider,
     UnconfiguredTextRedrawProvider,
 )
+from videoforge_provider_sdk.publish_connector import (
+    FakePublishConnector,
+    PublishConnector,
+    UnconfiguredPublishConnector,
+)
 from videoforge_provider_sdk.reedit import (
     FakeSegmentJudgeProvider,
     SegmentJudgeErrorCode,
@@ -489,4 +494,7 @@ __all__ = [
     "FakeLocalizationConsistencyProvider",
     "LocalizationConsistencyProvider",
     "UnconfiguredLocalizationConsistencyProvider",
+    "FakePublishConnector",
+    "PublishConnector",
+    "UnconfiguredPublishConnector",
 ]

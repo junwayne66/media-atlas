@@ -143,6 +143,16 @@ from videoforge_domain.onscreen_text import (
     plan_text_localization,
     validate_text_localization_plan,
 )
+from videoforge_domain.publish_preflight import (
+    DEFAULT_METHOD_PRIORITY,
+    PreflightIssue,
+    PreflightIssueKind,
+    is_publishable,
+    publish_preflight_gate,
+    run_preflight,
+    select_publish_method,
+    validate_preflight_report,
+)
 from videoforge_domain.qa import (
     DEFAULT_THRESHOLDS,
     AudioWindowSample,
@@ -475,4 +485,12 @@ __all__ = [
     "review_disposition",
     "signature_matches",
     "validate_review_decision",
+    "DEFAULT_METHOD_PRIORITY",
+    "PreflightIssue",
+    "PreflightIssueKind",
+    "is_publishable",
+    "publish_preflight_gate",
+    "run_preflight",
+    "select_publish_method",
+    "validate_preflight_report",
 ]

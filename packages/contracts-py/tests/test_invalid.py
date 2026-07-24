@@ -598,6 +598,25 @@ INVALID_OVERRIDES: list[tuple[str, str, dict[str, Any]]] = [
             "owner_approved": True,
         },
     }),
+    # 预检：min_width > max_width
+    ("platform-publish-spec", "min_width > max_width 被拒",
+     {"min_width": 2000, "max_width": 1080}),
+    # 预检：min_duration > max_duration
+    ("platform-publish-spec", "min_duration > max_duration 被拒",
+     {"min_duration_ms": 700000, "max_duration_ms": 600000}),
+    # 预检：allowed_aspect_ratios 不能空
+    ("platform-publish-spec", "allowed_aspect_ratios 空被拒",
+     {"allowed_aspect_ratios": []}),
+    # 预检：publishable=True 不能与 ERROR/FATAL 并存
+    ("preflight-report", "publishable 却含 ERROR 被拒", {
+        "publishable": True,
+        "findings": [{
+            "check": "FILE_SIZE", "severity": "ERROR", "detail": "文件过大",
+        }],
+    }),
+    # 连接器能力：max_file_size_bytes 若给必须 > 0
+    ("publish-connector-capability", "max_file_size_bytes ≤ 0 被拒",
+     {"max_file_size_bytes": 0}),
     ("exporter-report", "未知字段被拒", {"unexpected_field": 1}),
     ("exporter-report", "非法 ExporterKind 被拒",
      {"entries": [{"kind": "PREMIERE_XML", "status": "OK"}]}),

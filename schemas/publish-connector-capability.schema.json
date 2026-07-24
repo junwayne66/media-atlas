@@ -1,0 +1,133 @@
+{
+  "$defs": {
+    "AccountStatus": {
+      "enum": [
+        "ACTIVE",
+        "RESTRICTED",
+        "SUSPENDED",
+        "UNKNOWN"
+      ],
+      "title": "AccountStatus",
+      "type": "string"
+    },
+    "AuthStatus": {
+      "enum": [
+        "AUTHORIZED",
+        "PENDING_REVIEW",
+        "UNAUTHORIZED",
+        "EXPIRED"
+      ],
+      "title": "AuthStatus",
+      "type": "string"
+    },
+    "ClientReviewStatus": {
+      "description": "§3.1 客户端/应用审核状态（未审核 → 可见性受限）。",
+      "enum": [
+        "APPROVED",
+        "UNDER_REVIEW",
+        "UNAUDITED"
+      ],
+      "title": "ClientReviewStatus",
+      "type": "string"
+    },
+    "PublishMethod": {
+      "description": "§3 发布连接器优先级阶梯。",
+      "enum": [
+        "OFFICIAL_API",
+        "OFFICIAL_SHARE_SDK",
+        "BROWSER_AUTOMATION",
+        "ANDROID_DEVICE",
+        "MANUAL_EXPORT"
+      ],
+      "title": "PublishMethod",
+      "type": "string"
+    },
+    "PublishPlatform": {
+      "enum": [
+        "TIKTOK",
+        "DOUYIN"
+      ],
+      "title": "PublishPlatform",
+      "type": "string"
+    }
+  },
+  "$id": "https://videoforge.dev/schemas/publish-connector-capability.schema.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "description": "连接器上报的能力 + 授权/审核/账号状态（§3 \"Connector 返回能力，不由 UI 猜\"）。",
+  "properties": {
+    "account_status": {
+      "$ref": "#/$defs/AccountStatus"
+    },
+    "auth_status": {
+      "$ref": "#/$defs/AuthStatus"
+    },
+    "available": {
+      "description": "该方法当前是否可用",
+      "title": "Available",
+      "type": "boolean"
+    },
+    "client_review_status": {
+      "$ref": "#/$defs/ClientReviewStatus",
+      "default": "APPROVED"
+    },
+    "direct_post": {
+      "default": false,
+      "title": "Direct Post",
+      "type": "boolean"
+    },
+    "max_file_size_bytes": {
+      "anyOf": [
+        {
+          "exclusiveMinimum": 0,
+          "type": "integer"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Max File Size Bytes"
+    },
+    "method": {
+      "$ref": "#/$defs/PublishMethod"
+    },
+    "notes": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Notes"
+    },
+    "platform": {
+      "$ref": "#/$defs/PublishPlatform"
+    },
+    "schema_version": {
+      "default": "1",
+      "description": "合同 schema 版本；Reader 需兼容当前与前一版本",
+      "title": "Schema Version",
+      "type": "string"
+    },
+    "supported_containers": {
+      "items": {
+        "type": "string"
+      },
+      "title": "Supported Containers",
+      "type": "array"
+    }
+  },
+  "required": [
+    "platform",
+    "method",
+    "available",
+    "auth_status",
+    "account_status"
+  ],
+  "title": "PublishConnectorCapability",
+  "type": "object"
+}

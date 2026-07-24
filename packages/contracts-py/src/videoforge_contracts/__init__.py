@@ -117,6 +117,20 @@ from videoforge_contracts.onscreen_text import (
 from videoforge_contracts.problem import ProblemDetail
 from videoforge_contracts.project import Project
 from videoforge_contracts.provider import CostModel, ProviderDescriptor, ProviderHealth
+from videoforge_contracts.publish_preflight import (
+    AccountStatus,
+    AuthStatus,
+    ClientReviewStatus,
+    PlatformPublishSpec,
+    PreflightCheck,
+    PreflightFinding,
+    PreflightReport,
+    PublishConnectorCapability,
+    PublishMediaProbe,
+    PublishMetadata,
+    PublishMethod,
+    PublishPlatform,
+)
 from videoforge_contracts.qa import QAFinding, QAReport
 from videoforge_contracts.reedit import (
     ContinuityNote,
@@ -244,6 +258,9 @@ CONTRACTS: dict[str, type[ContractModel]] = {
     "review-decision": ReviewDecision,
     "review-policy": ReviewPolicy,
     "template-trust-state": TemplateTrustState,
+    "platform-publish-spec": PlatformPublishSpec,
+    "publish-connector-capability": PublishConnectorCapability,
+    "preflight-report": PreflightReport,
     "asset-plan": AssetPlan,
     "creative-timeline": CreativeTimeline,
     "render-manifest": RenderManifest,
@@ -402,6 +419,18 @@ __all__ = [
     "TemplateTrustLevel",
     "TemplateTrustState",
     "TemplateTrustStats",
+    "AccountStatus",
+    "AuthStatus",
+    "ClientReviewStatus",
+    "PlatformPublishSpec",
+    "PreflightCheck",
+    "PreflightFinding",
+    "PreflightReport",
+    "PublishConnectorCapability",
+    "PublishMediaProbe",
+    "PublishMetadata",
+    "PublishMethod",
+    "PublishPlatform",
     "SegmentEffect",
     "SegmentJudgment",
     "StorageBackend",
