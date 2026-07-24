@@ -1,0 +1,25 @@
+{
+  "criteria": {
+    "max_error_rate": 0.05,
+    "max_recent_fatal": 0,
+    "min_approved_renders": 20,
+    "recent_window": 20,
+    "require_owner_approval": true,
+    "schema_version": "1"
+  },
+  "level": "TRUSTED",
+  "schema_version": "1",
+  "stats": {
+    "approved_render_count": 24,
+    "duplicate_publish_ok": true,
+    "owner_approved": true,
+    "publish_success_ok": true,
+    "qa_meets_standard": true,
+    "recent_error_rate": 0.02,
+    "recent_fatal_count": 0,
+    "schema_version": "1"
+  },
+  "template_id": "tpl_ai_zh_en",
+  "template_version": 3,
+  "updated_at": "2026-07-21T08:00:00Z"
+}

@@ -1,0 +1,156 @@
+{
+  "$defs": {
+    "TemplateTrustCriteria": {
+      "additionalProperties": false,
+      "description": "§12 NEW → TRUSTED 升级阈值（可配）。",
+      "properties": {
+        "max_error_rate": {
+          "default": 0.05,
+          "maximum": 1.0,
+          "minimum": 0.0,
+          "title": "Max Error Rate",
+          "type": "number"
+        },
+        "max_recent_fatal": {
+          "default": 0,
+          "minimum": 0,
+          "title": "Max Recent Fatal",
+          "type": "integer"
+        },
+        "min_approved_renders": {
+          "default": 20,
+          "minimum": 1,
+          "title": "Min Approved Renders",
+          "type": "integer"
+        },
+        "recent_window": {
+          "default": 20,
+          "minimum": 1,
+          "title": "Recent Window",
+          "type": "integer"
+        },
+        "require_owner_approval": {
+          "default": true,
+          "title": "Require Owner Approval",
+          "type": "boolean"
+        },
+        "schema_version": {
+          "default": "1",
+          "description": "合同 schema 版本；Reader 需兼容当前与前一版本",
+          "title": "Schema Version",
+          "type": "string"
+        }
+      },
+      "title": "TemplateTrustCriteria",
+      "type": "object"
+    },
+    "TemplateTrustLevel": {
+      "enum": [
+        "NEW",
+        "TRUSTED"
+      ],
+      "title": "TemplateTrustLevel",
+      "type": "string"
+    },
+    "TemplateTrustStats": {
+      "additionalProperties": false,
+      "description": "模板当前观测统计（§12 升级依据；均为已知事实，不猜）。",
+      "properties": {
+        "approved_render_count": {
+          "minimum": 0,
+          "title": "Approved Render Count",
+          "type": "integer"
+        },
+        "duplicate_publish_ok": {
+          "title": "Duplicate Publish Ok",
+          "type": "boolean"
+        },
+        "owner_approved": {
+          "title": "Owner Approved",
+          "type": "boolean"
+        },
+        "publish_success_ok": {
+          "title": "Publish Success Ok",
+          "type": "boolean"
+        },
+        "qa_meets_standard": {
+          "title": "Qa Meets Standard",
+          "type": "boolean"
+        },
+        "recent_error_rate": {
+          "maximum": 1.0,
+          "minimum": 0.0,
+          "title": "Recent Error Rate",
+          "type": "number"
+        },
+        "recent_fatal_count": {
+          "minimum": 0,
+          "title": "Recent Fatal Count",
+          "type": "integer"
+        },
+        "schema_version": {
+          "default": "1",
+          "description": "合同 schema 版本；Reader 需兼容当前与前一版本",
+          "title": "Schema Version",
+          "type": "string"
+        }
+      },
+      "required": [
+        "approved_render_count",
+        "recent_fatal_count",
+        "recent_error_rate",
+        "qa_meets_standard",
+        "publish_success_ok",
+        "duplicate_publish_ok",
+        "owner_approved"
+      ],
+      "title": "TemplateTrustStats",
+      "type": "object"
+    }
+  },
+  "$id": "https://videoforge.dev/schemas/template-trust-state.schema.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "description": "模板受信状态机的当前状态（§12）。",
+  "properties": {
+    "criteria": {
+      "$ref": "#/$defs/TemplateTrustCriteria"
+    },
+    "level": {
+      "$ref": "#/$defs/TemplateTrustLevel"
+    },
+    "schema_version": {
+      "default": "1",
+      "description": "合同 schema 版本；Reader 需兼容当前与前一版本",
+      "title": "Schema Version",
+      "type": "string"
+    },
+    "stats": {
+      "$ref": "#/$defs/TemplateTrustStats"
+    },
+    "template_id": {
+      "minLength": 1,
+      "title": "Template Id",
+      "type": "string"
+    },
+    "template_version": {
+      "minimum": 1,
+      "title": "Template Version",
+      "type": "integer"
+    },
+    "updated_at": {
+      "format": "date-time",
+      "title": "Updated At",
+      "type": "string"
+    }
+  },
+  "required": [
+    "template_id",
+    "template_version",
+    "level",
+    "stats",
+    "updated_at"
+  ],
+  "title": "TemplateTrustState",
+  "type": "object"
+}

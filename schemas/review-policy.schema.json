@@ -1,0 +1,58 @@
+{
+  "$defs": {
+    "ReviewPolicyMode": {
+      "description": "§12 审核策略：何时需要人工审核。",
+      "enum": [
+        "ALWAYS",
+        "NEW_TEMPLATE_ONLY",
+        "AUTO"
+      ],
+      "title": "ReviewPolicyMode",
+      "type": "string"
+    }
+  },
+  "$id": "https://videoforge.dev/schemas/review-policy.schema.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "description": "审核策略快照（版本化，供 ReviewDecision.policy_snapshot_id 引用）。",
+  "properties": {
+    "created_at": {
+      "format": "date-time",
+      "title": "Created At",
+      "type": "string"
+    },
+    "id": {
+      "minLength": 1,
+      "title": "Id",
+      "type": "string"
+    },
+    "mode": {
+      "$ref": "#/$defs/ReviewPolicyMode"
+    },
+    "schema_version": {
+      "default": "1",
+      "description": "合同 schema 版本；Reader 需兼容当前与前一版本",
+      "title": "Schema Version",
+      "type": "string"
+    },
+    "version": {
+      "default": 1,
+      "minimum": 1,
+      "title": "Version",
+      "type": "integer"
+    },
+    "warning_blocks": {
+      "default": false,
+      "description": "WARNING 是否阻塞（模板/账号策略，§2）",
+      "title": "Warning Blocks",
+      "type": "boolean"
+    }
+  },
+  "required": [
+    "id",
+    "mode",
+    "created_at"
+  ],
+  "title": "ReviewPolicy",
+  "type": "object"
+}
