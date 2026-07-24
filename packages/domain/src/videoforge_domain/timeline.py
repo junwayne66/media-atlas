@@ -175,12 +175,28 @@ def _segment_to_otio_clip(seg: Segment) -> dict[str, Any]:
         extras["localization"] = {
             "language": seg.localization.language, "strategy": seg.localization.strategy,
         }
-    return {
+    clip: dict[str, Any] = {
         "OTIO_SCHEMA": "Clip.1",
         "name": seg.id,
         "source_range": _range_to_otio(seg.time_range),
         "metadata": {"videoforge": extras},
     }
+    # media_reference：DaVinci/NLE 靠此重连媒体。source_ref 存在 → ExternalReference；
+    # 否则 → MissingReference（NLE 打开时提示"离线媒体"而非静默丢字段）。§12 第 6 条硬要求。
+    if seg.source_ref:
+        clip["media_reference"] = {
+            "OTIO_SCHEMA": "ExternalReference.1",
+            "target_url": seg.source_ref,
+            "available_range": None,
+            "metadata": {"videoforge": {"source_ref": seg.source_ref}},
+        }
+    else:
+        clip["media_reference"] = {
+            "OTIO_SCHEMA": "MissingReference.1",
+            "name": f"{seg.id}.missing",
+            "metadata": {},
+        }
+    return clip
 
 
 def to_otio_mapping(timeline: CreativeTimeline) -> dict[str, Any]:
