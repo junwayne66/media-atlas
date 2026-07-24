@@ -90,9 +90,12 @@ from videoforge_contracts import (
     PronunciationLexicon,
     ProviderDescriptor,
     ProviderHealth,
+    PublishAttempt,
     PublishConnectorCapability,
+    PublishJob,
     PublishMethod,
     PublishPlatform,
+    PublishState,
     QAFinding,
     QAFindingKind,
     QAReport,
@@ -1089,6 +1092,32 @@ def make_preflight_report() -> PreflightReport:
     )
 
 
+def make_publish_job() -> PublishJob:
+    return PublishJob(
+        id="01J2ZK3AC9V6XW8YQ4R5T6U7PJ01",
+        idempotency_key="e3b0c44298fc1c149afbf4c8996fb924" * 2,
+        account_id="acct_tt_9",
+        platform=PublishPlatform.TIKTOK,
+        method=PublishMethod.OFFICIAL_API,
+        render_digest="r" * 64,
+        metadata_digest="m" * 64,
+        scheduled_window="immediate",
+        state=PublishState.SUCCEEDED,
+        external_post_id="tt_post_7788",
+        external_url="https://www.tiktok.com/@acct/video/7788",
+        content_fingerprint="cf_abc",
+        attempts=[
+            PublishAttempt(
+                attempt=1, request_digest="req_1",
+                external_upload_token="up_1", external_post_token="post_1",
+                at=_T0,
+            ),
+        ],
+        created_at=_T0,
+        updated_at=_T0,
+    )
+
+
 def make_reedit_plan() -> ReeditPlan:
     return ReeditPlan(
         id="01J2ZK3AC9V6XW8YQ4R5T6U7ZK",
@@ -1364,6 +1393,7 @@ SAMPLES: dict[str, ContractModel] = {
     "platform-publish-spec": make_platform_publish_spec(),
     "publish-connector-capability": make_publish_connector_capability(),
     "preflight-report": make_preflight_report(),
+    "publish-job": make_publish_job(),
     "reedit-plan": make_reedit_plan(),
     "asset-plan": make_asset_plan(),
     "creative-timeline": make_creative_timeline(),

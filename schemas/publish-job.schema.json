@@ -1,0 +1,232 @@
+{
+  "$defs": {
+    "PublishAttempt": {
+      "additionalProperties": false,
+      "description": "一次平台调用尝试（§5：每次保存请求摘要 + 外部 upload/post token）。",
+      "properties": {
+        "at": {
+          "format": "date-time",
+          "title": "At",
+          "type": "string"
+        },
+        "attempt": {
+          "minimum": 1,
+          "title": "Attempt",
+          "type": "integer"
+        },
+        "detail": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Detail"
+        },
+        "external_post_token": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "已提交发帖的外部令牌；有值即视为已提交，用于幂等对账",
+          "title": "External Post Token"
+        },
+        "external_upload_token": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "External Upload Token"
+        },
+        "request_digest": {
+          "minLength": 1,
+          "title": "Request Digest",
+          "type": "string"
+        },
+        "schema_version": {
+          "default": "1",
+          "description": "合同 schema 版本；Reader 需兼容当前与前一版本",
+          "title": "Schema Version",
+          "type": "string"
+        }
+      },
+      "required": [
+        "attempt",
+        "request_digest",
+        "at"
+      ],
+      "title": "PublishAttempt",
+      "type": "object"
+    },
+    "PublishMethod": {
+      "description": "§3 发布连接器优先级阶梯。",
+      "enum": [
+        "OFFICIAL_API",
+        "OFFICIAL_SHARE_SDK",
+        "BROWSER_AUTOMATION",
+        "ANDROID_DEVICE",
+        "MANUAL_EXPORT"
+      ],
+      "title": "PublishMethod",
+      "type": "string"
+    },
+    "PublishPlatform": {
+      "enum": [
+        "TIKTOK",
+        "DOUYIN"
+      ],
+      "title": "PublishPlatform",
+      "type": "string"
+    },
+    "PublishState": {
+      "description": "§4 发布状态机的状态。",
+      "enum": [
+        "PENDING",
+        "PREFLIGHT_BLOCKED",
+        "AWAITING_AUTH",
+        "UPLOADING",
+        "SUBMITTED",
+        "VERIFYING",
+        "SUCCEEDED",
+        "SUCCEEDED_RECONCILED",
+        "FAILED",
+        "WAITING_FOR_HUMAN"
+      ],
+      "title": "PublishState",
+      "type": "string"
+    }
+  },
+  "$id": "https://videoforge.dev/schemas/publish-job.schema.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "description": "一个幂等发布任务（§4/§5）。同 idempotency_key 只应存在一个 Job。",
+  "properties": {
+    "account_id": {
+      "minLength": 1,
+      "title": "Account Id",
+      "type": "string"
+    },
+    "attempts": {
+      "items": {
+        "$ref": "#/$defs/PublishAttempt"
+      },
+      "title": "Attempts",
+      "type": "array"
+    },
+    "content_fingerprint": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Content Fingerprint"
+    },
+    "created_at": {
+      "format": "date-time",
+      "title": "Created At",
+      "type": "string"
+    },
+    "external_post_id": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "External Post Id"
+    },
+    "external_url": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "External Url"
+    },
+    "id": {
+      "minLength": 1,
+      "title": "Id",
+      "type": "string"
+    },
+    "idempotency_key": {
+      "minLength": 1,
+      "title": "Idempotency Key",
+      "type": "string"
+    },
+    "metadata_digest": {
+      "minLength": 1,
+      "title": "Metadata Digest",
+      "type": "string"
+    },
+    "method": {
+      "$ref": "#/$defs/PublishMethod"
+    },
+    "platform": {
+      "$ref": "#/$defs/PublishPlatform"
+    },
+    "render_digest": {
+      "minLength": 1,
+      "title": "Render Digest",
+      "type": "string"
+    },
+    "scheduled_window": {
+      "description": "计划窗口标识（如 ISO 时间或 'immediate'）",
+      "minLength": 1,
+      "title": "Scheduled Window",
+      "type": "string"
+    },
+    "schema_version": {
+      "default": "1",
+      "description": "合同 schema 版本；Reader 需兼容当前与前一版本",
+      "title": "Schema Version",
+      "type": "string"
+    },
+    "state": {
+      "$ref": "#/$defs/PublishState"
+    },
+    "updated_at": {
+      "format": "date-time",
+      "title": "Updated At",
+      "type": "string"
+    }
+  },
+  "required": [
+    "id",
+    "idempotency_key",
+    "account_id",
+    "platform",
+    "method",
+    "render_digest",
+    "metadata_digest",
+    "scheduled_window",
+    "state",
+    "created_at",
+    "updated_at"
+  ],
+  "title": "PublishJob",
+  "type": "object"
+}

@@ -1,0 +1,28 @@
+{
+  "account_id": "acct_tt_9",
+  "attempts": [
+    {
+      "at": "2026-07-21T08:00:00Z",
+      "attempt": 1,
+      "detail": null,
+      "external_post_token": "post_1",
+      "external_upload_token": "up_1",
+      "request_digest": "req_1",
+      "schema_version": "1"
+    }
+  ],
+  "content_fingerprint": "cf_abc",
+  "created_at": "2026-07-21T08:00:00Z",
+  "external_post_id": "tt_post_7788",
+  "external_url": "https://www.tiktok.com/@acct/video/7788",
+  "id": "01J2ZK3AC9V6XW8YQ4R5T6U7PJ01",
+  "idempotency_key": "e3b0c44298fc1c149afbf4c8996fb924e3b0c44298fc1c149afbf4c8996fb924",
+  "metadata_digest": "mmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmm",
+  "method": "OFFICIAL_API",
+  "platform": "TIKTOK",
+  "render_digest": "rrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrr",
+  "scheduled_window": "immediate",
+  "schema_version": "1",
+  "state": "SUCCEEDED",
+  "updated_at": "2026-07-21T08:00:00Z"
+}

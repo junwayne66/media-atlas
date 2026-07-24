@@ -194,6 +194,16 @@ from videoforge_provider_sdk.publish_connector import (
     PublishConnector,
     UnconfiguredPublishConnector,
 )
+from videoforge_provider_sdk.publish_executor import (
+    CreatorInfoResult,
+    FakeTikTokPublishExecutor,
+    PublishExecErrorCode,
+    PublishExecStatus,
+    PublishExecutor,
+    StatusResult,
+    SubmitResult,
+    UnconfiguredTikTokPublishExecutor,
+)
 from videoforge_provider_sdk.reedit import (
     FakeSegmentJudgeProvider,
     SegmentJudgeErrorCode,
@@ -497,4 +507,12 @@ __all__ = [
     "FakePublishConnector",
     "PublishConnector",
     "UnconfiguredPublishConnector",
+    "CreatorInfoResult",
+    "FakeTikTokPublishExecutor",
+    "PublishExecErrorCode",
+    "PublishExecStatus",
+    "PublishExecutor",
+    "StatusResult",
+    "SubmitResult",
+    "UnconfiguredTikTokPublishExecutor",
 ]
