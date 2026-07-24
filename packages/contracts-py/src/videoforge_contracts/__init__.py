@@ -6,6 +6,14 @@ from videoforge_contracts.asset_plan import (
     CompositionSpec,
     ResolvedAsset,
 )
+from videoforge_contracts.audio_mix import (
+    AudioMixPlan,
+    AudioMixTrack,
+    AudioMixTrackKind,
+    DuckingPolicy,
+    DuckingSidechain,
+    LoudnessTarget,
+)
 from videoforge_contracts.base import CONTRACT_SCHEMA_VERSION, ContractModel
 from videoforge_contracts.blueprint import (
     Claim,
@@ -21,6 +29,12 @@ from videoforge_contracts.brief import (
     CreativeBrief,
     CreativeOpportunity,
     VisualMix,
+)
+from videoforge_contracts.duration_fit import (
+    DurationFitDecision,
+    DurationFitPlan,
+    DurationFitStatus,
+    DurationFitStrategy,
 )
 from videoforge_contracts.enums import (
     AssetLicenseType,
@@ -191,6 +205,8 @@ CONTRACTS: dict[str, type[ContractModel]] = {
     "voice-profile": VoiceProfile,
     "pronunciation-lexicon": PronunciationLexicon,
     "tts-manifest": TTSManifest,
+    "duration-fit-plan": DurationFitPlan,
+    "audio-mix-plan": AudioMixPlan,
     "asset-plan": AssetPlan,
     "creative-timeline": CreativeTimeline,
     "render-manifest": RenderManifest,
@@ -314,6 +330,16 @@ __all__ = [
     "VoiceLicenseStatus",
     "VoiceProfile",
     "VoiceStyle",
+    "DurationFitDecision",
+    "DurationFitPlan",
+    "DurationFitStatus",
+    "DurationFitStrategy",
+    "AudioMixPlan",
+    "AudioMixTrack",
+    "AudioMixTrackKind",
+    "DuckingPolicy",
+    "DuckingSidechain",
+    "LoudnessTarget",
     "SegmentEffect",
     "SegmentJudgment",
     "StorageBackend",

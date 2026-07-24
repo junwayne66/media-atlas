@@ -1,0 +1,160 @@
+{
+  "$defs": {
+    "DurationFitDecision": {
+      "additionalProperties": false,
+      "description": "一句的拟合决策。fit_method 与 final_ratio 忠实记录（§8 每句必录）。",
+      "properties": {
+        "estimated_ms": {
+          "description": "TTS 估算时长（VF-404 estimate）",
+          "minimum": 0,
+          "title": "Estimated Ms",
+          "type": "integer"
+        },
+        "final_ratio": {
+          "description": "估算/目标；用于最终伸缩记录",
+          "exclusiveMinimum": 0.0,
+          "title": "Final Ratio",
+          "type": "number"
+        },
+        "fit_method": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/DurationFitStrategy"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "OK_UNCHANGED 时为 None"
+        },
+        "rationale": {
+          "minLength": 1,
+          "title": "Rationale",
+          "type": "string"
+        },
+        "review_reasons": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Review Reasons",
+          "type": "array"
+        },
+        "schema_version": {
+          "default": "1",
+          "description": "合同 schema 版本；Reader 需兼容当前与前一版本",
+          "title": "Schema Version",
+          "type": "string"
+        },
+        "sentence_id": {
+          "minLength": 1,
+          "title": "Sentence Id",
+          "type": "string"
+        },
+        "status": {
+          "$ref": "#/$defs/DurationFitStatus"
+        },
+        "target_ms": {
+          "exclusiveMinimum": 0,
+          "title": "Target Ms",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "sentence_id",
+        "estimated_ms",
+        "target_ms",
+        "final_ratio",
+        "status",
+        "rationale"
+      ],
+      "title": "DurationFitDecision",
+      "type": "object"
+    },
+    "DurationFitStatus": {
+      "description": "决策结果状态。",
+      "enum": [
+        "OK_UNCHANGED",
+        "OK_FITTED",
+        "NEEDS_REVIEW",
+        "FAILED"
+      ],
+      "title": "DurationFitStatus",
+      "type": "string"
+    },
+    "DurationFitStrategy": {
+      "description": "§8 五步顺序策略。",
+      "enum": [
+        "LLM_REWRITE",
+        "TTS_SPEED",
+        "BROLL_ADJUST",
+        "TIME_STRETCH",
+        "BEAT_REPLAN"
+      ],
+      "title": "DurationFitStrategy",
+      "type": "string"
+    }
+  },
+  "$id": "https://videoforge.dev/schemas/duration-fit-plan.schema.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "description": "一整个 LocalizationVariant 的拟合计划。",
+  "properties": {
+    "created_at": {
+      "format": "date-time",
+      "title": "Created At",
+      "type": "string"
+    },
+    "decisions": {
+      "items": {
+        "$ref": "#/$defs/DurationFitDecision"
+      },
+      "title": "Decisions",
+      "type": "array"
+    },
+    "id": {
+      "minLength": 1,
+      "title": "Id",
+      "type": "string"
+    },
+    "localization_variant_id": {
+      "minLength": 1,
+      "title": "Localization Variant Id",
+      "type": "string"
+    },
+    "natural_speed_max": {
+      "default": 1.08,
+      "exclusiveMinimum": 1.0,
+      "title": "Natural Speed Max",
+      "type": "number"
+    },
+    "natural_speed_min": {
+      "default": 0.92,
+      "exclusiveMinimum": 0.0,
+      "maximum": 1.0,
+      "title": "Natural Speed Min",
+      "type": "number"
+    },
+    "schema_version": {
+      "default": "1",
+      "description": "合同 schema 版本；Reader 需兼容当前与前一版本",
+      "title": "Schema Version",
+      "type": "string"
+    },
+    "stretch_max_abs_ratio": {
+      "default": 0.05,
+      "description": "非人脸时间伸缩绝对幅度（±5%）",
+      "maximum": 0.5,
+      "minimum": 0.0,
+      "title": "Stretch Max Abs Ratio",
+      "type": "number"
+    }
+  },
+  "required": [
+    "id",
+    "localization_variant_id",
+    "created_at"
+  ],
+  "title": "DurationFitPlan",
+  "type": "object"
+}
