@@ -328,6 +328,47 @@ INVALID_OVERRIDES: list[tuple[str, str, dict[str, Any]]] = [
          "id": "ls-x", "canonical_sentence_id": "cs-0", "target_language": "en-US",
          "text": "x", "duration_estimate_ms": 100, "semantic_similarity": -0.1,
      }]}),
+    # 字幕：SubtitleTemplate 无任何阅读速度上限 → 拒
+    ("subtitle-template", "无阅读速度上限被拒", {
+        "cjk_chars_per_sec": None, "en_chars_per_sec": None,
+        "en_words_per_sec": None,
+    }),
+    # 字幕：SubtitleTemplate max_lines_per_cue > 2
+    ("subtitle-template", "max_lines_per_cue 超过 2 被拒", {"max_lines_per_cue": 3}),
+    # 字幕：SubtitleTemplate min_cue_duration_ms > max_cue_duration_ms
+    ("subtitle-template", "min > max cue duration 被拒",
+     {"min_cue_duration_ms": 7000, "max_cue_duration_ms": 5000}),
+    # 字幕：SafeAreaSpec left ≥ right
+    ("subtitle-template", "safe_area left ≥ right 被拒",
+     {"safe_area": {"left_min_pct": 60, "right_max_pct": 40}}),
+    # 字幕：SafeAreaSpec top ≥ bottom
+    ("subtitle-template", "safe_area top ≥ bottom 被拒",
+     {"safe_area": {"top_min_pct": 90, "bottom_max_pct": 80}}),
+    # 字幕：cue 时间倒序
+    ("subtitle-track", "cue 时间倒序被拒", {
+        "cues": [{
+            "id": "c-x", "start_ms": 5000, "end_ms": 1000,
+            "lines": [{"text": "x", "start_ms": 0, "end_ms": 100,
+                        "language": "zh-CN"}],
+        }],
+    }),
+    # 字幕：cue.lines 空数组
+    ("subtitle-track", "cue lines 为空被拒", {
+        "cues": [{"id": "c-x", "start_ms": 0, "end_ms": 1000, "lines": []}],
+    }),
+    # 字幕：SubtitleLine text 空
+    ("subtitle-track", "line text 空被拒", {
+        "cues": [{"id": "c-x", "start_ms": 0, "end_ms": 1000, "lines": [
+            {"text": "", "start_ms": 0, "end_ms": 1000, "language": "zh-CN"},
+        ]}],
+    }),
+    # 字幕：SubtitleWord end < start
+    ("subtitle-track", "word 时间倒序被拒", {
+        "cues": [{"id": "c-x", "start_ms": 0, "end_ms": 1000, "lines": [{
+            "text": "x", "start_ms": 0, "end_ms": 1000, "language": "zh-CN",
+            "words": [{"text": "x", "start_ms": 500, "end_ms": 200}],
+        }]}],
+    }),
     ("exporter-report", "未知字段被拒", {"unexpected_field": 1}),
     ("exporter-report", "非法 ExporterKind 被拒",
      {"entries": [{"kind": "PREMIERE_XML", "status": "OK"}]}),

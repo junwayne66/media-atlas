@@ -1,0 +1,30 @@
+{
+  "cjk_chars_per_sec": 8.0,
+  "created_at": "2026-07-21T08:00:00Z",
+  "en_chars_per_sec": null,
+  "en_words_per_sec": null,
+  "id": "01J2ZK3AC9V6XW8YQ4R5T6U7SUB1",
+  "language": "zh-CN",
+  "max_chars_per_line": 16,
+  "max_cue_duration_ms": 6000,
+  "max_lines_per_cue": 2,
+  "min_cue_duration_ms": 800,
+  "safe_area": {
+    "bottom_max_pct": 90.0,
+    "left_min_pct": 5.0,
+    "right_max_pct": 95.0,
+    "schema_version": "1",
+    "top_min_pct": 5.0
+  },
+  "schema_version": "1",
+  "style_hint": {
+    "bold": true,
+    "color": "#FFFFFF",
+    "font_family": "Source Han Sans",
+    "font_size_pt": 48,
+    "outline_color": "#000000",
+    "outline_width": 2.0,
+    "schema_version": "1"
+  },
+  "version": 1
+}

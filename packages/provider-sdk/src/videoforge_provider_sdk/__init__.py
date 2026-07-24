@@ -171,6 +171,15 @@ from videoforge_provider_sdk.routing import (
     RouteDecision,
     route,
 )
+from videoforge_provider_sdk.subtitle import (
+    FakeForcedAlignmentProvider,
+    ForcedAlignmentErrorCode,
+    ForcedAlignmentProvider,
+    ForcedAlignmentRequest,
+    ForcedAlignmentResult,
+    ForcedAlignmentStatus,
+    UnconfiguredForcedAlignmentProvider,
+)
 from videoforge_provider_sdk.timeline_exporter import (
     OtioDictExporter,
     TimelineExporter,
@@ -259,6 +268,7 @@ __all__ = [
     "FakeRemotionRenderProvider",
     "FakeSegmentJudgeProvider",
     "FakeTRAProvider",
+    "FakeForcedAlignmentProvider",
     "FakeStructureRewriteProvider",
     "FakeVLMProvider",
     "FixtureFetcher",
@@ -308,6 +318,11 @@ __all__ = [
     "SegmentJudgeStatus",
     "SegmentSpec",
     "ShortLinkExpander",
+    "ForcedAlignmentErrorCode",
+    "ForcedAlignmentProvider",
+    "ForcedAlignmentRequest",
+    "ForcedAlignmentResult",
+    "ForcedAlignmentStatus",
     "StructureRewriteProvider",
     "TRAErrorCode",
     "TRARequest",
@@ -331,6 +346,7 @@ __all__ = [
     "UnconfiguredRemotionRenderProvider",
     "UnconfiguredSegmentJudgeProvider",
     "UnconfiguredShortLinkExpander",
+    "UnconfiguredForcedAlignmentProvider",
     "UnconfiguredStructureRewriteProvider",
     "UnconfiguredTRAProvider",
     "UnconfiguredTimelineExporter",

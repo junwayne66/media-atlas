@@ -1,0 +1,243 @@
+{
+  "$defs": {
+    "SafeAreaSpec": {
+      "additionalProperties": false,
+      "description": "安全区约束（归一化百分比 0-100）；渲染/QA 消费。默认覆盖抖音/TikTok 底部 UI 占位。",
+      "properties": {
+        "bottom_max_pct": {
+          "default": 90.0,
+          "maximum": 100.0,
+          "minimum": 0.0,
+          "title": "Bottom Max Pct",
+          "type": "number"
+        },
+        "left_min_pct": {
+          "default": 5.0,
+          "maximum": 100.0,
+          "minimum": 0.0,
+          "title": "Left Min Pct",
+          "type": "number"
+        },
+        "right_max_pct": {
+          "default": 95.0,
+          "maximum": 100.0,
+          "minimum": 0.0,
+          "title": "Right Max Pct",
+          "type": "number"
+        },
+        "schema_version": {
+          "default": "1",
+          "description": "合同 schema 版本；Reader 需兼容当前与前一版本",
+          "title": "Schema Version",
+          "type": "string"
+        },
+        "top_min_pct": {
+          "default": 5.0,
+          "maximum": 100.0,
+          "minimum": 0.0,
+          "title": "Top Min Pct",
+          "type": "number"
+        }
+      },
+      "title": "SafeAreaSpec",
+      "type": "object"
+    },
+    "SubtitleStyleHint": {
+      "additionalProperties": false,
+      "description": "字体样式提示（渲染层参考，不做真实 layout）。",
+      "properties": {
+        "bold": {
+          "default": false,
+          "title": "Bold",
+          "type": "boolean"
+        },
+        "color": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "#RRGGBB",
+          "title": "Color"
+        },
+        "font_family": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Font Family"
+        },
+        "font_size_pt": {
+          "anyOf": [
+            {
+              "exclusiveMinimum": 0,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Font Size Pt"
+        },
+        "outline_color": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "#RRGGBB",
+          "title": "Outline Color"
+        },
+        "outline_width": {
+          "anyOf": [
+            {
+              "minimum": 0.0,
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Outline Width"
+        },
+        "schema_version": {
+          "default": "1",
+          "description": "合同 schema 版本；Reader 需兼容当前与前一版本",
+          "title": "Schema Version",
+          "type": "string"
+        }
+      },
+      "title": "SubtitleStyleHint",
+      "type": "object"
+    }
+  },
+  "$id": "https://videoforge.dev/schemas/subtitle-template.schema.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "description": "字幕模板：分段 + 阅读速度 + 安全区 + 样式（每语言/平台/账号一份，可版本化）。\n\n- max_chars_per_line：单行字符上限。中文按字符（含全角），英文按字符（近似 42）。\n  两语言不同，故建议按 language 建两份模板；此字段配当前 language。\n- max_lines_per_cue：≤2（§5.1）；短视频默认 1。\n- cjk_chars_per_sec / en_chars_per_sec / en_words_per_sec：阅读速度上限（软阈值，超即 QA）。\n- min_cue_duration_ms：单条 cue 最短持续（避免闪现），默认 800ms。\n- max_cue_duration_ms：单条最长（避免长时间悬挂），默认 6000ms。\n- safe_area：安全区约束（渲染 + QA 消费）。\n- style_hint：字体/描边等提示（不承载真实字体渲染）。",
+  "properties": {
+    "cjk_chars_per_sec": {
+      "anyOf": [
+        {
+          "exclusiveMinimum": 0.0,
+          "type": "number"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "description": "中文阅读速度上限，字/秒",
+      "title": "Cjk Chars Per Sec"
+    },
+    "created_at": {
+      "format": "date-time",
+      "title": "Created At",
+      "type": "string"
+    },
+    "en_chars_per_sec": {
+      "anyOf": [
+        {
+          "exclusiveMinimum": 0.0,
+          "type": "number"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "description": "英文 CPS 上限",
+      "title": "En Chars Per Sec"
+    },
+    "en_words_per_sec": {
+      "anyOf": [
+        {
+          "exclusiveMinimum": 0.0,
+          "type": "number"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "description": "英文 WPM/60 上限，可选",
+      "title": "En Words Per Sec"
+    },
+    "id": {
+      "minLength": 1,
+      "title": "Id",
+      "type": "string"
+    },
+    "language": {
+      "description": "模板绑定的字幕语言，如 zh-CN / en-US",
+      "minLength": 1,
+      "title": "Language",
+      "type": "string"
+    },
+    "max_chars_per_line": {
+      "exclusiveMinimum": 0,
+      "title": "Max Chars Per Line",
+      "type": "integer"
+    },
+    "max_cue_duration_ms": {
+      "default": 6000,
+      "minimum": 0,
+      "title": "Max Cue Duration Ms",
+      "type": "integer"
+    },
+    "max_lines_per_cue": {
+      "default": 2,
+      "maximum": 2,
+      "minimum": 1,
+      "title": "Max Lines Per Cue",
+      "type": "integer"
+    },
+    "min_cue_duration_ms": {
+      "default": 800,
+      "minimum": 0,
+      "title": "Min Cue Duration Ms",
+      "type": "integer"
+    },
+    "safe_area": {
+      "$ref": "#/$defs/SafeAreaSpec"
+    },
+    "schema_version": {
+      "default": "1",
+      "description": "合同 schema 版本；Reader 需兼容当前与前一版本",
+      "title": "Schema Version",
+      "type": "string"
+    },
+    "style_hint": {
+      "$ref": "#/$defs/SubtitleStyleHint"
+    },
+    "version": {
+      "default": 1,
+      "minimum": 1,
+      "title": "Version",
+      "type": "integer"
+    }
+  },
+  "required": [
+    "id",
+    "language",
+    "max_chars_per_line",
+    "created_at"
+  ],
+  "title": "SubtitleTemplate",
+  "type": "object"
+}
