@@ -228,6 +228,42 @@ class _BarrierOnAttachGateway(DbSourceGateway):
         return super()._attach_project(session, asset, project_id)
 
 
+class _BarrierOnLinkGateway(DbSourceGateway):
+    """双方都进入 Project 反向关联后才各自乐观锁更新 —— 必然一方冲突。"""
+
+    def __init__(self, engine: Engine, barrier: threading.Barrier) -> None:
+        super().__init__(engine)
+        self._barrier = barrier
+
+    def _link_project(self, session: Session, project_id: str, asset_id: str) -> None:
+        self._barrier.wait(timeout=30)
+        super()._link_project(session, project_id, asset_id)
+
+
+def test_concurrent_import_two_assets_into_same_project(migrated_engine: Engine) -> None:
+    """批量导入进同一项目：Project 行乐观锁冲突时输家重试，两个素材都进 source_asset_ids。"""
+    project = _make_project(migrated_engine)
+    barrier = threading.Barrier(2)
+    gw = _BarrierOnLinkGateway(migrated_engine, barrier)
+    urls = (_DOUYIN, "https://www.tiktok.com/@u/video/7499999999999999999")
+
+    def run(url: str) -> tuple[str, bool]:
+        asset, created = gw.import_url(ImportUrlRequest(input=url, project_id=project.id))
+        return asset.id, created
+
+    with ThreadPoolExecutor(max_workers=2) as pool:
+        results = [f.result(timeout=60) for f in [pool.submit(run, u) for u in urls]]
+
+    assert [c for _, c in results] == [True, True]  # 两个都是新建（201），无人 500
+    asset_ids = {a for a, _ in results}
+    assert len(asset_ids) == 2
+    with session_scope(migrated_engine) as s:
+        stored = ProjectRepository(s).get(project.id)
+        assert set(stored.source_asset_ids) == asset_ids  # 两个素材都在，关联不丢
+        for asset_id in asset_ids:
+            assert SourceAssetRepository(s).get(asset_id).project_ids == [project.id]
+
+
 def test_concurrent_same_url_import_is_idempotent_not_500(migrated_engine: Engine) -> None:
     """并发同 URL 导入：输家撞唯一索引后重查复用，两边都成功且只有一条素材/一个事件。"""
     barrier = threading.Barrier(2)

@@ -411,17 +411,33 @@ class DbSourceGateway:
         raise ProjectAttachConflict(f"素材 {asset.id} 并发写冲突，请重试")
 
     def _link_project(self, session: Session, project_id: str, asset_id: str) -> None:
+        """反向关联：把素材挂进 Project.source_asset_ids（去重）。
+
+        与 `_attach_project` 同一模式的有界重试：「批量导入进同一项目」是 UI 高频路径，
+        两个请求并发挂**不同素材**到同一 Project 会撞 Project 行的乐观锁，输家必须重读最新
+        Project 版本重新追加，而不是 500。耗尽 → ProjectAttachConflict（409）。
+        """
         repo = ProjectRepository(session)
-        try:
-            project = repo.get(project_id)
-        except NotFoundError:
-            return  # Project 不存在时不阻断素材导入（素材可先于项目存在）
-        if asset_id in project.source_asset_ids:
+        for _ in range(_ATTACH_MAX_ATTEMPTS):
+            try:
+                project = repo.get(project_id)
+            except NotFoundError:
+                return  # Project 不存在时不阻断素材导入（素材可先于项目存在）
+            if asset_id in project.source_asset_ids:
+                return  # 已挂（含并发方已代为挂上）→ 幂等返回
+            try:
+                repo.update(
+                    project.model_copy(
+                        update={"source_asset_ids": [*project.source_asset_ids, asset_id]}
+                    ),
+                    expected_version=project.version,
+                )
+            except VersionConflictError:
+                # 重读：expire 掉本事务身份映射里的旧行，READ COMMITTED 下能看到赢家的提交
+                session.expire_all()
+                continue
             return
-        repo.update(
-            project.model_copy(update={"source_asset_ids": [*project.source_asset_ids, asset_id]}),
-            expected_version=project.version,
-        )
+        raise ProjectAttachConflict(f"项目 {project_id} 并发写冲突，请重试")
 
 
 # 前缀只到 /v1：`/sources:resolve` 是动作式路径（51 §4），不能作为 /v1/sources 的子路径
