@@ -1,0 +1,9 @@
+{
+  "coefficients": {
+    "ending_payoff": 0.14,
+    "hook_strength": 0.28
+  },
+  "ranker_kind": "HIGHLIGHT",
+  "schema_version": "1",
+  "template_version": "hl-weights-v3"
+}

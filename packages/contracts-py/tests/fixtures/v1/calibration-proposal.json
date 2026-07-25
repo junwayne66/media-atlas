@@ -1,0 +1,49 @@
+{
+  "candidate": {
+    "coefficients": {
+      "ending_payoff": 0.16,
+      "hook_strength": 0.31
+    },
+    "ranker_kind": "HIGHLIGHT",
+    "schema_version": "1",
+    "template_version": "hl-weights-v3+cal"
+  },
+  "candidate_eval": {
+    "enough_samples": true,
+    "rank_correlation": 0.63,
+    "ranker_kind": "HIGHLIGHT",
+    "sample_count": 24,
+    "schema_version": "1",
+    "template_version": "hl-weights-v3+cal",
+    "top_k": 3,
+    "top_k_hit_rate": 0.67
+  },
+  "current": {
+    "coefficients": {
+      "ending_payoff": 0.14,
+      "hook_strength": 0.28
+    },
+    "ranker_kind": "HIGHLIGHT",
+    "schema_version": "1",
+    "template_version": "hl-weights-v3"
+  },
+  "current_eval": {
+    "enough_samples": true,
+    "rank_correlation": 0.55,
+    "ranker_kind": "HIGHLIGHT",
+    "sample_count": 24,
+    "schema_version": "1",
+    "template_version": "hl-weights-v3",
+    "top_k": 3,
+    "top_k_hit_rate": 0.67
+  },
+  "decision": "EXPLORE",
+  "exploration_fraction": 0.1,
+  "generated_at": "2026-07-26T14:00:00Z",
+  "improvement": 0.08,
+  "max_exploration_fraction": 0.2,
+  "note": "候选离线秩相关 +0.080，进入少量探索（保留探索流量）",
+  "promotable": true,
+  "ranker_kind": "HIGHLIGHT",
+  "schema_version": "1"
+}

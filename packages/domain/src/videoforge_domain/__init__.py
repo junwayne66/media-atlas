@@ -265,6 +265,18 @@ from videoforge_domain.qa import (
     detect_voice_tail_cut,
     validate_publish_gate,
 )
+from videoforge_domain.ranker_calibration import (
+    DEFAULT_MIN_IMPROVEMENT,
+    MIN_SAMPLES_FOR_CALIBRATION,
+    CalibrationIssue,
+    CalibrationIssueKind,
+    decide_calibration,
+    evaluate_ranking,
+    is_valid_calibration_proposal,
+    propose_calibration,
+    score_item,
+    validate_calibration_proposal,
+)
 from videoforge_domain.reason_codes import derive_reason_codes
 from videoforge_domain.reedit import (
     ReeditIssue,
@@ -647,6 +659,16 @@ __all__ = [
     "significant_signals",
     "spearman_correlation",
     "validate_learning_report",
+    "DEFAULT_MIN_IMPROVEMENT",
+    "MIN_SAMPLES_FOR_CALIBRATION",
+    "CalibrationIssue",
+    "CalibrationIssueKind",
+    "decide_calibration",
+    "evaluate_ranking",
+    "is_valid_calibration_proposal",
+    "propose_calibration",
+    "score_item",
+    "validate_calibration_proposal",
     "BrowserChallengeKind",
     "SelectorStrategy",
     "canary_ok",

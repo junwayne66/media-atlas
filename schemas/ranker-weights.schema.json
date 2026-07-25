@@ -1,0 +1,47 @@
+{
+  "$defs": {
+    "RankerKind": {
+      "enum": [
+        "TREND_HOT",
+        "HIGHLIGHT"
+      ],
+      "title": "RankerKind",
+      "type": "string"
+    }
+  },
+  "$id": "https://videoforge.dev/schemas/ranker-weights.schema.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "description": "排序器权重（通用线性表示；系数为 ≥0 幅度——正负号在打分公式里，承接 VF-101）。",
+  "properties": {
+    "coefficients": {
+      "additionalProperties": {
+        "type": "number"
+      },
+      "minProperties": 1,
+      "title": "Coefficients",
+      "type": "object"
+    },
+    "ranker_kind": {
+      "$ref": "#/$defs/RankerKind"
+    },
+    "schema_version": {
+      "default": "1",
+      "description": "合同 schema 版本；Reader 需兼容当前与前一版本",
+      "title": "Schema Version",
+      "type": "string"
+    },
+    "template_version": {
+      "minLength": 1,
+      "title": "Template Version",
+      "type": "string"
+    }
+  },
+  "required": [
+    "ranker_kind",
+    "template_version",
+    "coefficients"
+  ],
+  "title": "RankerWeights",
+  "type": "object"
+}
