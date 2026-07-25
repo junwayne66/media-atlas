@@ -3,9 +3,11 @@
 全程零网络：下载连接器默认未配置，路由必然 manual_fallback（诚实处置，非静默失败）。
 """
 
+import tempfile
 import threading
 from concurrent.futures import ThreadPoolExecutor
 from datetime import UTC, datetime
+from pathlib import Path
 
 from sqlalchemy import Engine, func, select
 from sqlalchemy.orm import Session
@@ -14,6 +16,7 @@ from videoforge_api.sources import (
     DbSourceGateway,
     ImportFileRequest,
     ImportUrlRequest,
+    ProjectNotFound,
     ResolveRequest,
 )
 from videoforge_contracts import (
@@ -238,6 +241,66 @@ class _BarrierOnLinkGateway(DbSourceGateway):
     def _link_project(self, session: Session, project_id: str, asset_id: str) -> None:
         self._barrier.wait(timeout=30)
         super()._link_project(session, project_id, asset_id)
+
+
+def test_concurrent_same_file_import_is_one_asset(migrated_engine: Engine) -> None:
+    """并发导入同一本地文件：manual 部分唯一索引兜底，输家重查复用而非双建。"""
+    with tempfile.TemporaryDirectory() as tmp:
+        media = Path(tmp) / "demo.mp4"
+        media.write_bytes(b"concurrent-media-bytes")
+        barrier = threading.Barrier(2)
+        gw = _BarrierOnPersistGateway(migrated_engine, barrier)
+
+        def run() -> tuple[str, bool]:
+            asset, created = gw.import_file(ImportFileRequest(path=str(media)))
+            return asset.id, created
+
+        with ThreadPoolExecutor(max_workers=2) as pool:
+            results = [f.result(timeout=60) for f in [pool.submit(run), pool.submit(run)]]
+
+    ids = {r[0] for r in results}
+    assert len(ids) == 1
+    assert {r[1] for r in results} == {True, False}
+    assert _count_assets(migrated_engine) == 1
+    assert _imported_events(migrated_engine) == [next(iter(ids))]
+
+
+def test_import_with_unknown_project_persists_nothing(migrated_engine: Engine) -> None:
+    """幽灵 project_id → ProjectNotFound，且零落库（不留下指向不存在项目的无主素材）。"""
+    gw = DbSourceGateway(migrated_engine)
+    for request in (
+        ImportUrlRequest(input=_DOUYIN, project_id="ghost-project"),
+        ImportUrlRequest(input="https://v.douyin.com/ghost1/", project_id="ghost-project"),
+        ImportUrlRequest(input="根本不是链接", project_id="ghost-project"),
+    ):
+        try:
+            gw.import_url(request)
+        except ProjectNotFound as exc:
+            assert "项目不存在" in str(exc)
+        else:  # pragma: no cover - 失败路径
+            raise AssertionError("幽灵项目必须 404，不能建出无主素材")
+
+    assert _count_assets(migrated_engine) == 0
+    assert _imported_events(migrated_engine) == []
+
+
+def test_one_way_project_link_is_repaired_on_reimport(migrated_engine: Engine) -> None:
+    """历史脏数据：素材侧已含 project 但 Project 侧为空 → 再次导入应补挂反向关联。"""
+    project = _make_project(migrated_engine)
+    gw = DbSourceGateway(migrated_engine)
+    asset, _ = gw.import_url(ImportUrlRequest(input=_DOUYIN))
+    with session_scope(migrated_engine) as s:  # 手工制造单向关联
+        SourceAssetRepository(s).update(
+            asset.model_copy(update={"project_ids": [project.id]}),
+            expected_version=asset.version,
+        )
+    with session_scope(migrated_engine) as s:
+        assert ProjectRepository(s).get(project.id).source_asset_ids == []
+
+    again, created = gw.import_url(ImportUrlRequest(input=_DOUYIN, project_id=project.id))
+    assert not created and again.id == asset.id
+    with session_scope(migrated_engine) as s:
+        assert ProjectRepository(s).get(project.id).source_asset_ids == [asset.id]
 
 
 def test_concurrent_import_two_assets_into_same_project(migrated_engine: Engine) -> None:

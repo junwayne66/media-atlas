@@ -205,6 +205,14 @@ class SourceAssetRow(Base):
             unique=True,
             postgresql_where=text("content_id IS NULL"),
         ),
+        # 手工导入的身份是文件哈希；只对 platform='manual' 唯一——不同平台的 URL 资产
+        # 共享同一 file_sha256 是「FILE 层重复组」的设计前提，绝不能做成全局唯一。
+        Index(
+            "uq_source_assets_manual_file_sha256",
+            "file_sha256",
+            unique=True,
+            postgresql_where=text("platform = 'manual' AND file_sha256 IS NOT NULL"),
+        ),
     )
 
 

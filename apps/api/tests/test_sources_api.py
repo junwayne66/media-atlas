@@ -10,6 +10,7 @@ from videoforge_api.sources import (
     ImportFileRequest,
     ImportUrlRequest,
     LocalFileMissing,
+    ProjectNotFound,
     ResolveRequest,
     ResolveResponse,
 )
@@ -43,6 +44,8 @@ class StubSourceGateway:
         return ResolveResponse(resolvable=True, platform="douyin", reason="ok")
 
     def import_url(self, request: ImportUrlRequest) -> tuple[SourceAsset, bool]:
+        if request.project_id == "ghost":
+            raise ProjectNotFound("项目不存在：ghost")
         created = not self.existing
         self.existing = True
         return _asset(), created
@@ -50,6 +53,8 @@ class StubSourceGateway:
     def import_file(self, request: ImportFileRequest) -> tuple[SourceAsset, bool]:
         if request.path == "/missing.mp4":
             raise LocalFileMissing("本地文件不存在：/missing.mp4")
+        if request.project_id == "ghost":
+            raise ProjectNotFound("项目不存在：ghost")
         return _asset(
             "a2",
             kind=SourceAssetKind.LOCAL_FILE,
@@ -106,6 +111,21 @@ def test_import_file_missing_path_is_422() -> None:
     resp = client.post("/v1/sources/import-file", json={"path": "/missing.mp4"})
     assert resp.status_code == 422
     assert "不存在" in resp.json()["detail"]
+
+
+def test_import_with_unknown_project_is_404() -> None:
+    """幽灵 project_id → 404（不能 201 建出指向不存在项目的素材）。"""
+    client, _ = _client()
+    url_resp = client.post(
+        "/v1/sources/import-url",
+        json={"input": "https://www.douyin.com/video/1", "project_id": "ghost"},
+    )
+    assert url_resp.status_code == 404
+    assert "项目不存在" in url_resp.json()["detail"]
+    file_resp = client.post(
+        "/v1/sources/import-file", json={"path": "/ok.mp4", "project_id": "ghost"}
+    )
+    assert file_resp.status_code == 404
 
 
 def test_list_and_get_and_404() -> None:

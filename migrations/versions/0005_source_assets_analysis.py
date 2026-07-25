@@ -51,6 +51,15 @@ def upgrade() -> None:
         unique=True,
         postgresql_where=sa.text("content_id IS NULL"),
     )
+    # 手工导入的身份就是文件哈希（content_id 是文件名，不可靠）。**只对 manual 唯一**——
+    # 不同平台的 URL 资产共享同一 file_sha256 是「FILE 层重复组」的设计前提，不能全局唯一。
+    op.create_index(
+        "uq_source_assets_manual_file_sha256",
+        "source_assets",
+        ["file_sha256"],
+        unique=True,
+        postgresql_where=sa.text("platform = 'manual' AND file_sha256 IS NOT NULL"),
+    )
 
     op.create_table(
         "analysis_runs",

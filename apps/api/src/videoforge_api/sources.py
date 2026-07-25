@@ -104,6 +104,10 @@ class LocalFileMissing(ValueError):
     """手工导入指向的本地文件不存在（422，不静默建一条无文件的「已导入」素材）。"""
 
 
+class ProjectNotFound(LookupError):
+    """导入指定的项目不存在（404，且**零落库**——绝不留下指向幽灵项目的无主素材）。"""
+
+
 class ProjectAttachConflict(RuntimeError):
     """有界重试后仍与并发写冲突（409，让调用方重试；绝不静默丢失项目关联）。"""
 
@@ -349,8 +353,12 @@ class DbSourceGateway:
         查与建在两个事务里，中间有并发窗口：两方都 miss 时会双插，部分唯一索引拒掉后者。
         输家不应 500——它重查（此时赢家必已提交，否则 INSERT 会阻塞而非报错）并复用同一
         素材，得到与「命中复用」完全一致的 200 语义（created=False）。
+
+        project_id 在**任何落库之前**先验证存在（不存在 → ProjectNotFound → 404）：否则会
+        建出一条 project_ids 指向幽灵项目的素材，而 Project 侧永远没有反向关联，且无 API 可修。
         """
         with session_scope(self._engine) as s:
+            self._require_project(s, project_id)
             existing = lookup(SourceAssetRepository(s))
             if existing is not None:
                 return self._attach_project(s, existing, project_id), False
@@ -363,6 +371,15 @@ class DbSourceGateway:
                 if existing is None:
                     raise  # 不是幂等冲突（如主键碰撞）→ 如实上抛，不掩盖
                 return self._attach_project(s, existing, project_id), False
+
+    @staticmethod
+    def _require_project(session: Session, project_id: str | None) -> None:
+        if not project_id:
+            return
+        try:
+            ProjectRepository(session).get(project_id)
+        except NotFoundError:
+            raise ProjectNotFound(f"项目不存在：{project_id}") from None
 
     def _persist_new(self, asset: SourceAsset, project_id: str | None) -> SourceAsset:
         if project_id:
@@ -389,8 +406,14 @@ class DbSourceGateway:
         两个请求给同一素材挂**不同** project 时会撞乐观锁：输家不能 500 也不能静默丢关联，
         必须重读最新版本、在最新 project_ids 上重新追加（去重）后重试。有界重试仍冲突 →
         ProjectAttachConflict（409，让调用方重试），绝不无限自旋。
+
+        素材侧已含该 project 时仍要走一次 `_link_project`（幂等）：历史脏数据可能只有素材侧
+        单向关联（Project 侧为空），早退会让它永远修不回来。
         """
-        if not project_id or project_id in asset.project_ids:
+        if not project_id:
+            return asset
+        if project_id in asset.project_ids:
+            self._link_project(session, project_id, asset.id)  # 双保险：补挂单向历史数据
             return asset
         repo = SourceAssetRepository(session)
         for _ in range(_ATTACH_MAX_ATTEMPTS):
@@ -416,13 +439,13 @@ class DbSourceGateway:
         与 `_attach_project` 同一模式的有界重试：「批量导入进同一项目」是 UI 高频路径，
         两个请求并发挂**不同素材**到同一 Project 会撞 Project 行的乐观锁，输家必须重读最新
         Project 版本重新追加，而不是 500。耗尽 → ProjectAttachConflict（409）。
+
+        Project 存在性已由 `_require_project` 在落库前验证过，这里不再吞 NotFoundError
+        ——真发生就是异常（如项目被并发删除），应如实上抛而不是留下单向关联。
         """
         repo = ProjectRepository(session)
         for _ in range(_ATTACH_MAX_ATTEMPTS):
-            try:
-                project = repo.get(project_id)
-            except NotFoundError:
-                return  # Project 不存在时不阻断素材导入（素材可先于项目存在）
+            project = repo.get(project_id)
             if asset_id in project.source_asset_ids:
                 return  # 已挂（含并发方已代为挂上）→ 幂等返回
             try:
@@ -460,6 +483,8 @@ def resolve_source(body: ResolveRequest, gateway: GatewayDep) -> ResolveResponse
 def import_url(body: ImportUrlRequest, gateway: GatewayDep, response: Response) -> SourceAsset:
     try:
         asset, created = gateway.import_url(body)
+    except ProjectNotFound as exc:
+        raise HTTPException(status_code=404, detail=str(exc)) from None
     except ProjectAttachConflict as exc:
         raise HTTPException(status_code=409, detail=str(exc)) from None
     response.status_code = 201 if created else 200
@@ -472,6 +497,8 @@ def import_file(body: ImportFileRequest, gateway: GatewayDep, response: Response
         asset, created = gateway.import_file(body)
     except (LocalFileMissing, UnresolvableUrl) as exc:
         raise HTTPException(status_code=422, detail=str(exc)) from None
+    except ProjectNotFound as exc:
+        raise HTTPException(status_code=404, detail=str(exc)) from None
     except ProjectAttachConflict as exc:
         raise HTTPException(status_code=409, detail=str(exc)) from None
     response.status_code = 201 if created else 200
