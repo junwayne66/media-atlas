@@ -7,7 +7,7 @@
 
 from datetime import datetime
 
-from sqlalchemy import DateTime, Float, Index, Integer, String
+from sqlalchemy import DateTime, Float, Index, Integer, String, Text
 from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.orm import Mapped, mapped_column
 
@@ -30,6 +30,9 @@ class CreativeDocumentRow(Base):
     doc_version: Mapped[int] = mapped_column(Integer, nullable=False)
     payload: Mapped[dict] = mapped_column(JSONB, nullable=False)
     cache_key: Mapped[str | None] = mapped_column(String(64))
+    # 护栏结论（脚本 needs_review + issues）；brief/timeline 不过是 422 不落库，故常为 None。
+    status: Mapped[str | None] = mapped_column(Text)
+    issues: Mapped[list | None] = mapped_column(JSONB)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
 
     __table_args__ = (
@@ -77,6 +80,9 @@ class PublishJobRow(Base):
     state: Mapped[str] = mapped_column(String(30), nullable=False, index=True)
     payload: Mapped[dict] = mapped_column(JSONB, nullable=False)
     publish_metadata: Mapped[dict | None] = mapped_column(JSONB)
+    # 最近一次预检的输入探针 + 报告（submit 放行前要用同一能力源重跑预检）
+    media_probe: Mapped[dict | None] = mapped_column(JSONB)
+    preflight_report: Mapped[dict | None] = mapped_column(JSONB)
     render_manifest_id: Mapped[str | None] = mapped_column(String(36))
     row_version: Mapped[int] = mapped_column(Integer, nullable=False, default=1)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)

@@ -34,7 +34,7 @@ from videoforge_persistence.creation import (
     DOC_SCRIPT_VERSION,
     CreativeDocumentRepository,
 )
-from videoforge_persistence.errors import VersionConflictError
+from videoforge_persistence.errors import DuplicateError, VersionConflictError
 from videoforge_persistence.performance_store import PerformanceSnapshotRepository
 from videoforge_persistence.publish import PublishJobRepository
 from videoforge_persistence.review import ReviewDecisionRepository
@@ -245,3 +245,89 @@ def test_performance_snapshot_capture_is_idempotent_and_keeps_null(session: Sess
     ages = {s.age_hours: s.views for s in repo.list_for_post("post-x")}
     assert ages == {1.0: None, 24.0: 100}
     assert len(repo.list_for_account(account_id="acct-1", platform=PublishPlatform.TIKTOK)) == 2
+
+
+def test_creative_document_stores_guardrail_status_and_issues(session: Session) -> None:
+    repo = CreativeDocumentRepository(session)
+    project_id = new_id()
+    repo.add(
+        id=new_id(),
+        project_id=project_id,
+        kind=DOC_SCRIPT_VERSION,
+        payload={"sentences": []},
+        created_at=_NOW,
+        status="needs_review",
+        issues=["BANNED_PHRASE:s-1:观众"],
+    )
+    latest = repo.latest(project_id, DOC_SCRIPT_VERSION)
+    assert latest.status == "needs_review"
+    assert latest.issues == ["BANNED_PHRASE:s-1:观众"]
+
+
+def test_creative_document_retries_version_race(session: Session) -> None:
+    """并发 add 撞唯一键 → SAVEPOINT 回滚后重读版本号 +1 重试，不冒 500。"""
+    repo = CreativeDocumentRepository(session)
+    project_id = new_id()
+    repo.add(
+        id=new_id(),
+        project_id=project_id,
+        kind=DOC_BRIEF,
+        payload={"v": 1},
+        created_at=_NOW,
+    )
+
+    real_next = repo.next_version
+    stale = {"used": False}
+
+    def racing_next(pid: str, kind: str) -> int:
+        if not stale["used"]:  # 第一次返回陈旧版本号，模拟并发方已抢先占用
+            stale["used"] = True
+            return 1
+        return real_next(pid, kind)
+
+    repo.next_version = racing_next  # type: ignore[method-assign]
+    record = repo.add(
+        id=new_id(),
+        project_id=project_id,
+        kind=DOC_BRIEF,
+        payload={"v": 2},
+        created_at=_NOW,
+    )
+    assert record.doc_version == 2  # 重试后落在正确的下一版
+    assert stale["used"]
+
+    repo.next_version = lambda *_: 1  # type: ignore[method-assign,assignment]
+    with pytest.raises(DuplicateError):  # 一直撞 → 重试耗尽，交由上层 409
+        repo.add(
+            id=new_id(),
+            project_id=project_id,
+            kind=DOC_BRIEF,
+            payload={"v": 3},
+            created_at=_NOW,
+        )
+
+
+def test_publish_job_row_lock_reads_latest(session: Session) -> None:
+    """`get_for_update` 与 `get` 读到相同内容（行锁只影响并发语义，不改数据）。"""
+    repo = PublishJobRepository(session)
+    stored = repo.create(_job())
+    locked = repo.get_for_update(stored.job.id)
+    assert locked.job == stored.job
+    assert locked.row_version == stored.row_version
+
+
+def test_publish_job_persists_probe_and_report(session: Session) -> None:
+    """探针/报告只在传入时写，传 None 保持原值——submit 的预检门依赖它们跨请求存活。"""
+    repo = PublishJobRepository(session)
+    stored = repo.create(_job())
+    stored = repo.update(
+        stored.job,
+        expected_row_version=stored.row_version,
+        media_probe={"width": 1080},
+        preflight_report={"publishable": False},
+    )
+    assert stored.media_probe == {"width": 1080}
+
+    stored = repo.update(stored.job, expected_row_version=stored.row_version)
+    assert stored.media_probe == {"width": 1080}  # 未传 → 保持
+    assert stored.preflight_report == {"publishable": False}

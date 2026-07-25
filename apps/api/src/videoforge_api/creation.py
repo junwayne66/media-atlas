@@ -53,6 +53,7 @@ from videoforge_domain.ffmpeg_compiler import (
 from videoforge_domain.rewrite import build_beat_template, validate_script
 from videoforge_domain.timeline import validate_timeline
 from videoforge_persistence import (
+    DuplicateError,
     NotFoundError,
     ProjectRepository,
     SourceAssetRepository,
@@ -156,13 +157,19 @@ class CompileResponse(BaseModel):
 
 
 class DocumentView(BaseModel):
-    """产物版本的通用视图（payload 是既有合同对象的 JSON，本层不新增合同）。"""
+    """产物版本的通用视图（payload 是既有合同对象的 JSON，本层不新增合同）。
+
+    `status` / `issues` 是落库时的护栏结论：脚本护栏不过仍落库（needs_review + 全量 issues），
+    GET 也看得见；brief/timeline 不过是 422 不落库，故这两项为 None/空。
+    """
 
     id: str
     project_id: str
     kind: str
     doc_version: int
     cache_key: str | None = None
+    status: str | None = None
+    issues: list[str] = Field(default_factory=list)
     created_at: datetime | None = None
     payload: dict[str, Any]
 
@@ -174,6 +181,8 @@ def _view(record: CreativeDocumentRecord) -> DocumentView:
         kind=record.kind,
         doc_version=record.doc_version,
         cache_key=record.cache_key,
+        status=record.status,
+        issues=list(record.issues),
         created_at=record.created_at,
         payload=record.payload,
     )
@@ -314,19 +323,23 @@ class DbCreationGateway:
                 brief=brief,
             )
             issue_texts = [f"{i.kind}:{i.ref}:{i.detail}" for i in issues]
+            status = "needs_review" if issue_texts else "ok"
             # 脚本护栏不通过**仍落库**：UI 要看得见问题并逐句改，而不是被挡住。
+            # 结论随产物一起存，GET scripts 才能看见（不是只在生成那一刻的响应里闪一下）。
             doc = docs.add(
                 id=new_id(),
                 project_id=project_id,
                 kind=DOC_SCRIPT_VERSION,
                 payload=result.script.model_dump(mode="json"),
                 created_at=now,
+                status=status,
+                issues=issue_texts,
             )
             return ScriptGenerateResponse(
                 script=result.script,
                 beat_template=template,
                 doc_version=doc.doc_version,
-                status="needs_review" if issue_texts else "ok",
+                status=status,
                 issues=issue_texts,
             )
 
@@ -441,7 +454,14 @@ class DbCreationGateway:
 
     @staticmethod
     def _resolve_media(session, timeline: CreativeTimeline) -> _ResolvedMedia:
-        """时间线里用到的 source_ref → 素材本地文件 + sha256；缺文件即 409（不编译幻影输入）。"""
+        """时间线里用到的 source_ref → 素材本地文件 + sha256；缺文件即 409（不编译幻影输入）。
+
+        白名单边界（既定立场，非疏漏）：根目录取自素材自身的 `local_path` 父目录，且
+        VF-307 的 `_path_within` 只做**段级词法**归一化、**不折叠符号链接**（刻意避开
+        `realpath` 的 TOCTOU）。因此素材路径某种意义上"自授权"其所在目录——这在 macOS
+        桌面单用户试点下可接受：素材本就是操作者自己选的文件。多租户/服务端接入前需要
+        改成集中配置的媒体根目录白名单。
+        """
         refs: list[str] = []
         for track in timeline.tracks:
             for seg in track.segments:
@@ -484,6 +504,9 @@ def _http(exc: Exception) -> HTTPException:
         return HTTPException(status_code=422, detail={"message": str(exc), "issues": exc.issues})
     if isinstance(exc, CreationPrerequisiteMissing):
         return HTTPException(status_code=409, detail=str(exc))
+    if isinstance(exc, DuplicateError):
+        # 版本号竞争重试耗尽：让调用方重试，别冒 500
+        return HTTPException(status_code=409, detail=f"产物版本冲突，请重试: {exc}")
     if isinstance(exc, NotFoundError):
         return HTTPException(status_code=404, detail=str(exc))
     raise exc
@@ -495,7 +518,7 @@ def generate_brief(
 ) -> BriefGenerateResponse:
     try:
         return gateway.generate_brief(project_id, body)
-    except (GuardrailRejected, CreationPrerequisiteMissing, NotFoundError) as exc:
+    except (GuardrailRejected, CreationPrerequisiteMissing, DuplicateError, NotFoundError) as exc:
         raise _http(exc) from None
 
 
@@ -505,7 +528,7 @@ def generate_script(
 ) -> ScriptGenerateResponse:
     try:
         return gateway.generate_script(project_id, body)
-    except (GuardrailRejected, CreationPrerequisiteMissing, NotFoundError) as exc:
+    except (GuardrailRejected, CreationPrerequisiteMissing, DuplicateError, NotFoundError) as exc:
         raise _http(exc) from None
 
 
@@ -515,7 +538,7 @@ def put_timeline(
 ) -> TimelinePutResponse:
     try:
         return gateway.put_timeline(project_id, body.timeline)
-    except (GuardrailRejected, CreationPrerequisiteMissing, NotFoundError) as exc:
+    except (GuardrailRejected, CreationPrerequisiteMissing, DuplicateError, NotFoundError) as exc:
         raise _http(exc) from None
 
 
@@ -525,7 +548,7 @@ def compile_project_timeline(
 ) -> CompileResponse:
     try:
         return gateway.compile_timeline(project_id, body)
-    except (GuardrailRejected, CreationPrerequisiteMissing, NotFoundError) as exc:
+    except (GuardrailRejected, CreationPrerequisiteMissing, DuplicateError, NotFoundError) as exc:
         raise _http(exc) from None
 
 

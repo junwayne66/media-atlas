@@ -3,12 +3,16 @@
 产物 payload 是**既有合同对象**的 JSON（本层不新增合同），仓储只按 (project_id, kind) 做版本管理：
 `add` 自动取下一个 doc_version，`latest` / `get_version` / `list` 供 UI 回看。
 产物只增不改——改一版就是新 doc_version，旧版永远可回溯（README §4「编辑产生新版本」）。
+
+`status` / `issues` 随产物一起存：脚本护栏不通过时仍落库（`needs_review` + 全量 issues），
+GET 才看得见问题。并发 add 撞 (project, kind, version) 唯一键时**有界重试**（重读最新版本号 +1，
+3 次），耗尽才抛 DuplicateError（调用方转 409）——不让并发窗口变成 500。
 """
 
 # 延迟注解：仓储有名为 list 的方法，会遮蔽内建 list，令后续 list[...] 注解求值失败。
 from __future__ import annotations
 
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from datetime import datetime
 from typing import Any
 
@@ -25,6 +29,9 @@ DOC_CLAIM_TABLE = "claim_table"
 DOC_SCRIPT_VERSION = "script_version"
 DOC_TIMELINE = "creative_timeline"
 DOC_RENDER_MANIFEST = "render_manifest"
+
+# 版本号竞争的有界重试次数（并发 add 撞唯一键 → 重读最新版本号 +1）
+_VERSION_RACE_RETRIES = 3
 
 CREATIVE_DOCUMENT_KINDS = (
     DOC_BRIEF,
@@ -45,6 +52,8 @@ class CreativeDocumentRecord:
     doc_version: int
     payload: dict[str, Any]
     cache_key: str | None = None
+    status: str | None = None
+    issues: list[str] = field(default_factory=list)
     created_at: datetime | None = None
 
 
@@ -56,6 +65,8 @@ def _from_row(row: CreativeDocumentRow) -> CreativeDocumentRecord:
         doc_version=row.doc_version,
         payload=dict(row.payload),
         cache_key=row.cache_key,
+        status=row.status,
+        issues=list(row.issues or []),
         created_at=row.created_at,
     )
 
@@ -82,26 +93,43 @@ class CreativeDocumentRepository:
         created_at: datetime,
         cache_key: str | None = None,
         doc_version: int | None = None,
+        status: str | None = None,
+        issues: list[str] | None = None,
+        max_attempts: int = _VERSION_RACE_RETRIES,
     ) -> CreativeDocumentRecord:
-        """追加一版产物；doc_version 缺省自动取下一个。"""
-        version = doc_version if doc_version is not None else self.next_version(project_id, kind)
-        row = CreativeDocumentRow(
-            id=id,
-            project_id=project_id,
-            kind=kind,
-            doc_version=version,
-            payload=payload,
-            cache_key=cache_key,
-            created_at=created_at,
+        """追加一版产物；doc_version 缺省自动取下一个。
+
+        并发 add 会撞 (project_id, kind, doc_version) 唯一键——自动版本号时**有界重试**
+        （SAVEPOINT 回滚后重读最新版本号 +1）；显式指定版本号则直接抛 DuplicateError。
+        """
+        explicit = doc_version is not None
+        attempts = 1 if explicit else max(1, max_attempts)
+        last_version = doc_version
+        for _ in range(attempts):
+            version = doc_version if explicit else self.next_version(project_id, kind)
+            last_version = version
+            row = CreativeDocumentRow(
+                id=id,
+                project_id=project_id,
+                kind=kind,
+                doc_version=version,
+                payload=payload,
+                cache_key=cache_key,
+                status=status,
+                issues=list(issues) if issues is not None else None,
+                created_at=created_at,
+            )
+            try:
+                # SAVEPOINT：唯一键冲突只回滚这一步，外层事务仍可继续重试
+                with self._session.begin_nested():
+                    self._session.add(row)
+                    self._session.flush()
+            except IntegrityError:
+                continue
+            return _from_row(row)
+        raise DuplicateError(
+            f"creative_document 版本号竞争重试耗尽: {project_id}/{kind}/v{last_version}"
         )
-        self._session.add(row)
-        try:
-            self._session.flush()
-        except IntegrityError as exc:
-            raise DuplicateError(
-                f"creative_document 已存在: {project_id}/{kind}/v{version}"
-            ) from exc
-        return _from_row(row)
 
     def get(self, doc_id: str) -> CreativeDocumentRecord:
         row = self._session.get(CreativeDocumentRow, doc_id)

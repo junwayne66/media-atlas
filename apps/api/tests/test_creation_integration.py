@@ -364,3 +364,27 @@ def test_http_status_codes_for_guardrail_and_prerequisite(
         assert rejected.json()["detail"]["issues"]
 
         assert client.get(f"/v1/projects/{project.id}/brief").status_code == 404
+
+
+def test_script_issues_are_persisted_and_visible_in_get(
+    migrated_engine: Engine, project: Project, analyzed, tmp_path
+):
+    """脚本护栏不过仍落库，且 status/issues 在 GET 里看得见。
+
+    不是只在生成那一刻的响应里闪一下——UI 之后回来看这一版仍要知道它 needs_review。
+    """
+    gw = _gateway(migrated_engine, tmp_path)
+    # avoid 命中 Fake 改写模板里的词 → 必触 BANNED_PHRASE（非空跑）
+    gw.generate_brief(project.id, _brief_request(avoid=["观众"]))
+
+    resp = gw.generate_script(project.id, ScriptGenerateRequest())
+    assert resp.status == "needs_review"
+    assert any(i.startswith("BANNED_PHRASE") for i in resp.issues)
+
+    latest = gw.latest_document(project.id, "script_version")
+    assert latest.status == "needs_review"
+    assert latest.issues == resp.issues
+    listed = gw.list_documents(project.id, "script_version", 50)
+    assert listed[0].issues == resp.issues
+    by_version = gw.get_document_version(project.id, "script_version", resp.doc_version)
+    assert by_version.status == "needs_review"

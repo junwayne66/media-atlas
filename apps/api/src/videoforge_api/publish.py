@@ -14,6 +14,11 @@
 3. **挑战必停给人工**：executor 返回 CHALLENGE / AUTH_REQUIRED → WAITING_FOR_HUMAN，
    绝不绕过、绝不改用别的方法硬发。
 
+**并发安全**：所有会调用外部执行器的状态变更（submit / reconcile / manual-complete / preflight）
+都在**单事务 + 行锁**内完成：`get_for_update` → 读最新 → 域判定 → 外部调用 → 写回 → commit。
+乐观锁单独用不够——两个并发请求会各自过完 `can_submit` 再各自调 `executor.submit`（外部副作用
+已经发生），只有写回时才发现冲突（verifier 实测 executor 被调 2 次）。
+
 真实平台发布（官方 API / 浏览器 / 真机）仍是 stop-condition：这里注册的是 Fake executor，
 `app.state.publish_executors` 可整体替换（集成测试注入 challenge/限流）。
 """
@@ -38,6 +43,7 @@ from videoforge_contracts import (
     PublishMethod,
     PublishPlatform,
     PublishState,
+    ReviewSeverity,
 )
 from videoforge_contracts.ids import new_id
 from videoforge_domain.publish_job import (
@@ -52,7 +58,12 @@ from videoforge_domain.publish_job import (
 )
 from videoforge_domain.publish_preflight import run_preflight
 from videoforge_domain.publish_schedule import compute_copy_idempotency_key, next_publish_time
-from videoforge_persistence import NotFoundError, VersionConflictError, session_scope
+from videoforge_persistence import (
+    DuplicateError,
+    NotFoundError,
+    VersionConflictError,
+    session_scope,
+)
 from videoforge_persistence.publish import PublishJobRepository, StoredPublishJob
 from videoforge_provider_sdk.publish_connector import FakePublishConnector, PublishConnector
 from videoforge_provider_sdk.publish_executor import (
@@ -203,6 +214,26 @@ class CannotPublish(Exception):
     """平台未注册规则集/连接器/执行器 → 409（组合根配置问题，不是用户输入问题）。"""
 
 
+class PreflightRequired(Exception):
+    """未跑过预检就提交 → 409。**fail-closed**：没有媒体探针就无从判断能不能发。"""
+
+
+class PreflightBlocked(Exception):
+    """预检不通过 → 409，且 executor 一次都不会被调用。"""
+
+    def __init__(self, message: str, report: PreflightReport) -> None:
+        super().__init__(message)
+        self.report = report
+
+    def summary(self) -> list[str]:
+        """阻塞项摘要（ERROR/FATAL）——UI 直接看得到该修什么。"""
+        return [
+            f"{f.check}:{f.severity}:{f.detail}"
+            for f in self.report.findings
+            if f.severity in (ReviewSeverity.ERROR, ReviewSeverity.FATAL)
+        ]
+
+
 class DbPublishGateway:
     def __init__(
         self,
@@ -236,71 +267,141 @@ class DbPublishGateway:
             scheduled_window=request.publishing_window,
             copy_index=request.copy_index,
         )
+        try:
+            with session_scope(self._engine) as s:
+                repo = PublishJobRepository(s)
+                existing = repo.find_by_idempotency_key(key)
+                if existing is not None:
+                    return existing.job, False
+                now = _now()
+                job = new_publish_job(
+                    id=new_id(),
+                    account_id=request.account_id,
+                    platform=request.platform,
+                    method=request.method,
+                    render_digest=request.media_digest,
+                    metadata_digest=metadata_digest,
+                    scheduled_window=window,
+                    created_at=now,
+                )
+                if job.idempotency_key != key:  # 派生窗口与副本键公式必须自洽
+                    raise CannotPublish("幂等键推导不一致（窗口派生与副本键公式不匹配）")
+                stored = repo.create(
+                    job,
+                    publish_metadata=request.metadata.model_dump(mode="json"),
+                    render_manifest_id=request.render_manifest_id,
+                )
+                return stored.job, True
+        except DuplicateError:
+            # 并发窗口：查不到→建时撞唯一键。按幂等语义重读既有 Job 返回，绝不冒 500。
+            pass
         with session_scope(self._engine) as s:
-            repo = PublishJobRepository(s)
-            existing = repo.find_by_idempotency_key(key)
-            if existing is not None:
-                return existing.job, False
-            now = _now()
-            job = new_publish_job(
-                id=new_id(),
-                account_id=request.account_id,
-                platform=request.platform,
-                method=request.method,
-                render_digest=request.media_digest,
-                metadata_digest=metadata_digest,
-                scheduled_window=window,
-                created_at=now,
-            )
-            if job.idempotency_key != key:  # 派生窗口与副本键公式必须自洽
-                raise CannotPublish("幂等键推导不一致（窗口派生与副本键公式不匹配）")
-            stored = repo.create(
-                job,
-                publish_metadata=request.metadata.model_dump(mode="json"),
-                render_manifest_id=request.render_manifest_id,
-            )
-            return stored.job, True
+            raced = PublishJobRepository(s).find_by_idempotency_key(key)
+            if raced is None:  # 唯一键冲突却查不到——不该发生，交由上层 409 而非静默
+                raise CannotPublish("幂等键冲突但未找到既有任务（存储不一致）")
+            return raced.job, False
 
     # —— 预检 ——
 
     def preflight(self, job_id: str, request: PreflightRequest) -> PreflightResponse:
+        """跑预检并**持久化探针 + 报告**——submit 放行前会用同一探针重跑，预检不是一次性通行证。"""
         with session_scope(self._engine) as s:
             repo = PublishJobRepository(s)
-            stored = repo.get(job_id)
+            stored = repo.get_for_update(job_id)
             job = stored.job
-            spec = self._specs.get(job.platform)
-            connector = self._connectors.get(job.platform)
-            if spec is None or connector is None:
-                raise CannotPublish(f"平台 {job.platform} 未注册规则集/连接器")
-            report = run_preflight(
-                request.probe,
-                request.metadata,
-                spec,
-                connector.capabilities(),
-                id=new_id(),
-                created_at=_now(),
-            )
+            report = self._run_preflight(job.platform, request.probe, request.metadata)
+            target = job
             if not report.publishable and job.state is PublishState.PENDING:
-                blocked = job.model_copy(
+                assert_transition(job.state, PublishState.PREFLIGHT_BLOCKED)
+                target = job.model_copy(
                     update={"state": PublishState.PREFLIGHT_BLOCKED, "updated_at": _now()}
                 )
-                assert_transition(job.state, PublishState.PREFLIGHT_BLOCKED)
-                stored = repo.update(blocked, expected_row_version=stored.row_version)
-                job = stored.job
-            return PreflightResponse(report=report, job=job)
+            stored = repo.update(
+                target,
+                expected_row_version=stored.row_version,
+                media_probe=request.probe.model_dump(mode="json"),
+                preflight_report=report.model_dump(mode="json"),
+            )
+            return PreflightResponse(report=report, job=stored.job)
+
+    def _run_preflight(
+        self, platform: PublishPlatform, probe: PublishMediaProbe, metadata: PublishMetadata
+    ) -> PreflightReport:
+        spec = self._specs.get(platform)
+        connector = self._connectors.get(platform)
+        if spec is None or connector is None:
+            raise CannotPublish(f"平台 {platform} 未注册规则集/连接器")
+        return run_preflight(
+            probe, metadata, spec, connector.capabilities(), id=new_id(), created_at=_now()
+        )
+
+    def _enforce_preflight(
+        self,
+        repo: PublishJobRepository,
+        stored: StoredPublishJob,
+        job: PublishJob,
+        *,
+        now: datetime,
+    ) -> tuple[StoredPublishJob, PublishJob]:
+        """发布前置门：用持久化的探针 + **当前**连接器能力重跑预检。
+
+        预检不是一次性通行证——授权可能已过期、账号可能已被封禁，所以每次提交都重算。
+        不通过 → Job 置/保持 PREFLIGHT_BLOCKED 并抛 `PreflightBlocked`（executor 不被调用）。
+
+        遗留（本次不做）：VF-501 的审批门（ALWAYS / NEW_TEMPLATE_ONLY / AUTO 策略 +
+        `is_approval_valid`）尚未接进这条路径——发布前"是否已人工批准且审批未失效"目前不校验。
+        """
+        metadata = stored.publish_metadata
+        probe = stored.media_probe
+        if probe is None or metadata is None:
+            raise PreflightRequired(
+                f"job {job.id!r} 尚未通过发布前检查；"
+                "请先 POST /v1/publish-jobs/{job_id}/preflight（需提供成片媒体探针）"
+            )
+        report = self._run_preflight(
+            job.platform,
+            PublishMediaProbe.model_validate(probe),
+            PublishMetadata.model_validate(metadata),
+        )
+        if report.publishable:
+            return stored, job
+        target = job
+        if job.state is not PublishState.PREFLIGHT_BLOCKED:
+            assert_transition(job.state, PublishState.PREFLIGHT_BLOCKED)
+            target = job.model_copy(
+                update={"state": PublishState.PREFLIGHT_BLOCKED, "updated_at": now}
+            )
+        repo.update(
+            target,
+            expected_row_version=stored.row_version,
+            preflight_report=report.model_dump(mode="json"),
+        )
+        raise PreflightBlocked(f"job {job.id!r} 预检未通过，拒绝提交", report)
 
     # —— 提交（幂等硬拦）——
 
     def submit(self, job_id: str) -> SubmitResponse:
+        """提交发帖。**整段在行锁内**：取锁 → 读最新 → 预检门 → 幂等门 → executor → 写回。
+
+        取舍（登记为遗留）：行锁横跨 `executor.submit()` 调用。Fake 执行器是瞬时的，没问题；
+        接真实执行器（HTTP/浏览器/真机，秒级甚至分钟级）时应改成**「预留-提交」两段式**
+        ——先在短事务里把 Job 原子地标成"提交中"并写入预留令牌（参照 VF-006 熔断器的
+        single-probe reservation 先例），释放锁后再做外部调用，回来用令牌收尾。本次不实现。
+        """
         with session_scope(self._engine) as s:
             repo = PublishJobRepository(s)
-            stored = repo.get(job_id)
+            # 行锁：并发的第二方阻塞在这里，拿到锁时已能看到对方提交后的状态
+            stored = repo.get_for_update(job_id)
             job = stored.job
             executor = self._executors.get(job.platform)
             if executor is None:
                 raise CannotPublish(f"平台 {job.platform} 未注册执行器")
 
             now = _now()
+            if job.state in (PublishState.PENDING, PublishState.PREFLIGHT_BLOCKED):
+                # **预检门**：离开 PENDING/PREFLIGHT_BLOCKED 前强制重跑预检（同一能力源）。
+                # 不通过 → 置/保持 PREFLIGHT_BLOCKED + 409，executor 一次都不调用。
+                stored, job = self._enforce_preflight(repo, stored, job, now=now)
             if job.state is not PublishState.UPLOADING:
                 # 非法起点（含终态、已提交态）由 domain 迁移表拒 → 409
                 assert_transition(job.state, PublishState.UPLOADING)
@@ -311,7 +412,7 @@ class DbPublishGateway:
                     f"job {job.id!r} 已提交过——拒绝重复发布（§5/§13 幂等）"
                 )
 
-            result = executor.submit(job)
+            result = executor.submit(job)  # 外部副作用：受行锁保护，同一 Job 不会并发进入
             if result.status is PublishExecStatus.OK and result.external_post_token:
                 submitted = record_submission(
                     job,
@@ -349,7 +450,7 @@ class DbPublishGateway:
     def reconcile(self, job_id: str) -> ReconcileResponse:
         with session_scope(self._engine) as s:
             repo = PublishJobRepository(s)
-            stored = repo.get(job_id)
+            stored = repo.get_for_update(job_id)
             job = stored.job
             executor = self._executors.get(job.platform)
             if executor is None:
@@ -374,7 +475,7 @@ class DbPublishGateway:
     def manual_complete(self, job_id: str, request: ManualCompleteRequest) -> PublishJob:
         with session_scope(self._engine) as s:
             repo = PublishJobRepository(s)
-            stored = repo.get(job_id)
+            stored = repo.get_for_update(job_id)
             done = mark_manually_completed(
                 stored.job,
                 external_id=request.external_post_id,
@@ -417,6 +518,13 @@ GatewayDep = Annotated[DbPublishGateway, Depends(get_publish_gateway)]
 
 
 def _raise_http(exc: Exception) -> HTTPException:
+    if isinstance(exc, PreflightBlocked):
+        return HTTPException(
+            status_code=409,
+            detail={"message": str(exc), "blocking_findings": exc.summary()},
+        )
+    if isinstance(exc, PreflightRequired):
+        return HTTPException(status_code=409, detail=str(exc))
     if isinstance(exc, IllegalPublishTransition):
         return HTTPException(status_code=409, detail=str(exc))
     if isinstance(exc, VersionConflictError):
@@ -428,7 +536,14 @@ def _raise_http(exc: Exception) -> HTTPException:
     raise exc
 
 
-_HANDLED = (IllegalPublishTransition, VersionConflictError, CannotPublish, NotFoundError)
+_HANDLED = (
+    PreflightBlocked,
+    PreflightRequired,
+    IllegalPublishTransition,
+    VersionConflictError,
+    CannotPublish,
+    NotFoundError,
+)
 
 
 @router.post("/publish-jobs")
@@ -515,6 +630,8 @@ __all__ = [
     "DEFAULT_PUBLISH_SPECS",
     "CannotPublish",
     "DbPublishGateway",
+    "PreflightBlocked",
+    "PreflightRequired",
     "PublishJobCreate",
     "default_publish_connectors",
     "default_publish_executors",

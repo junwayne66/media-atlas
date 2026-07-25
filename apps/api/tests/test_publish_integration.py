@@ -6,6 +6,7 @@
 - 对账：查到已存在帖子 → SUCCEEDED_RECONCILED，attempts 数量**不变**（没有第二次提交）。
 """
 
+import threading
 from collections.abc import Iterator
 from datetime import UTC, datetime
 
@@ -76,6 +77,14 @@ def _good_probe() -> PublishMediaProbe:
     )
 
 
+def _ready_job(gw: DbPublishGateway, request: PublishJobCreate | None = None) -> str:
+    """建任务 + 跑通预检（预检现在是提交的前置门），返回 job_id。"""
+    job, _ = gw.create(request or _create_request())
+    result = gw.preflight(job.id, PreflightRequest(probe=_good_probe(), metadata=_metadata()))
+    assert result.report.publishable
+    return job.id
+
+
 def _gateway(engine: Engine, **executor_kwargs) -> DbPublishGateway:
     return DbPublishGateway(
         engine,
@@ -103,32 +112,32 @@ def test_create_is_idempotent_and_copy_index_derives_new_job(migrated_engine: En
 
 def test_submit_then_reconcile_never_double_publishes(migrated_engine: Engine):
     gw = _gateway(migrated_engine)
-    job, _ = gw.create(_create_request())
+    job_id = _ready_job(gw)
 
-    submitted = gw.submit(job.id)
+    submitted = gw.submit(job_id)
     assert submitted.job.state is PublishState.SUBMITTED
     assert len(submitted.job.attempts) == 1
     token = submitted.job.attempts[0].external_post_token
 
-    reconciled = gw.reconcile(job.id)
+    reconciled = gw.reconcile(job_id)
     assert reconciled.job.state is PublishState.SUCCEEDED_RECONCILED
     assert reconciled.found_post and reconciled.job.external_post_id
     # 对账没有新增 attempt —— 没有第二次提交
     assert reconciled.attempts_count == 1
     assert reconciled.job.attempts[0].external_post_token == token
-    assert not gw.get(job.id).issues
+    assert not gw.get(job_id).issues
 
 
 def test_second_submit_is_blocked(migrated_engine: Engine):
     gw = _gateway(migrated_engine)
-    job, _ = gw.create(_create_request())
-    gw.submit(job.id)
+    job_id = _ready_job(gw)
+    gw.submit(job_id)
 
     from videoforge_domain.publish_job import IllegalPublishTransition
 
     with pytest.raises(IllegalPublishTransition):
-        gw.submit(job.id)
-    stored = gw.get(job.id)
+        gw.submit(job_id)
+    stored = gw.get(job_id)
     assert len([a for a in stored.job.attempts if a.external_post_token]) == 1
     assert not stored.issues  # 无 DOUBLE_SUBMIT
 
@@ -144,20 +153,20 @@ def test_recovery_from_waiting_for_human_still_cannot_republish(migrated_engine:
     from videoforge_persistence.publish import PublishJobRepository
 
     gw = _gateway(migrated_engine)
-    job, _ = gw.create(_create_request(media_digest="c" * 64))
-    submitted = gw.submit(job.id).job
+    job_id = _ready_job(gw, _create_request(media_digest="c" * 64))
+    submitted = gw.submit(job_id).job
 
     with session_scope(migrated_engine) as s:
         repo = PublishJobRepository(s)
-        stored = repo.get(job.id)
+        stored = repo.get(job_id)
         repo.update(
             to_waiting_for_human(stored.job, now=_NOW), expected_row_version=stored.row_version
         )
 
     with pytest.raises(IllegalPublishTransition) as exc:
-        gw.submit(job.id)
+        gw.submit(job_id)
     assert "已提交过" in str(exc.value)
-    after = gw.get(job.id).job
+    after = gw.get(job_id).job
     assert [a.external_post_token for a in after.attempts] == [
         submitted.attempts[0].external_post_token
     ]
@@ -165,9 +174,9 @@ def test_recovery_from_waiting_for_human_still_cannot_republish(migrated_engine:
 
 def test_challenge_routes_to_human_without_publishing(migrated_engine: Engine):
     gw = _gateway(migrated_engine, challenge=True)
-    job, _ = gw.create(_create_request())
+    job_id = _ready_job(gw)
 
-    result = gw.submit(job.id)
+    result = gw.submit(job_id)
     assert result.job.state is PublishState.WAITING_FOR_HUMAN
     assert result.job.external_post_id is None  # 绝不绕过挑战发布
     assert result.job.attempts == []
@@ -177,17 +186,17 @@ def test_manual_complete_only_from_waiting_for_human(migrated_engine: Engine):
     from videoforge_domain.publish_job import IllegalPublishTransition
 
     gw = _gateway(migrated_engine, challenge=True)
-    job, _ = gw.create(_create_request())
-    gw.submit(job.id)
-    done = gw.manual_complete(job.id, ManualCompleteRequest(external_post_id="human-post-1"))
+    job_id = _ready_job(gw)
+    gw.submit(job_id)
+    done = gw.manual_complete(job_id, ManualCompleteRequest(external_post_id="human-post-1"))
     assert done.state is PublishState.SUCCEEDED_RECONCILED
     assert done.external_post_id == "human-post-1"
     assert done.attempts == []  # 人工完成不新增提交
 
     ok_gw = _gateway(migrated_engine)
-    fresh, _ = ok_gw.create(_create_request(media_digest="f" * 64))
+    fresh_id = _ready_job(ok_gw, _create_request(media_digest="f" * 64))
     with pytest.raises(IllegalPublishTransition):
-        ok_gw.manual_complete(fresh.id, ManualCompleteRequest(external_post_id="x"))
+        ok_gw.manual_complete(fresh_id, ManualCompleteRequest(external_post_id="x"))
 
 
 def test_preflight_blocks_job_when_media_violates_spec(migrated_engine: Engine):
@@ -265,6 +274,15 @@ def test_http_double_submit_returns_409(client: TestClient):
     )
     assert again.status_code == 200 and again.json()["id"] == job_id  # 幂等命中
 
+    preflighted = client.post(
+        f"/v1/publish-jobs/{job_id}/preflight",
+        json={
+            "probe": _good_probe().model_dump(mode="json"),
+            "metadata": _metadata().model_dump(mode="json"),
+        },
+    )
+    assert preflighted.status_code == 200 and preflighted.json()["report"]["publishable"]
+
     assert client.post(f"/v1/publish-jobs/{job_id}/submit").status_code == 200
     second = client.post(f"/v1/publish-jobs/{job_id}/submit")
     assert second.status_code == 409
@@ -294,3 +312,129 @@ def test_http_publish_calendar_next(client: TestClient):
 
     bad = client.get("/v1/publish-calendar/next", params={"window": "not-a-window"})
     assert bad.status_code == 422
+
+
+# --- verifier 反例回归 ---------------------------------------------------------
+
+
+class _BarrierTikTokExecutor(FakeTikTokPublishExecutor):
+    """在 submit 内部卡一道 Barrier，把"两方同时处在外部调用中"这一竞态放大到必现。
+
+    verifier 的原始构造：不加行锁时两个线程都能过 `can_submit` 再各自调 executor
+    （实测 CALLS: 2）；Fake 靠 idempotency_key 只发一帖，真实浏览器/真机路径就是双发。
+    """
+
+    def __init__(self, barrier, **kwargs) -> None:
+        super().__init__(**kwargs)
+        self._barrier = barrier
+        self.calls = 0
+        self._lock = threading.Lock()
+
+    def submit(self, job):
+        with self._lock:
+            self.calls += 1
+        try:
+            self._barrier.wait(timeout=3)
+        except threading.BrokenBarrierError:
+            pass  # 只有一方进来 → 超时即继续（正是修复后期望的结果）
+        return super().submit(job)
+
+
+def test_concurrent_submit_calls_executor_exactly_once(migrated_engine: Engine):
+    """并发双 submit：行锁把整段串行化 → executor.submit 只被调用 1 次、一方 409。"""
+    from videoforge_domain.publish_job import IllegalPublishTransition
+
+    barrier = threading.Barrier(2)
+    executor = _BarrierTikTokExecutor(barrier)
+    gw = DbPublishGateway(migrated_engine, executors={PublishPlatform.TIKTOK: executor})
+    job_id = _ready_job(gw, _create_request(media_digest="d" * 64))
+
+    results: list[object] = []
+    errors: list[Exception] = []
+
+    def run() -> None:
+        try:
+            results.append(gw.submit(job_id))
+        except Exception as exc:  # noqa: BLE001 - 测试要分类收集
+            errors.append(exc)
+
+    threads = [threading.Thread(target=run) for _ in range(2)]
+    for th in threads:
+        th.start()
+    for th in threads:
+        th.join(timeout=20)
+
+    assert executor.calls == 1, f"executor.submit 被调用 {executor.calls} 次（应恰好 1 次）"
+    assert len(results) == 1 and len(errors) == 1
+    assert isinstance(errors[0], IllegalPublishTransition)
+    final = gw.get(job_id)
+    assert len(final.job.attempts) == 1
+    assert not final.issues  # 无 DOUBLE_SUBMIT
+
+
+class _CountingTikTokExecutor(FakeTikTokPublishExecutor):
+    """记账用：断言"预检未过时 executor 一次都不被调用"。"""
+
+    def __init__(self, **kwargs) -> None:
+        super().__init__(**kwargs)
+        self.calls = 0
+
+    def submit(self, job):
+        self.calls += 1
+        return super().submit(job)
+
+
+def test_preflight_blocked_job_cannot_submit(migrated_engine: Engine):
+    """封禁账号 + 授权过期 → submit 被预检门拦：409、executor 0 次调用、状态 PREFLIGHT_BLOCKED。
+
+    能力修好后（换一个 Fake connector 注入正常授权）同一 Job 再 submit 即通过。
+    """
+    from videoforge_api.publish import PreflightBlocked
+
+    executor = _CountingTikTokExecutor()
+    banned_connector = FakePublishConnector(
+        platform=PublishPlatform.TIKTOK,
+        auth_status=AuthStatus.EXPIRED,
+        account_status=AccountStatus.SUSPENDED,
+    )
+    blocked_gw = DbPublishGateway(
+        migrated_engine,
+        executors={PublishPlatform.TIKTOK: executor},
+        connectors={PublishPlatform.TIKTOK: banned_connector},
+    )
+    job, _ = blocked_gw.create(_create_request(media_digest="9" * 64))
+    report = blocked_gw.preflight(
+        job.id, PreflightRequest(probe=_good_probe(), metadata=_metadata())
+    )
+    assert not report.report.publishable
+    assert report.job.state is PublishState.PREFLIGHT_BLOCKED
+
+    with pytest.raises(PreflightBlocked) as exc:
+        blocked_gw.submit(job.id)
+    assert exc.value.summary()  # 阻塞项摘要非空（UI 看得到该修什么）
+    assert executor.calls == 0, "预检未过时 executor 绝不能被调用"
+    after = blocked_gw.get(job.id)
+    assert after.job.state is PublishState.PREFLIGHT_BLOCKED
+    assert after.job.attempts == []
+
+    # 能力修复（重新授权 / 账号恢复）后，同一 Job 再提交即可通过
+    fixed_gw = DbPublishGateway(
+        migrated_engine,
+        executors={PublishPlatform.TIKTOK: executor},
+        connectors={PublishPlatform.TIKTOK: FakePublishConnector(platform=PublishPlatform.TIKTOK)},
+    )
+    ok = fixed_gw.submit(job.id)
+    assert ok.job.state is PublishState.SUBMITTED
+    assert executor.calls == 1
+
+
+def test_submit_without_preflight_is_refused(migrated_engine: Engine):
+    """从未跑过预检 → fail-closed 409（没有媒体探针就无从判断能不能发）。"""
+    from videoforge_api.publish import PreflightRequired
+
+    executor = _CountingTikTokExecutor()
+    gw = DbPublishGateway(migrated_engine, executors={PublishPlatform.TIKTOK: executor})
+    job, _ = gw.create(_create_request(media_digest="7" * 64))
+    with pytest.raises(PreflightRequired):
+        gw.submit(job.id)
+    assert executor.calls == 0

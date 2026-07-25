@@ -24,6 +24,9 @@ def upgrade() -> None:
         sa.Column("doc_version", sa.Integer(), nullable=False),
         sa.Column("payload", JSONB, nullable=False),
         sa.Column("cache_key", sa.String(64)),
+        # 护栏结论随产物一起存：脚本护栏不过仍落库（needs_review + issues），GET 要看得见。
+        sa.Column("status", sa.Text()),
+        sa.Column("issues", JSONB),
         sa.Column("created_at", sa.DateTime(timezone=True), nullable=False),
     )
     op.create_index("ix_creative_documents_project_id", "creative_documents", ["project_id"])
@@ -59,6 +62,10 @@ def upgrade() -> None:
         # 发布元数据（PublishMetadata）：合同 PublishJob 只存 metadata_digest，
         # 效果归因（VF-602 features）需要语言等原文字段，故单列旁存。
         sa.Column("publish_metadata", JSONB),
+        # 最近一次预检的输入探针与报告：submit 要在放行前用**同一能力源**重跑预检，
+        # 因此探针必须持久化（预检不是一次性通行证）。
+        sa.Column("media_probe", JSONB),
+        sa.Column("preflight_report", JSONB),
         sa.Column("render_manifest_id", sa.String(36)),
         # 乐观锁令牌（纯存储关注点，不进合同）：并发迁移冲突 → 409。
         sa.Column("row_version", sa.Integer(), nullable=False, server_default="1"),

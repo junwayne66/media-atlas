@@ -16,10 +16,11 @@ from videoforge_api.performance import (
     DbPerformanceGateway,
     MetricsFetchRejected,
 )
-from videoforge_api.publish import DbPublishGateway, PublishJobCreate
+from videoforge_api.publish import DbPublishGateway, PreflightRequest, PublishJobCreate
 from videoforge_contracts import (
     MetricField,
     PerformanceSnapshot,
+    PublishMediaProbe,
     PublishMetadata,
     PublishPlatform,
 )
@@ -109,16 +110,28 @@ def test_non_ok_fetch_is_structured_and_writes_nothing(migrated_engine: Engine, 
 def _publish_and_capture(engine: Engine, *, count: int, language: str, prefix: str) -> list[str]:
     """建真发布任务 → 提交 → 对账拿 external_post_id，供快照按帖子挂回 Job（归因特征来源）。"""
     publish_gw = DbPublishGateway(engine)
+    probe = PublishMediaProbe(
+        width=1080,
+        height=1920,
+        aspect_ratio="9:16",
+        video_codec="h264",
+        audio_codec="aac",
+        container="mp4",
+        file_size_bytes=1024,
+        duration_ms=45_000,
+    )
     post_ids: list[str] = []
     for i in range(count):
+        metadata = PublishMetadata(title=f"{prefix}-{i}", language=language)
         job, _ = publish_gw.create(
             PublishJobCreate(
                 account_id=_ACCOUNT,
                 platform=PublishPlatform.TIKTOK,
                 media_digest=f"{prefix}{i:062d}",
-                metadata=PublishMetadata(title=f"{prefix}-{i}", language=language),
+                metadata=metadata,
             )
         )
+        publish_gw.preflight(job.id, PreflightRequest(probe=probe, metadata=metadata))
         publish_gw.submit(job.id)
         done = publish_gw.reconcile(job.id)
         assert done.job.external_post_id
