@@ -1,0 +1,15 @@
+{
+  "auth_status": "AUTHORIZED",
+  "available": true,
+  "min_seconds_between_calls": 30,
+  "notes": null,
+  "platform": "TIKTOK",
+  "provided_fields": [
+    "VIEWS",
+    "LIKES",
+    "COMMENTS",
+    "SHARES",
+    "COMPLETION_RATE"
+  ],
+  "schema_version": "1"
+}

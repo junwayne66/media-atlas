@@ -160,6 +160,13 @@ from videoforge_provider_sdk.media_analyzer import (
     MediaAnalyzerStatus,
     UnconfiguredMediaAnalyzerProvider,
 )
+from videoforge_provider_sdk.metrics_connector import (
+    FakeMetricsConnector,
+    MetricsConnector,
+    MetricsFetchResult,
+    MetricsFetchStatus,
+    UnconfiguredMetricsConnector,
+)
 from videoforge_provider_sdk.neutral_connector import (
     CANARY_KEYWORD,
     NeutralDiscoveryConnector,
@@ -517,6 +524,11 @@ __all__ = [
     "FakePublishConnector",
     "PublishConnector",
     "UnconfiguredPublishConnector",
+    "FakeMetricsConnector",
+    "MetricsConnector",
+    "MetricsFetchResult",
+    "MetricsFetchStatus",
+    "UnconfiguredMetricsConnector",
     "CreatorInfoResult",
     "FakeAndroidPublishExecutor",
     "FakeBrowserPublishExecutor",

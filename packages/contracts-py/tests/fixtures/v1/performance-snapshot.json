@@ -1,0 +1,21 @@
+{
+  "account_id": "01J2ZK3AC9V6XW8YQ4R5T6U7AC01",
+  "age_hours": 24.0,
+  "avg_watch_time_ms": 15000,
+  "click_through_rate": null,
+  "comments": 45,
+  "completion_rate": 0.42,
+  "follows": null,
+  "id": "01J2ZK3AC9V6XW8YQ4R5T6U7PS01",
+  "impressions": null,
+  "likes": 800,
+  "observed_at": "2026-07-26T12:00:00Z",
+  "platform": "TIKTOK",
+  "platform_post_id": "7412345678901234567",
+  "saves": null,
+  "schema_version": "1",
+  "shares": null,
+  "source_confidence": 1.0,
+  "views": 12000,
+  "watch_time_ms": 180000000
+}

@@ -114,6 +114,12 @@ from videoforge_contracts.onscreen_text import (
     TextLocalizationStrategy,
     TextTrackLocalizationDecision,
 )
+from videoforge_contracts.performance import (
+    MetricField,
+    MetricsConnectorCapability,
+    PerformanceSnapshot,
+    SnapshotSchedule,
+)
 from videoforge_contracts.problem import ProblemDetail
 from videoforge_contracts.project import Project
 from videoforge_contracts.provider import CostModel, ProviderDescriptor, ProviderHealth
@@ -272,6 +278,9 @@ CONTRACTS: dict[str, type[ContractModel]] = {
     "preflight-report": PreflightReport,
     "publish-job": PublishJob,
     "platform-account": PlatformAccount,
+    "performance-snapshot": PerformanceSnapshot,
+    "snapshot-schedule": SnapshotSchedule,
+    "metrics-connector-capability": MetricsConnectorCapability,
     "asset-plan": AssetPlan,
     "creative-timeline": CreativeTimeline,
     "render-manifest": RenderManifest,
@@ -447,6 +456,10 @@ __all__ = [
     "PublishState",
     "AccountBinding",
     "PlatformAccount",
+    "MetricField",
+    "MetricsConnectorCapability",
+    "PerformanceSnapshot",
+    "SnapshotSchedule",
     "SegmentEffect",
     "SegmentJudgment",
     "StorageBackend",

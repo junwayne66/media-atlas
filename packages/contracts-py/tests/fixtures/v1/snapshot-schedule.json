@@ -1,0 +1,20 @@
+{
+  "account_id": "01J2ZK3AC9V6XW8YQ4R5T6U7AC01",
+  "captured_ages_hours": [
+    1.0,
+    3.0
+  ],
+  "id": "01J2ZK3AC9V6XW8YQ4R5T6U7SC01",
+  "planned_ages_hours": [
+    1.0,
+    3.0,
+    6.0,
+    24.0,
+    72.0,
+    168.0
+  ],
+  "platform": "TIKTOK",
+  "platform_post_id": "7412345678901234567",
+  "published_at": "2026-07-25T12:00:00Z",
+  "schema_version": "1"
+}
