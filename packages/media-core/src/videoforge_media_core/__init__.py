@@ -33,6 +33,11 @@ from videoforge_media_core.probe import (
     FfprobeProbeProvider,
     ProbeProvider,
 )
+from videoforge_media_core.render_runtime import (
+    RenderResult,
+    RenderRuntime,
+    assemble_render_argv,
+)
 from videoforge_media_core.video_fingerprint import (
     FfmpegVideoFingerprinter,
     VideoFingerprinter,
@@ -59,8 +64,11 @@ __all__ = [
     "ObjectStore",
     "ProbeProvider",
     "ProxyResult",
+    "RenderResult",
+    "RenderRuntime",
     "S3Settings",
     "SceneResult",
+    "assemble_render_argv",
     "StagedUpload",
     "StagedUploadMismatch",
     "StagedUploadNotFound",
