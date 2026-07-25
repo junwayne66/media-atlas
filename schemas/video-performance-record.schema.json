@@ -61,6 +61,18 @@
           "default": null,
           "title": "Hook Kind"
         },
+        "human_selected": {
+          "anyOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Human Selected"
+        },
         "language": {
           "anyOf": [
             {
@@ -85,6 +97,19 @@
           ],
           "default": null,
           "title": "Manual Edit Count"
+        },
+        "publish_delay_hours": {
+          "anyOf": [
+            {
+              "minimum": 0,
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Publish Delay Hours"
         },
         "publish_hour": {
           "anyOf": [
@@ -127,6 +152,18 @@
           "default": null,
           "title": "Qa Warning Count"
         },
+        "rejected_then_revised": {
+          "anyOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Rejected Then Revised"
+        },
         "schema_version": {
           "default": "1",
           "description": "合同 schema 版本；Reader 需兼容当前与前一版本",
@@ -168,6 +205,19 @@
           ],
           "default": null,
           "title": "Trend Cluster Id"
+        },
+        "trend_hotness_at_publish": {
+          "anyOf": [
+            {
+              "minimum": 0,
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Trend Hotness At Publish"
         },
         "voice_ref": {
           "anyOf": [

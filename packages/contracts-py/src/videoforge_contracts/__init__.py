@@ -74,6 +74,13 @@ from videoforge_contracts.highlight import (
     HighlightSet,
     HighlightWeights,
 )
+from videoforge_contracts.learning_signal import (
+    LearningReport,
+    LearningSignalResult,
+    SignalBucketStat,
+    SignalDirection,
+    SignalKind,
+)
 from videoforge_contracts.lipsync import (
     LipSyncEligibilityCriteria,
     LipSyncIneligibleReason,
@@ -293,6 +300,8 @@ CONTRACTS: dict[str, type[ContractModel]] = {
     "video-performance-record": VideoPerformanceRecord,
     "account-baseline": AccountBaseline,
     "performance-dashboard": PerformanceDashboard,
+    "learning-signal-result": LearningSignalResult,
+    "learning-report": LearningReport,
     "asset-plan": AssetPlan,
     "creative-timeline": CreativeTimeline,
     "render-manifest": RenderManifest,
@@ -479,6 +488,11 @@ __all__ = [
     "PerformanceFeatures",
     "PerformanceGroupStat",
     "VideoPerformanceRecord",
+    "LearningReport",
+    "LearningSignalResult",
+    "SignalBucketStat",
+    "SignalDirection",
+    "SignalKind",
     "SegmentEffect",
     "SegmentJudgment",
     "StorageBackend",

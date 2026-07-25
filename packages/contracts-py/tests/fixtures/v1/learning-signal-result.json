@@ -1,0 +1,35 @@
+{
+  "age_hours": 24.0,
+  "association_only": true,
+  "buckets": [
+    {
+      "enough_samples": false,
+      "label": "低",
+      "median_relative": 1.3,
+      "sample_count": 6,
+      "schema_version": "1"
+    },
+    {
+      "enough_samples": false,
+      "label": "中",
+      "median_relative": 1.0,
+      "sample_count": 6,
+      "schema_version": "1"
+    },
+    {
+      "enough_samples": false,
+      "label": "高",
+      "median_relative": 0.7,
+      "sample_count": 6,
+      "schema_version": "1"
+    }
+  ],
+  "correlation": -0.42,
+  "direction": "NEGATIVE",
+  "enough_samples": true,
+  "metric": "VIEWS",
+  "note": "QA_WARNING_COUNT 越高，相对表现越低的**相关**（Spearman=-0.42, n=18）——关联非因果",
+  "sample_count": 18,
+  "schema_version": "1",
+  "signal": "QA_WARNING_COUNT"
+}
