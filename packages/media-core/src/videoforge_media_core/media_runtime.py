@@ -100,6 +100,11 @@ class FfmpegRuntime:
             created_at=datetime.now(UTC),
         )
 
+    def run(self, argv: list[str]) -> subprocess.CompletedProcess[str]:
+        """执行一段**预校验**的 ffmpeg 参数数组（无 shell、无注入面）；供 RenderRuntime 执行
+        FfmpegRenderGraph。失败统一包成 MediaRuntimeError。"""
+        return self._run(argv)
+
     def probe(self, path: Path) -> MediaProbe:
         return self._prober.probe(path)
 
