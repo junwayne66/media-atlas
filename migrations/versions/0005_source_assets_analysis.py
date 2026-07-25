@@ -24,6 +24,7 @@ def upgrade() -> None:
         sa.Column("kind", sa.String(20), nullable=False),
         sa.Column("platform", sa.String(50), nullable=False),
         sa.Column("content_id", sa.String(300)),
+        sa.Column("input_digest", sa.String(64), nullable=False),
         sa.Column("disposition", sa.String(30), nullable=False),
         sa.Column("file_sha256", sa.String(64)),
         sa.Column("payload", JSONB, nullable=False),
@@ -41,6 +42,14 @@ def upgrade() -> None:
         ["platform", "content_id"],
         unique=True,
         postgresql_where=sa.text("content_id IS NOT NULL AND platform <> 'manual'"),
+    )
+    # 短链 / 不可解析输入没有 content_id，其幂等身份是 sha256(original_input)
+    op.create_index(
+        "uq_source_assets_input_digest",
+        "source_assets",
+        ["input_digest"],
+        unique=True,
+        postgresql_where=sa.text("content_id IS NULL"),
     )
 
     op.create_table(

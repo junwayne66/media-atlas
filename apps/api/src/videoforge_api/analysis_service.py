@@ -163,6 +163,9 @@ class AnalysisService:
                 )
                 stages.append(blueprint_stage.as_stage())
             except _BlueprintInvalid as exc:
+                # 增量语义（**期望行为，不是待修的 bug**）：run 标 FAILED，但此前已完成阶段的
+                # 产物照常保留、随事务提交——它们本身是合法产物，只是失败阶段没有产物。
+                # 重跑时上游按 (kind, cache_key) 全部命中缓存（cache_hit=[T,T,T]），只重算失败阶段。
                 stages.append(exc.stage)
                 run = AnalysisRunRecord(
                     id=run_id,
@@ -210,6 +213,11 @@ class AnalysisService:
             return AnalysisRunRepository(s).latest_for_project(project_id)
 
     def latest_artifact(self, project_id: str, kind: str) -> dict[str, Any]:
+        """**只看最新一次 run**（设计选择）：一次失败的 run 会遮住更早成功 run 的产物。
+
+        这样「最新产物」始终与最新执行结果一致，不会把旧成功产物当成当前状态展示；要看历史
+        产物走 run 明细（stages[].artifact_id）。
+        """
         with session_scope(self._engine) as s:
             run = AnalysisRunRepository(s).latest_for_project(project_id)
             for stage in run.stages:

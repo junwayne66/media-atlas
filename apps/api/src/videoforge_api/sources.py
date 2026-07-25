@@ -11,6 +11,7 @@ cookie resolver 均为 Unconfigured），因此路由必然走到 manual_fallbac
 
 from __future__ import annotations
 
+from collections.abc import Callable
 from datetime import UTC, datetime
 from pathlib import Path
 from typing import Annotated, Protocol
@@ -18,6 +19,7 @@ from typing import Annotated, Protocol
 from fastapi import APIRouter, Depends, HTTPException, Query, Request, Response
 from pydantic import BaseModel, Field
 from sqlalchemy import Engine
+from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
 from videoforge_connector_f2 import F2DownloadConnector
@@ -33,11 +35,14 @@ from videoforge_contracts.ids import new_id
 from videoforge_domain.dedup import AssetFingerprint, find_duplicate_groups
 from videoforge_media_core.hashing import sha256_file
 from videoforge_persistence import (
+    DuplicateError,
     NotFoundError,
     ProjectRepository,
     SourceAssetRepository,
+    VersionConflictError,
     record_event,
     session_scope,
+    source_input_digest,
 )
 from videoforge_provider_sdk import (
     DownloadRequest,
@@ -99,6 +104,13 @@ class LocalFileMissing(ValueError):
     """手工导入指向的本地文件不存在（422，不静默建一条无文件的「已导入」素材）。"""
 
 
+class ProjectAttachConflict(RuntimeError):
+    """有界重试后仍与并发写冲突（409，让调用方重试；绝不静默丢失项目关联）。"""
+
+
+_ATTACH_MAX_ATTEMPTS = 3
+
+
 def default_download_router() -> DownloadRouter:
     """默认下载路由：真实连接器 + 默认（未配置）runner —— 不触网，只产出可解释轨迹。"""
     return DownloadRouter(
@@ -150,68 +162,89 @@ class DbSourceGateway:
     # —— 导入 ——
 
     def import_url(self, request: ImportUrlRequest) -> tuple[SourceAsset, bool]:
-        """返回 (素材, 是否新建)。幂等：同 (platform, content_id) 命中即返回既有素材。"""
+        """返回 (素材, 是否新建)。
+
+        幂等身份分两类：可解析链接按 (platform, content_id)；短链 / 不可解析输入没有
+        content_id，按 sha256(原始输入) 去重——否则同一短链导入 N 次会得到 N 条资产
+        与 N 个 `source.imported` 事件。两类都在 `_import_idempotent` 里「先查后建、
+        撞唯一索引再重查复用」，并发下不会有一方 500。
+        """
         try:
             resolved = resolve_url(request.input)
         except UnresolvableUrl as exc:
-            asset = self._new_asset(
-                kind=SourceAssetKind.URL,
-                original_input=request.input,
-                platform="unknown",
-                disposition=SourceDisposition.UNRESOLVABLE,
-                reason=str(exc),
-                error_code="UNRESOLVABLE_INPUT",
+            # 在 except 块外仍要用到原因文本：Python 会在块结束时清掉 exc，先取出字符串
+            reason = str(exc)
+            return self._import_idempotent(
+                lookup=lambda repo: repo.find_existing(
+                    input_digest=source_input_digest(request.input)
+                ),
+                make_asset=lambda: self._new_asset(
+                    kind=SourceAssetKind.URL,
+                    original_input=request.input,
+                    platform="unknown",
+                    disposition=SourceDisposition.UNRESOLVABLE,
+                    reason=reason,
+                    error_code="UNRESOLVABLE_INPUT",
+                ),
+                project_id=request.project_id,
             )
-            return self._persist_new(asset, request.project_id), True
 
         if resolved.needs_expansion:
-            asset = self._new_asset(
+            return self._import_idempotent(
+                lookup=lambda repo: repo.find_existing(
+                    input_digest=source_input_digest(request.input)
+                ),
+                make_asset=lambda: self._new_asset(
+                    kind=SourceAssetKind.URL,
+                    original_input=request.input,
+                    platform=resolved.platform,
+                    canonical_url=resolved.short_url,
+                    disposition=SourceDisposition.NEEDS_EXPANSION,
+                    reason="短链需先展开（展开需实时网络，默认未启用）；请粘贴规范链接或手工导入",
+                    error_code="NEEDS_EXPANSION",
+                ),
+                project_id=request.project_id,
+            )
+
+        def make_downloaded_asset() -> SourceAsset:
+            # 未命中 → 走下载路由（默认全未配置，必然 manual_fallback）
+            route = self._router.download(
+                DownloadRequest(source=resolved, dest_dir=Path("/nonexistent-dest"))
+            )
+            attempts = [
+                AcquisitionAttemptSummary(
+                    connector=a.connector,
+                    status=str(a.status),
+                    error_code=None if a.error_code is None else str(a.error_code),
+                )
+                for a in route.attempts
+            ]
+            acquisition = AcquisitionSummary(
+                tool_name="download.router",
+                attempts=attempts,
+                manual_fallback=route.manual_fallback,
+            )
+            return self._new_asset(
                 kind=SourceAssetKind.URL,
                 original_input=request.input,
                 platform=resolved.platform,
-                canonical_url=resolved.short_url,
-                disposition=SourceDisposition.NEEDS_EXPANSION,
-                reason="短链需先展开（展开需实时网络，默认未启用）；请粘贴规范链接或手工导入",
-                error_code="NEEDS_EXPANSION",
+                content_id=resolved.content_id,
+                canonical_url=resolved.canonical_url,
+                disposition=SourceDisposition.MANUAL_FALLBACK,
+                reason="实时下载未配置（需真实账号/凭据）；请人工下载原片后用 import-file 关联",
+                error_code=(
+                    None if route.result.error_code is None else str(route.result.error_code)
+                ),
+                acquisition=acquisition,
             )
-            return self._persist_new(asset, request.project_id), True
 
-        with session_scope(self._engine) as s:
-            existing = SourceAssetRepository(s).find_existing(
+        return self._import_idempotent(
+            lookup=lambda repo: repo.find_existing(
                 platform=resolved.platform, content_id=resolved.content_id
-            )
-            if existing is not None:
-                return self._attach_project(s, existing, request.project_id), False
-
-        # 未命中 → 走下载路由（默认全未配置，必然 manual_fallback）
-        route = self._router.download(
-            DownloadRequest(source=resolved, dest_dir=Path("/nonexistent-dest"))
+            ),
+            make_asset=make_downloaded_asset,
+            project_id=request.project_id,
         )
-        attempts = [
-            AcquisitionAttemptSummary(
-                connector=a.connector,
-                status=str(a.status),
-                error_code=None if a.error_code is None else str(a.error_code),
-            )
-            for a in route.attempts
-        ]
-        acquisition = AcquisitionSummary(
-            tool_name="download.router",
-            attempts=attempts,
-            manual_fallback=route.manual_fallback,
-        )
-        asset = self._new_asset(
-            kind=SourceAssetKind.URL,
-            original_input=request.input,
-            platform=resolved.platform,
-            content_id=resolved.content_id,
-            canonical_url=resolved.canonical_url,
-            disposition=SourceDisposition.MANUAL_FALLBACK,
-            reason="实时下载未配置（需真实账号/凭据）；请人工下载原片后用 import-file 关联",
-            error_code=(None if route.result.error_code is None else str(route.result.error_code)),
-            acquisition=acquisition,
-        )
-        return self._persist_new(asset, request.project_id), True
 
     def import_file(self, request: ImportFileRequest) -> tuple[SourceAsset, bool]:
         resolved = resolve_local_file(request.path)
@@ -219,28 +252,26 @@ class DbSourceGateway:
         if not path.is_file():
             raise LocalFileMissing(f"本地文件不存在：{request.path}")
         digest, size = sha256_file(path)
-
-        with session_scope(self._engine) as s:
-            existing = SourceAssetRepository(s).find_existing(file_sha256=digest)
-            if existing is not None:
-                return self._attach_project(s, existing, request.project_id), False
-
-        asset = self._new_asset(
-            kind=SourceAssetKind.LOCAL_FILE,
-            original_input=request.path,
-            platform=resolved.platform,  # manual
-            content_id=resolved.content_id,
-            canonical_url=resolved.canonical_url,
-            disposition=SourceDisposition.IMPORTED,
-            reason="本地原片已导入并完成哈希校验",
-            local_path=str(path),
-            file_sha256=digest,
-            acquisition=AcquisitionSummary(
-                tool_name="manual.import", output_sha256=digest, manual_fallback=False
-            ),
-        )
         del size  # 仅用于流式哈希的副产物，不入合同（Artifact 层才关心字节数）
-        return self._persist_new(asset, request.project_id), True
+
+        return self._import_idempotent(
+            lookup=lambda repo: repo.find_existing(file_sha256=digest),
+            make_asset=lambda: self._new_asset(
+                kind=SourceAssetKind.LOCAL_FILE,
+                original_input=request.path,
+                platform=resolved.platform,  # manual
+                content_id=resolved.content_id,
+                canonical_url=resolved.canonical_url,
+                disposition=SourceDisposition.IMPORTED,
+                reason="本地原片已导入并完成哈希校验",
+                local_path=str(path),
+                file_sha256=digest,
+                acquisition=AcquisitionSummary(
+                    tool_name="manual.import", output_sha256=digest, manual_fallback=False
+                ),
+            ),
+            project_id=request.project_id,
+        )
 
     # —— 查询 ——
 
@@ -306,6 +337,33 @@ class DbSourceGateway:
             updated_at=now,
         )
 
+    def _import_idempotent(
+        self,
+        *,
+        lookup: Callable[[SourceAssetRepository], SourceAsset | None],
+        make_asset: Callable[[], SourceAsset],
+        project_id: str | None,
+    ) -> tuple[SourceAsset, bool]:
+        """先查后建的幂等导入。
+
+        查与建在两个事务里，中间有并发窗口：两方都 miss 时会双插，部分唯一索引拒掉后者。
+        输家不应 500——它重查（此时赢家必已提交，否则 INSERT 会阻塞而非报错）并复用同一
+        素材，得到与「命中复用」完全一致的 200 语义（created=False）。
+        """
+        with session_scope(self._engine) as s:
+            existing = lookup(SourceAssetRepository(s))
+            if existing is not None:
+                return self._attach_project(s, existing, project_id), False
+
+        try:
+            return self._persist_new(make_asset(), project_id), True
+        except (DuplicateError, IntegrityError):
+            with session_scope(self._engine) as s:
+                existing = lookup(SourceAssetRepository(s))
+                if existing is None:
+                    raise  # 不是幂等冲突（如主键碰撞）→ 如实上抛，不掩盖
+                return self._attach_project(s, existing, project_id), False
+
     def _persist_new(self, asset: SourceAsset, project_id: str | None) -> SourceAsset:
         if project_id:
             asset = asset.model_copy(update={"project_ids": [project_id]})
@@ -326,16 +384,31 @@ class DbSourceGateway:
     def _attach_project(
         self, session: Session, asset: SourceAsset, project_id: str | None
     ) -> SourceAsset:
-        """幂等命中路径：只在需要时把素材挂到 Project（去重），不重复建记录。"""
+        """幂等命中路径：只在需要时把素材挂到 Project（去重），不重复建记录。
+
+        两个请求给同一素材挂**不同** project 时会撞乐观锁：输家不能 500 也不能静默丢关联，
+        必须重读最新版本、在最新 project_ids 上重新追加（去重）后重试。有界重试仍冲突 →
+        ProjectAttachConflict（409，让调用方重试），绝不无限自旋。
+        """
         if not project_id or project_id in asset.project_ids:
             return asset
         repo = SourceAssetRepository(session)
-        updated = repo.update(
-            asset.model_copy(update={"project_ids": [*asset.project_ids, project_id]}),
-            expected_version=asset.version,
-        )
-        self._link_project(session, project_id, asset.id)
-        return updated
+        for _ in range(_ATTACH_MAX_ATTEMPTS):
+            try:
+                updated = repo.update(
+                    asset.model_copy(update={"project_ids": [*asset.project_ids, project_id]}),
+                    expected_version=asset.version,
+                )
+            except VersionConflictError:
+                # 重读：expire 掉本事务身份映射里的旧行，READ COMMITTED 下能看到赢家的提交
+                session.expire_all()
+                asset = repo.get(asset.id)
+                if project_id in asset.project_ids:
+                    return asset  # 并发方已挂上同一 project → 无需再写
+                continue
+            self._link_project(session, project_id, asset.id)
+            return updated
+        raise ProjectAttachConflict(f"素材 {asset.id} 并发写冲突，请重试")
 
     def _link_project(self, session: Session, project_id: str, asset_id: str) -> None:
         repo = ProjectRepository(session)
@@ -369,7 +442,10 @@ def resolve_source(body: ResolveRequest, gateway: GatewayDep) -> ResolveResponse
 
 @router.post("/sources/import-url")
 def import_url(body: ImportUrlRequest, gateway: GatewayDep, response: Response) -> SourceAsset:
-    asset, created = gateway.import_url(body)
+    try:
+        asset, created = gateway.import_url(body)
+    except ProjectAttachConflict as exc:
+        raise HTTPException(status_code=409, detail=str(exc)) from None
     response.status_code = 201 if created else 200
     return asset
 
@@ -380,6 +456,8 @@ def import_file(body: ImportFileRequest, gateway: GatewayDep, response: Response
         asset, created = gateway.import_file(body)
     except (LocalFileMissing, UnresolvableUrl) as exc:
         raise HTTPException(status_code=422, detail=str(exc)) from None
+    except ProjectAttachConflict as exc:
+        raise HTTPException(status_code=409, detail=str(exc)) from None
     response.status_code = 201 if created else 200
     return asset
 

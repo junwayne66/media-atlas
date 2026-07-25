@@ -25,7 +25,10 @@ from videoforge_persistence.outbox import (
     try_claim_event,
 )
 from videoforge_persistence.repositories import ArtifactRepository, ProjectRepository
-from videoforge_persistence.source_asset import SourceAssetRepository
+from videoforge_persistence.source_asset import (
+    SourceAssetRepository,
+    source_input_digest,
+)
 from videoforge_persistence.trend import (
     TrendClusterRepository,
     TrendItemSnapshotRepository,
@@ -55,5 +58,6 @@ __all__ = [
     "new_id",
     "record_event",
     "session_scope",
+    "source_input_digest",
     "try_claim_event",
 ]

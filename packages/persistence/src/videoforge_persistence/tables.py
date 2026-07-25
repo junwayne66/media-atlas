@@ -169,6 +169,9 @@ class SourceAssetRow(Base):
     列只放过滤/唯一性所需字段，完整合同进 payload JSONB（合同演进不必每次改列）。
     (platform, content_id) 部分唯一：二者都非空时防重复导入；platform='manual' 排除在外
     ——手工导入的 content_id 是文件名，同名不同文件是常态，其去重靠 file_sha256。
+    input_digest = sha256(original_input)：短链 / 不可解析输入没有 content_id，
+    其幂等身份只能是原始输入本身；用摘要而非原文入索引（原文可能很长，不适合直接进 btree）。
+    该唯一索引只覆盖 content_id IS NULL 的行，可解析素材仍按 (platform, content_id) 去重。
     """
 
     __tablename__ = "source_assets"
@@ -179,6 +182,7 @@ class SourceAssetRow(Base):
     kind: Mapped[str] = mapped_column(String(20), nullable=False)
     platform: Mapped[str] = mapped_column(String(50), nullable=False, index=True)
     content_id: Mapped[str | None] = mapped_column(String(300))
+    input_digest: Mapped[str] = mapped_column(String(64), nullable=False)
     disposition: Mapped[str] = mapped_column(String(30), nullable=False, index=True)
     file_sha256: Mapped[str | None] = mapped_column(String(64))
     payload: Mapped[dict] = mapped_column(JSONB, nullable=False)
@@ -194,6 +198,12 @@ class SourceAssetRow(Base):
             "content_id",
             unique=True,
             postgresql_where=text("content_id IS NOT NULL AND platform <> 'manual'"),
+        ),
+        Index(
+            "uq_source_assets_input_digest",
+            "input_digest",
+            unique=True,
+            postgresql_where=text("content_id IS NULL"),
         ),
     )
 
@@ -220,6 +230,8 @@ class AnalysisArtifactRow(Base):
     """分析产物（Transcript / TextTrackSet / VisualAnalysis / VideoBlueprint）。
 
     (kind, cache_key) 唯一 —— 缓存命中即按此二元组查到就复用，不再调 Provider（41 §11）。
+    project_id 记录**首个**创建该产物的项目；产物按 (kind, cache_key) 跨项目复用，
+    因此它不表示归属关系（某项目实际用了哪些产物，看 analysis_runs.stages[].artifact_id）。
     """
 
     __tablename__ = "analysis_artifacts"
@@ -233,9 +245,7 @@ class AnalysisArtifactRow(Base):
     tool_version: Mapped[str] = mapped_column(String(50), nullable=False)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
 
-    __table_args__ = (
-        Index("uq_analysis_artifacts_kind_cache", "kind", "cache_key", unique=True),
-    )
+    __table_args__ = (Index("uq_analysis_artifacts_kind_cache", "kind", "cache_key", unique=True),)
 
 
 class WorkerRow(Base):

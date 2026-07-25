@@ -3,9 +3,12 @@
 全程零网络：下载连接器默认未配置，路由必然 manual_fallback（诚实处置，非静默失败）。
 """
 
+import threading
+from concurrent.futures import ThreadPoolExecutor
 from datetime import UTC, datetime
 
-from sqlalchemy import Engine, select
+from sqlalchemy import Engine, func, select
+from sqlalchemy.orm import Session
 
 from videoforge_api.sources import (
     DbSourceGateway,
@@ -17,12 +20,13 @@ from videoforge_contracts import (
     CreationMode,
     Project,
     ProjectStatus,
+    SourceAsset,
     SourceAssetKind,
     SourceDisposition,
 )
 from videoforge_contracts.ids import new_id
 from videoforge_persistence import ProjectRepository, SourceAssetRepository, session_scope
-from videoforge_persistence.tables import OutboxEventRow
+from videoforge_persistence.tables import OutboxEventRow, SourceAssetRow
 
 _DOUYIN = "https://www.douyin.com/video/7412345678901234567"
 
@@ -178,3 +182,134 @@ def test_duplicate_groups_group_same_hash_without_deleting(
     assert groups[0].layers == ["FILE"]
     # 绝不删除来源记录
     assert len(gw.list_assets(None, None, 50)) == 2
+
+
+# —— 并发 / 幂等回归（复现 verifier 反例）——
+
+
+def _count_assets(engine: Engine) -> int:
+    with Session(engine) as s:
+        return s.scalar(select(func.count()).select_from(SourceAssetRow)) or 0
+
+
+def _imported_events(engine: Engine) -> list[str]:
+    with Session(engine) as s:
+        return [
+            e.aggregate_id
+            for e in s.scalars(
+                select(OutboxEventRow).where(OutboxEventRow.event_type == "source.imported")
+            )
+        ]
+
+
+class _BarrierOnPersistGateway(DbSourceGateway):
+    """把「查未命中」与「插入」之间的并发窗口拉到最大：双方都 miss 后才同时插。"""
+
+    def __init__(self, engine: Engine, barrier: threading.Barrier) -> None:
+        super().__init__(engine)
+        self._barrier = barrier
+
+    def _persist_new(self, asset: SourceAsset, project_id: str | None) -> SourceAsset:
+        self._barrier.wait(timeout=30)
+        return super()._persist_new(asset, project_id)
+
+
+class _BarrierOnAttachGateway(DbSourceGateway):
+    """双方都读到同一版本后才各自乐观锁更新 —— 必然一方冲突。"""
+
+    def __init__(self, engine: Engine, barrier: threading.Barrier) -> None:
+        super().__init__(engine)
+        self._barrier = barrier
+
+    def _attach_project(
+        self, session: Session, asset: SourceAsset, project_id: str | None
+    ) -> SourceAsset:
+        self._barrier.wait(timeout=30)
+        return super()._attach_project(session, asset, project_id)
+
+
+def test_concurrent_same_url_import_is_idempotent_not_500(migrated_engine: Engine) -> None:
+    """并发同 URL 导入：输家撞唯一索引后重查复用，两边都成功且只有一条素材/一个事件。"""
+    barrier = threading.Barrier(2)
+    gw = _BarrierOnPersistGateway(migrated_engine, barrier)
+
+    def run() -> tuple[str, bool]:
+        asset, created = gw.import_url(ImportUrlRequest(input=_DOUYIN))
+        return asset.id, created
+
+    with ThreadPoolExecutor(max_workers=2) as pool:
+        results = [f.result(timeout=60) for f in [pool.submit(run), pool.submit(run)]]
+
+    ids = {r[0] for r in results}
+    assert len(ids) == 1  # 两个响应指向同一素材
+    assert {r[1] for r in results} == {True, False}  # 201 + 200 语义
+    assert _count_assets(migrated_engine) == 1
+    assert _imported_events(migrated_engine) == [next(iter(ids))]
+
+
+def test_concurrent_attach_different_projects_keeps_both(migrated_engine: Engine) -> None:
+    """并发把同一素材挂到不同 Project：乐观锁输家重试，两个 project 都在 project_ids 里。"""
+    p1 = _make_project(migrated_engine)
+    p2 = _make_project(migrated_engine)
+    seed = DbSourceGateway(migrated_engine)
+    asset, created = seed.import_url(ImportUrlRequest(input=_DOUYIN))
+    assert created
+
+    barrier = threading.Barrier(2)
+    gw = _BarrierOnAttachGateway(migrated_engine, barrier)
+
+    def run(project_id: str) -> bool:
+        _, created_again = gw.import_url(ImportUrlRequest(input=_DOUYIN, project_id=project_id))
+        return created_again
+
+    with ThreadPoolExecutor(max_workers=2) as pool:
+        created_flags = [
+            f.result(timeout=60) for f in [pool.submit(run, p1.id), pool.submit(run, p2.id)]
+        ]
+
+    assert created_flags == [False, False]  # 两边都是命中复用（200），无人 500
+    with session_scope(migrated_engine) as s:
+        stored = SourceAssetRepository(s).get(asset.id)
+        assert set(stored.project_ids) == {p1.id, p2.id}  # 关联不丢
+        for project_id in (p1.id, p2.id):
+            assert ProjectRepository(s).get(project_id).source_asset_ids == [asset.id]
+    assert _count_assets(migrated_engine) == 1
+
+
+def test_short_link_and_unresolvable_input_are_idempotent(migrated_engine: Engine) -> None:
+    """短链 / 垃圾输入没有 content_id，按 sha256(原始输入) 去重：导入三次仍是一条素材。"""
+    gw = DbSourceGateway(migrated_engine)
+    short_url = "https://v.douyin.com/abc123/"
+    junk = "随手写的一句话"
+
+    short_results = [gw.import_url(ImportUrlRequest(input=short_url)) for _ in range(3)]
+    assert [c for _, c in short_results] == [True, False, False]
+    assert len({a.id for a, _ in short_results}) == 1
+
+    junk_results = [gw.import_url(ImportUrlRequest(input=junk)) for _ in range(3)]
+    assert [c for _, c in junk_results] == [True, False, False]
+    assert len({a.id for a, _ in junk_results}) == 1
+
+    # 两类互不干扰，各自一条素材、一个事件
+    assert short_results[0][0].id != junk_results[0][0].id
+    assert _count_assets(migrated_engine) == 2
+    assert sorted(_imported_events(migrated_engine)) == sorted(
+        [short_results[0][0].id, junk_results[0][0].id]
+    )
+
+
+def test_concurrent_same_short_link_import_is_idempotent(migrated_engine: Engine) -> None:
+    """并发同短链：input_digest 部分唯一索引兜底，输家重查复用而非 500。"""
+    barrier = threading.Barrier(2)
+    gw = _BarrierOnPersistGateway(migrated_engine, barrier)
+
+    def run() -> tuple[str, bool]:
+        asset, created = gw.import_url(ImportUrlRequest(input="https://vm.tiktok.com/ZSabc123/"))
+        return asset.id, created
+
+    with ThreadPoolExecutor(max_workers=2) as pool:
+        results = [f.result(timeout=60) for f in [pool.submit(run), pool.submit(run)]]
+
+    assert len({r[0] for r in results}) == 1
+    assert {r[1] for r in results} == {True, False}
+    assert _count_assets(migrated_engine) == 1
