@@ -15,7 +15,7 @@
           </div>
           <div class="project-meta">
             <span v-if="current" class="meta-item">
-              <StatusBadge :variant="statusVariant" :label="current.status" />
+              <StatusBadge :variant="statusVariant" :label="current.status ?? '—'" />
             </span>
             <span v-if="current" class="meta-item mono" :title="current.id">{{ shortId(current.id, 12) }}</span>
             <span v-if="current" class="meta-item">创建于 {{ datetime(current.created_at) }}</span>
@@ -149,7 +149,7 @@ const statusVariant = computed<Variant>(() => {
 const pipelineStages = computed(() => {
   const run = analysis.data.value;
   const scriptDocs = scripts.data.value ?? [];
-  const hasSource = (current.value?.source_asset_ids.length ?? 0) > 0;
+  const hasSource = (current.value?.source_asset_ids?.length ?? 0) > 0;
 
   const analysisStatus: Variant = run
     ? run.stages.some((s) => s.error)
@@ -164,7 +164,7 @@ const pipelineStages = computed(() => {
     {
       name: "采集",
       status: (hasSource ? "success" : "neutral") as Variant,
-      statusText: hasSource ? `${current.value?.source_asset_ids.length} 条素材` : "无素材",
+      statusText: hasSource ? `${current.value?.source_asset_ids?.length} 条素材` : "无素材",
       icon: icon("2_97"),
     },
     { name: "分析", status: analysisStatus, statusText: analysisText, icon: icon("10_9") },
@@ -210,7 +210,7 @@ const summaryRows = computed<{ label: string; value: string; variant: string }[]
   if (!p) return [];
   const run = analysis.data.value;
   return [
-    { label: "素材数量", value: String(p.source_asset_ids.length), variant: "primary" },
+    { label: "素材数量", value: String((p.source_asset_ids ?? []).length), variant: "primary" },
     { label: "脚本版本数", value: String((scripts.data.value ?? []).length), variant: "primary" },
     {
       label: "分析缓存命中",

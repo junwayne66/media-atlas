@@ -49,7 +49,7 @@
             </div>
             <div class="brief-section">
               <span class="brief-label">必须覆盖 Claim</span>
-              <span class="brief-value mono">{{ briefPayload.must_cover_claim_ids.join(", ") || "—" }}</span>
+              <span class="brief-value mono">{{ (briefPayload.must_cover_claim_ids ?? []).join(", ") || "—" }}</span>
             </div>
           </template>
         </div>
@@ -99,15 +99,19 @@
                 <span class="seg-num mono">{{ String(i + 1).padStart(2, "0") }}</span>
                 <span class="seg-timecode mono">{{ seg.role }}</span>
                 <StatusBadge
-                  :variant="seg.claim_ids.length ? 'info' : 'neutral'"
-                  :label="seg.claim_ids.length ? `引用 ${seg.claim_ids.length} 条 Claim` : '无 Claim 引用'"
+                  :variant="(seg.claim_ids ?? []).length ? 'info' : 'neutral'"
+                  :label="
+                    (seg.claim_ids ?? []).length
+                      ? `引用 ${(seg.claim_ids ?? []).length} 条 Claim`
+                      : '无 Claim 引用'
+                  "
                 />
               </div>
               <div class="seg-text">{{ seg.text }}</div>
               <div class="seg-meta">
                 <span class="seg-meta-item mono">目标时长: {{ (seg.target_duration_ms / 1000).toFixed(1) }}s</span>
                 <span class="seg-meta-item mono">语言: {{ seg.language }}</span>
-                <span class="seg-meta-item mono">claim: {{ seg.claim_ids.join(", ") || "—" }}</span>
+                <span class="seg-meta-item mono">claim: {{ (seg.claim_ids ?? []).join(", ") || "—" }}</span>
               </div>
             </div>
           </div>

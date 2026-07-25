@@ -1,23 +1,14 @@
-/** M-W7 审核：/v1/review-decisions（apps/api review.py）。列表**必须**带 entity_id。 */
+/**
+ * M-W7 审核：/v1/review-decisions（apps/api review.py）。列表**必须**带 entity_id。
+ *
+ * `ReviewDecision` 及其枚举取自合同包（type-only）；`ApprovalValidateResponse`
+ * 是 review.py 自有的校验端点形状，保留本地声明。
+ */
+import type { ReviewDecision, ReviewDecisionKind, ReviewScope } from "@videoforge/contracts";
+
 import { api } from "./client";
 
-export type ReviewDecisionKind = "APPROVED" | "REJECTED" | "CHANGES_REQUESTED";
-export type ReviewScope = "VARIANT" | "PACKAGE" | "TEMPLATE" | "PROJECT";
-
-export interface ReviewDecision {
-  id: string;
-  decision: ReviewDecisionKind;
-  scope: ReviewScope;
-  entity_id: string;
-  entity_version: number;
-  content_digest: string;
-  reviewer_id: string;
-  policy_snapshot_id: string;
-  qc_report_ids: string[];
-  signature: string;
-  note: string | null;
-  created_at: string;
-}
+export type { ReviewDecision, ReviewDecisionKind, ReviewScope };
 
 export interface ApprovalValidateResponse {
   valid: boolean;

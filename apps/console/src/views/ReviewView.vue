@@ -108,7 +108,7 @@
                   </div>
                   <div class="info-item">
                     <span class="info-label">QC 报告</span>
-                    <span class="info-value mono break">{{ selected.qc_report_ids.join(", ") || "—" }}</span>
+                    <span class="info-value mono break">{{ (selected.qc_report_ids ?? []).join(", ") || "—" }}</span>
                   </div>
                 </div>
                 <p v-if="selected.note" class="note-text">{{ selected.note }}</p>

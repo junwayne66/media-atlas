@@ -1,6 +1,6 @@
 COMPOSE ?= docker compose
 
-.PHONY: dev dev-infra down logs api web worker agent desktop lint fmt test ci smoke schemas migrate
+.PHONY: dev dev-infra down logs api web console worker agent desktop lint fmt test ci smoke schemas migrate
 
 dev: ## 构建并启动全套本地栈（API/Web/Postgres/Redis/MinIO/Temporal）
 	$(COMPOSE) up -d --build
@@ -21,6 +21,9 @@ api: ## 本机热重载运行 API（读 .env 端口连开发库）
 
 web: ## 本机运行 Web dev server（先 pnpm install）
 	pnpm --filter @videoforge/web dev
+
+console: ## 本机运行 Web 控制台 dev server（:3000，/api 代理到 :8000）
+	corepack pnpm --filter @videoforge/console dev
 
 worker: ## 本机运行 Temporal Worker（连接 dev 栈 :7233）
 	uv run python -m videoforge_temporal_worker

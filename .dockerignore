@@ -1,5 +1,5 @@
 # 构建上下文瘦身：compose 里 api/web/console 三个镜像的 context 都是仓库根。
-# node_modules 一律不进上下文（容器内 npm ci / corepack pnpm install 自装；
+# node_modules 一律不进上下文（容器内 corepack pnpm install 自装；
 # 宿主 darwin 的原生二进制也不能进 linux 镜像）。
 .git
 .venv
@@ -7,7 +7,7 @@
 .env
 node_modules
 **/node_modules
-media-atlas-app/dist
+apps/console/dist
 **/__pycache__
 **/.pytest_cache
 **/.ruff_cache

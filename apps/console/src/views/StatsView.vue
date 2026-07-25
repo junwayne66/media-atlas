@@ -102,7 +102,7 @@
           <StateBlock v-if="learning.loading.value" kind="loading" title="正在拉取学习信号…" />
           <StateBlock v-else-if="learning.error.value" kind="error" title="学习信号拉取失败" :detail="learning.error.value" />
           <StateBlock
-            v-else-if="(learning.data.value?.report.signals.length ?? 0) === 0"
+            v-else-if="(learning.data.value?.report.signals?.length ?? 0) === 0"
             kind="empty"
             :title="`没有信号结果：已拉取 ${learning.data.value?.record_count ?? 0} 条记录。`"
           />
@@ -113,7 +113,7 @@
                 <StatusBadge :variant="directionVariant(s.direction)" :label="DIRECTION_LABEL[s.direction]" />
               </div>
               <span class="signal-body mono">
-                秩相关 {{ s.correlation === null ? "—" : s.correlation.toFixed(3) }} · n={{ s.sample_count }}
+                秩相关 {{ s.correlation == null ? "—" : s.correlation.toFixed(3) }} · n={{ s.sample_count }}
               </span>
               <span class="signal-note">
                 {{ s.signal }} 与 {{ METRIC_LABEL[s.metric] }} {{ DIRECTION_LABEL[s.direction] }}（相关，非因果）
@@ -226,18 +226,18 @@ const snapshotRows = computed(() =>
     age: s.age_hours,
     views: metricText(s.views),
     likes: metricText(s.likes),
-    completion: s.completion_rate === null ? "—" : `${(s.completion_rate * 100).toFixed(1)}%`,
+    completion: s.completion_rate == null ? "—" : `${(s.completion_rate * 100).toFixed(1)}%`,
     saves: metricText(s.saves),
     observedAt: datetime(s.observed_at),
   })),
 );
 
-function relText(v: number | null): string {
-  return v === null ? "—" : `${(v * 100).toFixed(0)}%`;
+function relText(v: number | null | undefined): string {
+  return v == null ? "—" : `${(v * 100).toFixed(0)}%`;
 }
 
-function barWidth(v: number | null): string {
-  if (v === null) return "0%";
+function barWidth(v: number | null | undefined): string {
+  if (v == null) return "0%";
   return `${Math.max(0, Math.min(100, v * 50))}%`;
 }
 

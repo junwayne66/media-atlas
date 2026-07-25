@@ -178,6 +178,8 @@ API:workers 路由(已有 + requeue 新增);其余 P2。
 
 > ✅ 已有 = 后端已落库并有集成测试(引擎与发布执行均为 Fake,UI 需明示);📋 计划项先按 contracts-ts 合同类型 mock。两个实现细节 UI 需知:① `scripts:generate` 并发撞版本号时可能返回 409「产物版本冲突,请重试」——UI 做自动重试或提示;② 发布 Job 详情里的 `preflight_report` 列是展示用历史报告,提交时仍以服务端**实时重跑**的预检为准;submit 被拦时会**同步落库** PREFLIGHT_BLOCKED 状态 + 那份新的失败报告(列不再滞后),UI 直接读 `PublishJobView.preflight_report` 即可展示"为什么被拦"。
 
+> **工程收编状态**:控制台已从独立 npm 项目 `media-atlas-app/` 收编为 pnpm workspace 成员 `apps/console`(`@videoforge/console`),并已把领域对象类型接到生成的 `@videoforge/contracts` 上——`src/api/*.ts` 里原先手写的 TrendCluster / SourceAsset / Project / Transcript / TextTrackSet / VisualAnalysis / VideoBlueprint / ScriptVersion / CreativeBrief / PublishJob / PreflightReport / ReviewDecision / PerformanceSnapshot / PerformanceDashboard / LearningReport 等**全部改为 `import type` 自合同包**(纯类型,运行时零依赖,不进 bundle);只有端点自有的请求/响应包装(resolve 预览、analysis run 视图、dashboard/learning 包装、DocumentView 等**非注册合同**的形状)保留本地声明。容器镜像 `infra/docker/console.Dockerfile` 同步改为 workspace 构建(`--filter @videoforge/console...`)。
+
 ## 12. 分期建议
 
 - **一期(P0)**:导航壳 + 视觉方案落地(UI 工程师产出设计系统);M-W1 增强;M-W2 素材库;M-W3 项目工作台(流水线图)。
@@ -186,7 +188,7 @@ API:workers 路由(已有 + requeue 新增);其余 P2。
 
 ## 13. 验收要点(给 UI 的 DoD)
 
-- 全部界面通过 contracts-ts 类型编译(TS strict,无 any 透传)。
+- 全部界面通过 contracts-ts 类型编译(TS strict,无 any 透传)。**✅ 已成立**:`apps/console` 已在 pnpm workspace 内,领域类型来自 `@videoforge/contracts`,`corepack pnpm -r typecheck` 与 `--filter @videoforge/console build`(vue-tsc strict + vite build)均零错。
 - §0.2 九条交互红线逐条可演示。
 - 空态/错误态/未配置态三态在每个列表模块可截图验收。
 - 409 冲突路径有 e2e 用例(Playwright)。
