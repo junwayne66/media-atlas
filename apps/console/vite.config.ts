@@ -2,7 +2,7 @@ import { defineConfig } from "vite";
 import vue from "@vitejs/plugin-vue";
 import { resolve } from "path";
 
-// 开发期通过 /api 前缀反代到控制平面 API，避免浏览器跨域（与 apps/web 写法一致）；
+// 开发期通过 /api 前缀反代到控制平面 API，避免浏览器跨域；
 // 容器内由 nginx 做同源反代（infra/docker/console-nginx.conf），不走这里。
 const apiProxyTarget = process.env.VITE_API_PROXY_TARGET ?? "http://localhost:8000";
 

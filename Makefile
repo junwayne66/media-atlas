@@ -1,11 +1,11 @@
 COMPOSE ?= docker compose
 
-.PHONY: dev dev-infra down logs api web console worker agent desktop lint fmt test ci smoke schemas migrate
+.PHONY: dev dev-infra down logs api console worker agent desktop lint fmt test ci smoke schemas migrate
 
 dev: ## 构建并启动全套本地栈（API/Web/Postgres/Redis/MinIO/Temporal）
 	$(COMPOSE) up -d --build
 
-dev-infra: ## 只启动基础设施容器；API/Web 用 make api / make web 在本机跑
+dev-infra: ## 只启动基础设施容器；API/Web 用 make api / make console 在本机跑
 	$(COMPOSE) up -d postgres redis minio temporal temporal-ui
 
 down: ## 停止并移除容器（保留数据卷）
@@ -18,9 +18,6 @@ api: ## 本机热重载运行 API（读 .env 端口连开发库）
 	@set -a; [ -f .env ] && . ./.env; set +a; \
 	VIDEOFORGE_DATABASE_URL="postgresql+psycopg://$${POSTGRES_USER:-videoforge}:$${POSTGRES_PASSWORD:-videoforge}@localhost:$${POSTGRES_PORT:-5432}/$${POSTGRES_DB:-videoforge}" \
 	uv run uvicorn videoforge_api.main:app --reload --port 8000
-
-web: ## 本机运行 Web dev server（先 pnpm install）
-	pnpm --filter @videoforge/web dev
 
 console: ## 本机运行 Web 控制台 dev server（:3000，/api 代理到 :8000）
 	corepack pnpm --filter @videoforge/console dev
@@ -61,5 +58,5 @@ ci: lint test
 smoke: ## 对运行中的栈做健康检查
 	curl -fsS http://localhost:$${API_PORT:-8000}/healthz
 	@echo ""
-	@curl -fsS -o /dev/null http://localhost:$${WEB_PORT:-5173} && echo "web: ok"
+	@curl -fsS -o /dev/null http://localhost:$${CONSOLE_PORT:-8080} && echo "console: ok"
 	@curl -fsS -o /dev/null http://localhost:$${TEMPORAL_UI_PORT:-8233}/api/v1/namespaces && echo "temporal: ok"

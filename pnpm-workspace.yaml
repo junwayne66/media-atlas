@@ -1,5 +1,4 @@
 packages:
-  - apps/web
   - apps/console
   - apps/desktop
   - packages/contracts-ts
