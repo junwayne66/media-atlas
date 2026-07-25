@@ -1,0 +1,41 @@
+{
+  "acquisition": {
+    "attempts": [
+      {
+        "connector": "download.f2",
+        "error_code": "UNCONFIGURED",
+        "schema_version": "1",
+        "status": "unconfigured"
+      },
+      {
+        "connector": "download.yt_dlp",
+        "error_code": "UNCONFIGURED",
+        "schema_version": "1",
+        "status": "unconfigured"
+      }
+    ],
+    "manual_fallback": true,
+    "output_sha256": null,
+    "schema_version": "1",
+    "tool_name": "download.router",
+    "tool_version": null
+  },
+  "canonical_url": "https://www.douyin.com/video/7412345678901234567",
+  "content_id": "7412345678901234567",
+  "created_at": "2026-07-21T08:00:00Z",
+  "disposition": "MANUAL_FALLBACK",
+  "error_code": "UNCONFIGURED",
+  "file_sha256": null,
+  "id": "01J2ZK3AC9V6XW8YQ4R5T6U7SA",
+  "kind": "URL",
+  "local_path": null,
+  "original_input": "https://www.douyin.com/video/7412345678901234567",
+  "platform": "douyin",
+  "project_ids": [
+    "01J2ZK3AC9V6XW8YQ4R5T6U7V0"
+  ],
+  "reason": "实时下载未配置（需真实账号/凭据）；请人工下载原片后关联本地文件",
+  "schema_version": "1",
+  "updated_at": "2026-07-21T08:00:00Z",
+  "version": 1
+}

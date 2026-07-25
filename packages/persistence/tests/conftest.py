@@ -23,6 +23,9 @@ ALL_TABLES = (
     "workers",
     "trend_clusters",
     "trend_item_snapshots",
+    "source_assets",
+    "analysis_runs",
+    "analysis_artifacts",
 )
 
 

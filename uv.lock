@@ -1409,8 +1409,12 @@ dependencies = [
     { name = "pydantic-settings" },
     { name = "temporalio" },
     { name = "uvicorn", extra = ["standard"] },
+    { name = "videoforge-connector-f2" },
+    { name = "videoforge-connector-yt-dlp" },
     { name = "videoforge-domain" },
+    { name = "videoforge-media-core" },
     { name = "videoforge-persistence" },
+    { name = "videoforge-provider-sdk" },
     { name = "videoforge-workflows" },
 ]
 
@@ -1421,8 +1425,12 @@ requires-dist = [
     { name = "pydantic-settings", specifier = ">=2.7" },
     { name = "temporalio", specifier = ">=1.8" },
     { name = "uvicorn", extras = ["standard"], specifier = ">=0.32" },
+    { name = "videoforge-connector-f2", editable = "connectors/downloaders/f2" },
+    { name = "videoforge-connector-yt-dlp", editable = "connectors/downloaders/yt-dlp" },
     { name = "videoforge-domain", editable = "packages/domain" },
+    { name = "videoforge-media-core", editable = "packages/media-core" },
     { name = "videoforge-persistence", editable = "packages/persistence" },
+    { name = "videoforge-provider-sdk", editable = "packages/provider-sdk" },
     { name = "videoforge-workflows", editable = "packages/workflows" },
 ]
 

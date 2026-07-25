@@ -1,3 +1,9 @@
+from videoforge_persistence.analysis import (
+    AnalysisArtifactRecord,
+    AnalysisArtifactRepository,
+    AnalysisRunRecord,
+    AnalysisRunRepository,
+)
 from videoforge_persistence.engine import create_engine_from_env, session_scope
 from videoforge_persistence.errors import (
     DuplicateError,
@@ -19,6 +25,7 @@ from videoforge_persistence.outbox import (
     try_claim_event,
 )
 from videoforge_persistence.repositories import ArtifactRepository, ProjectRepository
+from videoforge_persistence.source_asset import SourceAssetRepository
 from videoforge_persistence.trend import (
     TrendClusterRepository,
     TrendItemSnapshotRepository,
@@ -26,7 +33,12 @@ from videoforge_persistence.trend import (
 
 __all__ = [
     "DEFAULT_MAX_ATTEMPTS",
+    "AnalysisArtifactRecord",
+    "AnalysisArtifactRepository",
+    "AnalysisRunRecord",
+    "AnalysisRunRepository",
     "ArtifactRepository",
+    "SourceAssetRepository",
     "DuplicateError",
     "LeaseLostError",
     "NotFoundError",

@@ -163,6 +163,81 @@ class TrendClusterRow(Base):
     updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
 
 
+class SourceAssetRow(Base):
+    """来源素材聚合（VF-105/107 持久化面）。
+
+    列只放过滤/唯一性所需字段，完整合同进 payload JSONB（合同演进不必每次改列）。
+    (platform, content_id) 部分唯一：二者都非空时防重复导入；platform='manual' 排除在外
+    ——手工导入的 content_id 是文件名，同名不同文件是常态，其去重靠 file_sha256。
+    """
+
+    __tablename__ = "source_assets"
+
+    id: Mapped[str] = mapped_column(String(36), primary_key=True)
+    schema_version: Mapped[str] = mapped_column(String(8), nullable=False)
+    version: Mapped[int] = mapped_column(Integer, nullable=False, default=1)
+    kind: Mapped[str] = mapped_column(String(20), nullable=False)
+    platform: Mapped[str] = mapped_column(String(50), nullable=False, index=True)
+    content_id: Mapped[str | None] = mapped_column(String(300))
+    disposition: Mapped[str] = mapped_column(String(30), nullable=False, index=True)
+    file_sha256: Mapped[str | None] = mapped_column(String(64))
+    payload: Mapped[dict] = mapped_column(JSONB, nullable=False)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
+    updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
+
+    __table_args__ = (
+        Index("ix_source_assets_created_at", "created_at"),
+        Index("ix_source_assets_file_sha256", "file_sha256"),
+        Index(
+            "uq_source_assets_platform_content",
+            "platform",
+            "content_id",
+            unique=True,
+            postgresql_where=text("content_id IS NOT NULL AND platform <> 'manual'"),
+        ),
+    )
+
+
+class AnalysisRunRow(Base):
+    """一次分析链执行（ASR→OCR→VLM→Blueprint）。stages 逐阶段记录缓存命中与产物。"""
+
+    __tablename__ = "analysis_runs"
+
+    id: Mapped[str] = mapped_column(String(36), primary_key=True)
+    project_id: Mapped[str] = mapped_column(String(36), nullable=False, index=True)
+    source_asset_id: Mapped[str] = mapped_column(String(36), nullable=False)
+    language: Mapped[str] = mapped_column(String(20), nullable=False)
+    # status ∈ RUNNING / COMPLETED / FAILED
+    status: Mapped[str] = mapped_column(String(20), nullable=False)
+    stages: Mapped[list] = mapped_column(JSONB, nullable=False, default=list)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
+    updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
+
+    __table_args__ = (Index("ix_analysis_runs_project_created", "project_id", "created_at"),)
+
+
+class AnalysisArtifactRow(Base):
+    """分析产物（Transcript / TextTrackSet / VisualAnalysis / VideoBlueprint）。
+
+    (kind, cache_key) 唯一 —— 缓存命中即按此二元组查到就复用，不再调 Provider（41 §11）。
+    """
+
+    __tablename__ = "analysis_artifacts"
+
+    id: Mapped[str] = mapped_column(String(36), primary_key=True)
+    project_id: Mapped[str] = mapped_column(String(36), nullable=False, index=True)
+    kind: Mapped[str] = mapped_column(String(40), nullable=False)
+    cache_key: Mapped[str] = mapped_column(String(64), nullable=False)
+    payload: Mapped[dict] = mapped_column(JSONB, nullable=False)
+    provider: Mapped[str] = mapped_column(String(100), nullable=False)
+    tool_version: Mapped[str] = mapped_column(String(50), nullable=False)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
+
+    __table_args__ = (
+        Index("uq_analysis_artifacts_kind_cache", "kind", "cache_key", unique=True),
+    )
+
+
 class WorkerRow(Base):
     __tablename__ = "workers"
 

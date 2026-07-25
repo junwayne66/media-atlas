@@ -1,0 +1,7 @@
+[
+  {"frame_time_ms": 500, "bbox": {"x": 0.86, "y": 0.04, "w": 0.1, "h": 0.05}, "text": "@demo频道", "confidence": 0.88},
+  {"frame_time_ms": 1000, "bbox": {"x": 0.18, "y": 0.82, "w": 0.62, "h": 0.08}, "text": "端侧推理提速三倍", "confidence": 0.91},
+  {"frame_time_ms": 2000, "bbox": {"x": 0.19, "y": 0.82, "w": 0.62, "h": 0.08}, "text": "端侧推理提速三倍", "confidence": 0.93},
+  {"frame_time_ms": 6000, "bbox": {"x": 0.86, "y": 0.04, "w": 0.1, "h": 0.05}, "text": "@demo频道", "confidence": 0.9},
+  {"frame_time_ms": 11000, "bbox": {"x": 0.87, "y": 0.04, "w": 0.1, "h": 0.05}, "text": "@demo频道", "confidence": 0.89}
+]

@@ -41,6 +41,15 @@ class ProjectRepository:
             raise NotFoundError("project", project_id)
         return row_to_project(row)
 
+    def list(self, *, limit: int = 50) -> "list[Project]":
+        """按创建时间倒序列出（UI 项目列表）。乐观锁/合同语义不变。"""
+        stmt = (
+            select(ProjectRow)
+            .order_by(ProjectRow.created_at.desc(), ProjectRow.id)
+            .limit(limit)
+        )
+        return [row_to_project(r) for r in self._session.scalars(stmt)]
+
     def update(self, project: Project, *, expected_version: int) -> Project:
         """expected_version 来自调用方读到的版本（API 层对应 If-Match）。
 

@@ -1,0 +1,59 @@
+{
+  "id": "demo-transcript-en",
+  "language": "en-US",
+  "created_at": "2026-07-25T00:00:00Z",
+  "duration_ms": 11500,
+  "models": {
+    "asr_provider": "fake-asr",
+    "asr_model": "demo",
+    "asr_version": "1"
+  },
+  "segments": [
+    {
+      "id": "seg-0",
+      "start_ms": 0,
+      "end_ms": 3000,
+      "speaker_id": "spk_0",
+      "language": "en-US",
+      "text": "This on device AI chip runs inference three times faster",
+      "confidence": 0.92,
+      "words": [
+        {"text": "This", "start_ms": 0, "end_ms": 300, "confidence": 0.95},
+        {"text": "on", "start_ms": 300, "end_ms": 500, "confidence": 0.9},
+        {"text": "device", "start_ms": 500, "end_ms": 900, "confidence": 0.9},
+        {"text": "AI", "start_ms": 900, "end_ms": 1200, "confidence": 0.52},
+        {"text": "chip", "start_ms": 1200, "end_ms": 1700, "confidence": 0.93},
+        {"text": "inference", "start_ms": 1700, "end_ms": 2400, "confidence": 0.89},
+        {"text": "faster", "start_ms": 2400, "end_ms": 3000, "confidence": 0.91}
+      ]
+    },
+    {
+      "id": "seg-1",
+      "start_ms": 3300,
+      "end_ms": 7000,
+      "speaker_id": "spk_0",
+      "language": "en-US",
+      "text": "We ran the same clip through both pipelines",
+      "confidence": 0.9,
+      "words": [
+        {"text": "We", "start_ms": 3300, "end_ms": 3600, "confidence": 0.93},
+        {"text": "ran", "start_ms": 3600, "end_ms": 4000, "confidence": 0.9},
+        {"text": "the same clip", "start_ms": 4000, "end_ms": 5400, "confidence": 0.9},
+        {"text": "both pipelines", "start_ms": 5400, "end_ms": 7000, "confidence": 0.87}
+      ]
+    },
+    {
+      "id": "seg-2",
+      "start_ms": 7400,
+      "end_ms": 11500,
+      "speaker_id": "spk_0",
+      "language": "en-US",
+      "text": "Follow along for the full benchmark breakdown",
+      "confidence": 0.9,
+      "words": [
+        {"text": "Follow along", "start_ms": 7400, "end_ms": 9000, "confidence": 0.9},
+        {"text": "full benchmark", "start_ms": 9000, "end_ms": 11500, "confidence": 0.9}
+      ]
+    }
+  ]
+}

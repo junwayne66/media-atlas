@@ -1,0 +1,278 @@
+{
+  "$defs": {
+    "AcquisitionAttemptSummary": {
+      "additionalProperties": false,
+      "description": "一次下载尝试的摘要（DownloadRouter attempts 轨迹的持久化形态）。\n\n只留「谁试了、结果如何」——不存下载器的原始元数据，更不可能带 Cookie/Token。",
+      "properties": {
+        "connector": {
+          "description": "下载连接器名，如 download.f2",
+          "minLength": 1,
+          "title": "Connector",
+          "type": "string"
+        },
+        "error_code": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "AcquisitionErrorCode 值",
+          "title": "Error Code"
+        },
+        "schema_version": {
+          "default": "1",
+          "description": "合同 schema 版本；Reader 需兼容当前与前一版本",
+          "title": "Schema Version",
+          "type": "string"
+        },
+        "status": {
+          "description": "DownloadStatus 值，如 unconfigured",
+          "minLength": 1,
+          "title": "Status",
+          "type": "string"
+        }
+      },
+      "required": [
+        "connector",
+        "status"
+      ],
+      "title": "AcquisitionAttemptSummary",
+      "type": "object"
+    },
+    "AcquisitionSummary": {
+      "additionalProperties": false,
+      "description": "获取过程的可重放摘要（README §4：工具版本 + 输出哈希 + 可解释尝试轨迹）。",
+      "properties": {
+        "attempts": {
+          "items": {
+            "$ref": "#/$defs/AcquisitionAttemptSummary"
+          },
+          "title": "Attempts",
+          "type": "array"
+        },
+        "manual_fallback": {
+          "default": false,
+          "description": "链耗尽 → 应转手工导入",
+          "title": "Manual Fallback",
+          "type": "boolean"
+        },
+        "output_sha256": {
+          "anyOf": [
+            {
+              "pattern": "^[0-9a-f]{64}$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Output Sha256"
+        },
+        "schema_version": {
+          "default": "1",
+          "description": "合同 schema 版本；Reader 需兼容当前与前一版本",
+          "title": "Schema Version",
+          "type": "string"
+        },
+        "tool_name": {
+          "description": "最终/路由使用的工具或连接器名",
+          "minLength": 1,
+          "title": "Tool Name",
+          "type": "string"
+        },
+        "tool_version": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "工具版本；未配置时为 null",
+          "title": "Tool Version"
+        }
+      },
+      "required": [
+        "tool_name"
+      ],
+      "title": "AcquisitionSummary",
+      "type": "object"
+    },
+    "SourceAssetKind": {
+      "enum": [
+        "URL",
+        "LOCAL_FILE"
+      ],
+      "title": "SourceAssetKind",
+      "type": "string"
+    },
+    "SourceDisposition": {
+      "description": "素材当前处置。四态互斥，且都能对用户解释「下一步做什么」。",
+      "enum": [
+        "IMPORTED",
+        "MANUAL_FALLBACK",
+        "NEEDS_EXPANSION",
+        "UNRESOLVABLE"
+      ],
+      "title": "SourceDisposition",
+      "type": "string"
+    }
+  },
+  "$id": "https://videoforge.dev/schemas/source-asset.schema.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "description": "来源素材聚合（可版本化：version 乐观锁）。",
+  "properties": {
+    "acquisition": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/AcquisitionSummary"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null
+    },
+    "canonical_url": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Canonical Url"
+    },
+    "content_id": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Content Id"
+    },
+    "created_at": {
+      "format": "date-time",
+      "title": "Created At",
+      "type": "string"
+    },
+    "disposition": {
+      "$ref": "#/$defs/SourceDisposition"
+    },
+    "error_code": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "description": "失败/未配置时的结构化错误码",
+      "title": "Error Code"
+    },
+    "file_sha256": {
+      "anyOf": [
+        {
+          "pattern": "^[0-9a-f]{64}$",
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "File Sha256"
+    },
+    "id": {
+      "minLength": 1,
+      "title": "Id",
+      "type": "string"
+    },
+    "kind": {
+      "$ref": "#/$defs/SourceAssetKind"
+    },
+    "local_path": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Local Path"
+    },
+    "original_input": {
+      "description": "用户粘贴的原文/路径，保留 provenance",
+      "minLength": 1,
+      "title": "Original Input",
+      "type": "string"
+    },
+    "platform": {
+      "default": "unknown",
+      "description": "douyin/tiktok/youtube/manual/unknown",
+      "minLength": 1,
+      "title": "Platform",
+      "type": "string"
+    },
+    "project_ids": {
+      "items": {
+        "type": "string"
+      },
+      "title": "Project Ids",
+      "type": "array"
+    },
+    "reason": {
+      "description": "处置理由（面向人的可解释说明）",
+      "minLength": 1,
+      "title": "Reason",
+      "type": "string"
+    },
+    "schema_version": {
+      "default": "1",
+      "description": "合同 schema 版本；Reader 需兼容当前与前一版本",
+      "title": "Schema Version",
+      "type": "string"
+    },
+    "updated_at": {
+      "format": "date-time",
+      "title": "Updated At",
+      "type": "string"
+    },
+    "version": {
+      "default": 1,
+      "description": "乐观并发版本",
+      "minimum": 1,
+      "title": "Version",
+      "type": "integer"
+    }
+  },
+  "required": [
+    "id",
+    "kind",
+    "original_input",
+    "disposition",
+    "reason",
+    "created_at",
+    "updated_at"
+  ],
+  "title": "SourceAsset",
+  "type": "object"
+}

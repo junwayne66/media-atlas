@@ -7,6 +7,8 @@ from videoforge_contracts import (
     AccountBaselineEntry,
     AccountBinding,
     AccountStatus,
+    AcquisitionAttemptSummary,
+    AcquisitionSummary,
     Artifact,
     AssetLicense,
     AssetLicenseType,
@@ -151,6 +153,9 @@ from videoforge_contracts import (
     SignalDirection,
     SignalKind,
     SnapshotSchedule,
+    SourceAsset,
+    SourceAssetKind,
+    SourceDisposition,
     StorageRef,
     SubtitleCue,
     SubtitleLine,
@@ -1370,6 +1375,37 @@ def make_qa_report() -> QAReport:
     )
 
 
+def make_source_asset() -> SourceAsset:
+    # 演示「诚实的处置」：链接已解析，但实时下载未配置 → 转手工导入，attempts 轨迹可解释。
+    return SourceAsset(
+        id="01J2ZK3AC9V6XW8YQ4R5T6U7SA",
+        version=1,
+        kind=SourceAssetKind.URL,
+        original_input="https://www.douyin.com/video/7412345678901234567",
+        platform="douyin",
+        content_id="7412345678901234567",
+        canonical_url="https://www.douyin.com/video/7412345678901234567",
+        disposition=SourceDisposition.MANUAL_FALLBACK,
+        reason="实时下载未配置（需真实账号/凭据）；请人工下载原片后关联本地文件",
+        error_code="UNCONFIGURED",
+        acquisition=AcquisitionSummary(
+            tool_name="download.router",
+            attempts=[
+                AcquisitionAttemptSummary(
+                    connector="download.f2", status="unconfigured", error_code="UNCONFIGURED"
+                ),
+                AcquisitionAttemptSummary(
+                    connector="download.yt_dlp", status="unconfigured", error_code="UNCONFIGURED"
+                ),
+            ],
+            manual_fallback=True,
+        ),
+        project_ids=["01J2ZK3AC9V6XW8YQ4R5T6U7V0"],
+        created_at=_T0,
+        updated_at=_T0,
+    )
+
+
 def make_exporter_report() -> ExporterReport:
     return ExporterReport(
         id="01J2ZK3AC9V6XW8YQ4R5T6U7ZT",
@@ -1626,5 +1662,6 @@ SAMPLES: dict[str, ContractModel] = {
     "render-manifest": make_render_manifest(),
     "remotion-render-manifest": make_remotion_render_manifest(),
     "qa-report": make_qa_report(),
+    "source-asset": make_source_asset(),
     "exporter-report": make_exporter_report(),
 }

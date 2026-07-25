@@ -208,6 +208,13 @@ from videoforge_contracts.rewrite import (
     ScriptSentence,
     ScriptVersion,
 )
+from videoforge_contracts.source_asset import (
+    AcquisitionAttemptSummary,
+    AcquisitionSummary,
+    SourceAsset,
+    SourceAssetKind,
+    SourceDisposition,
+)
 from videoforge_contracts.subtitle import (
     SafeAreaSpec,
     SubtitleCue,
@@ -317,6 +324,7 @@ CONTRACTS: dict[str, type[ContractModel]] = {
     "render-manifest": RenderManifest,
     "remotion-render-manifest": RemotionRenderManifest,
     "qa-report": QAReport,
+    "source-asset": SourceAsset,
     "exporter-report": ExporterReport,
 }
 
@@ -511,6 +519,11 @@ __all__ = [
     "RankingSample",
     "SegmentEffect",
     "SegmentJudgment",
+    "AcquisitionAttemptSummary",
+    "AcquisitionSummary",
+    "SourceAsset",
+    "SourceAssetKind",
+    "SourceDisposition",
     "StorageBackend",
     "StorageRef",
     "TaskEnvelope",
