@@ -19,3 +19,8 @@ export type {
   ProviderType,
 } from "./generated/provider-descriptor";
 export type { ResourceLimits, TaskEnvelope } from "./generated/task-envelope";
+export type {
+  AcquisitionAttemptSummary,
+  AcquisitionSummary,
+  SourceAsset,
+} from "./generated/source-asset";

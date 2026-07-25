@@ -11,6 +11,11 @@ dependencies = [
     "videoforge-workflows",
     "videoforge-persistence",
     "videoforge-domain",
+    "videoforge-provider-sdk",
+    "videoforge-media-core",
+    # 下载连接器：默认构造即「未配置」（不触网），只为把可解释的 attempts 轨迹交给 UI
+    "videoforge-connector-yt-dlp",
+    "videoforge-connector-f2",
     "temporalio>=1.8",
 ]
 
@@ -18,6 +23,10 @@ dependencies = [
 videoforge-workflows = { workspace = true }
 videoforge-persistence = { workspace = true }
 videoforge-domain = { workspace = true }
+videoforge-provider-sdk = { workspace = true }
+videoforge-media-core = { workspace = true }
+videoforge-connector-yt-dlp = { workspace = true }
+videoforge-connector-f2 = { workspace = true }
 
 [build-system]
 requires = ["hatchling"]

@@ -9,7 +9,15 @@ from alembic.config import Config
 from sqlalchemy import Engine, create_engine, text
 
 REPO_ROOT = Path(__file__).parents[3]
-_TRUNCATE = ("trend_clusters", "trend_item_snapshots", "projects", "outbox_events")
+_TRUNCATE = (
+    "trend_clusters",
+    "trend_item_snapshots",
+    "source_assets",
+    "analysis_runs",
+    "analysis_artifacts",
+    "projects",
+    "outbox_events",
+)
 
 os.environ.setdefault("TESTCONTAINERS_RYUK_DISABLED", "true")
 

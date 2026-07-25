@@ -1,0 +1,8 @@
+{
+  "0": {"caption": "创作者出镜，手持芯片开发板", "labels": ["person", "product"], "confidence": 0.9},
+  "500": {"caption": "创作者出镜，右上角频道角标", "labels": ["person"], "confidence": 0.88},
+  "1000": {"caption": "屏幕录制：推理耗时对比图表", "labels": ["screen_record", "chart"], "confidence": 0.87},
+  "2000": {"caption": "屏幕录制：推理耗时对比图表", "labels": ["screen_record", "chart"], "confidence": 0.86},
+  "5000": {"caption": "两台设备并排跑同一段视频", "labels": ["product", "screen"], "confidence": 0.85},
+  "10000": {"caption": "创作者出镜做总结并引导关注", "labels": ["person"], "confidence": 0.89}
+}

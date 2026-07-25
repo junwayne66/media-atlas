@@ -1,0 +1,56 @@
+{
+  "id": "demo-transcript-zh",
+  "language": "zh-CN",
+  "created_at": "2026-07-25T00:00:00Z",
+  "duration_ms": 11800,
+  "models": {
+    "asr_provider": "fake-asr",
+    "asr_model": "demo",
+    "asr_version": "1"
+  },
+  "segments": [
+    {
+      "id": "seg-0",
+      "start_ms": 0,
+      "end_ms": 3200,
+      "speaker_id": "spk_0",
+      "language": "zh-CN",
+      "text": "这颗端侧 AI 芯片的推理速度提升了三倍",
+      "confidence": 0.93,
+      "words": [
+        {"text": "这颗", "start_ms": 0, "end_ms": 600, "confidence": 0.95},
+        {"text": "端侧", "start_ms": 600, "end_ms": 1200, "confidence": 0.92},
+        {"text": "AI", "start_ms": 1200, "end_ms": 1600, "confidence": 0.55},
+        {"text": "芯片", "start_ms": 1600, "end_ms": 2200, "confidence": 0.94},
+        {"text": "提升三倍", "start_ms": 2200, "end_ms": 3200, "confidence": 0.9}
+      ]
+    },
+    {
+      "id": "seg-1",
+      "start_ms": 3400,
+      "end_ms": 7200,
+      "speaker_id": "spk_0",
+      "language": "zh-CN",
+      "text": "我们用同一段视频做了对比测试",
+      "confidence": 0.9,
+      "words": [
+        {"text": "我们", "start_ms": 3400, "end_ms": 3900, "confidence": 0.93},
+        {"text": "同一段视频", "start_ms": 3900, "end_ms": 5600, "confidence": 0.9},
+        {"text": "对比测试", "start_ms": 5600, "end_ms": 7200, "confidence": 0.88}
+      ]
+    },
+    {
+      "id": "seg-2",
+      "start_ms": 7500,
+      "end_ms": 11800,
+      "speaker_id": "spk_0",
+      "language": "zh-CN",
+      "text": "想看完整评测的朋友记得关注",
+      "confidence": 0.91,
+      "words": [
+        {"text": "想看完整评测", "start_ms": 7500, "end_ms": 9600, "confidence": 0.9},
+        {"text": "记得关注", "start_ms": 9600, "end_ms": 11800, "confidence": 0.92}
+      ]
+    }
+  ]
+}

@@ -1,0 +1,8 @@
+{
+  "0": {"caption": "Creator on camera holding a dev board", "labels": ["person", "product"], "confidence": 0.9},
+  "500": {"caption": "Creator on camera, channel mark top-right", "labels": ["person"], "confidence": 0.88},
+  "1000": {"caption": "Screen recording of latency comparison chart", "labels": ["screen_record", "chart"], "confidence": 0.87},
+  "2000": {"caption": "Screen recording of latency comparison chart", "labels": ["screen_record", "chart"], "confidence": 0.86},
+  "5000": {"caption": "Two devices running the same clip side by side", "labels": ["product", "screen"], "confidence": 0.85},
+  "10000": {"caption": "Creator wrapping up and asking for a follow", "labels": ["person"], "confidence": 0.89}
+}
