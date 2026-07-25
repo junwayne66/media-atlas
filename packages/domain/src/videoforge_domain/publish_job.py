@@ -30,47 +30,81 @@ from videoforge_contracts import (
 
 # §4 合法状态迁移。关键幂等不变量：SUBMITTED 之后**绝不**回到 UPLOADING/再次 SUBMITTED。
 PUBLISH_TRANSITIONS: dict[PublishState, frozenset[PublishState]] = {
-    PublishState.PENDING: frozenset({
-        PublishState.PREFLIGHT_BLOCKED, PublishState.AWAITING_AUTH,
-        PublishState.UPLOADING, PublishState.WAITING_FOR_HUMAN, PublishState.FAILED,
-    }),
-    PublishState.PREFLIGHT_BLOCKED: frozenset({
-        PublishState.UPLOADING, PublishState.AWAITING_AUTH,
-        PublishState.WAITING_FOR_HUMAN, PublishState.FAILED,
-    }),
-    PublishState.AWAITING_AUTH: frozenset({
-        PublishState.UPLOADING, PublishState.WAITING_FOR_HUMAN, PublishState.FAILED,
-    }),
-    PublishState.UPLOADING: frozenset({
-        PublishState.SUBMITTED, PublishState.AWAITING_AUTH,
-        PublishState.WAITING_FOR_HUMAN, PublishState.FAILED,
-    }),
+    PublishState.PENDING: frozenset(
+        {
+            PublishState.PREFLIGHT_BLOCKED,
+            PublishState.AWAITING_AUTH,
+            PublishState.UPLOADING,
+            PublishState.WAITING_FOR_HUMAN,
+            PublishState.FAILED,
+        }
+    ),
+    PublishState.PREFLIGHT_BLOCKED: frozenset(
+        {
+            PublishState.UPLOADING,
+            PublishState.AWAITING_AUTH,
+            PublishState.WAITING_FOR_HUMAN,
+            PublishState.FAILED,
+        }
+    ),
+    PublishState.AWAITING_AUTH: frozenset(
+        {
+            PublishState.UPLOADING,
+            PublishState.WAITING_FOR_HUMAN,
+            PublishState.FAILED,
+        }
+    ),
+    PublishState.UPLOADING: frozenset(
+        {
+            PublishState.SUBMITTED,
+            PublishState.AWAITING_AUTH,
+            PublishState.WAITING_FOR_HUMAN,
+            PublishState.FAILED,
+        }
+    ),
     # 已提交后只能前进到校验/成功/对账/人工/失败——绝不回上传或再提交
-    PublishState.SUBMITTED: frozenset({
-        PublishState.VERIFYING, PublishState.SUCCEEDED,
-        PublishState.SUCCEEDED_RECONCILED, PublishState.WAITING_FOR_HUMAN,
-        PublishState.FAILED,
-    }),
-    PublishState.VERIFYING: frozenset({
-        PublishState.SUCCEEDED, PublishState.SUCCEEDED_RECONCILED,
-        PublishState.WAITING_FOR_HUMAN, PublishState.FAILED,
-    }),
+    PublishState.SUBMITTED: frozenset(
+        {
+            PublishState.VERIFYING,
+            PublishState.SUCCEEDED,
+            PublishState.SUCCEEDED_RECONCILED,
+            PublishState.WAITING_FOR_HUMAN,
+            PublishState.FAILED,
+        }
+    ),
+    PublishState.VERIFYING: frozenset(
+        {
+            PublishState.SUCCEEDED,
+            PublishState.SUCCEEDED_RECONCILED,
+            PublishState.WAITING_FOR_HUMAN,
+            PublishState.FAILED,
+        }
+    ),
     # 人工恢复：前提交→UPLOADING / 后提交→VERIFYING；直连 SUBMITTED 由 can_submit 拦。
     # 人工完成（§5 手工完成 / 对账到已存在帖子）→ SUCCEEDED*（含 external_id，不重发）。
-    PublishState.WAITING_FOR_HUMAN: frozenset({
-        PublishState.UPLOADING, PublishState.VERIFYING,
-        PublishState.AWAITING_AUTH, PublishState.FAILED,
-        PublishState.SUCCEEDED, PublishState.SUCCEEDED_RECONCILED,
-    }),
+    PublishState.WAITING_FOR_HUMAN: frozenset(
+        {
+            PublishState.UPLOADING,
+            PublishState.VERIFYING,
+            PublishState.AWAITING_AUTH,
+            PublishState.FAILED,
+            PublishState.SUCCEEDED,
+            PublishState.SUCCEEDED_RECONCILED,
+        }
+    ),
     PublishState.SUCCEEDED: frozenset(),
     PublishState.SUCCEEDED_RECONCILED: frozenset(),
     PublishState.FAILED: frozenset(),
 }
 
-_POST_SUBMIT_STATES = frozenset({
-    PublishState.SUBMITTED, PublishState.VERIFYING,
-    PublishState.SUCCEEDED, PublishState.SUCCEEDED_RECONCILED,
-})
+_POST_SUBMIT_STATES = frozenset(
+    {
+        PublishState.SUBMITTED,
+        PublishState.VERIFYING,
+        PublishState.SUCCEEDED,
+        PublishState.SUCCEEDED_RECONCILED,
+    }
+)
 
 
 class IllegalPublishTransition(Exception):
@@ -107,8 +141,7 @@ def compute_idempotency_key(
         "metadata_digest": metadata_digest,
         "scheduled_window": scheduled_window,
     }
-    canonical = json.dumps(payload, sort_keys=True, separators=(",", ":"),
-                            ensure_ascii=False)
+    canonical = json.dumps(payload, sort_keys=True, separators=(",", ":"), ensure_ascii=False)
     return hashlib.sha256(canonical.encode("utf-8")).hexdigest()
 
 
@@ -146,20 +179,35 @@ def new_publish_job(
 ) -> PublishJob:
     """建一个 PENDING 发布任务，幂等键按 §5 计算。"""
     key = compute_idempotency_key(
-        account_id=account_id, platform=platform, render_digest=render_digest,
-        metadata_digest=metadata_digest, scheduled_window=scheduled_window,
+        account_id=account_id,
+        platform=platform,
+        render_digest=render_digest,
+        metadata_digest=metadata_digest,
+        scheduled_window=scheduled_window,
     )
     return PublishJob(
-        id=id, idempotency_key=key, account_id=account_id, platform=platform,
-        method=method, render_digest=render_digest, metadata_digest=metadata_digest,
-        scheduled_window=scheduled_window, state=PublishState.PENDING,
-        attempts=[], created_at=created_at, updated_at=created_at,
+        id=id,
+        idempotency_key=key,
+        account_id=account_id,
+        platform=platform,
+        method=method,
+        render_digest=render_digest,
+        metadata_digest=metadata_digest,
+        scheduled_window=scheduled_window,
+        state=PublishState.PENDING,
+        attempts=[],
+        created_at=created_at,
+        updated_at=created_at,
     )
 
 
 def record_submission(
-    job: PublishJob, *, external_post_token: str, request_digest: str,
-    now: datetime, external_upload_token: str | None = None,
+    job: PublishJob,
+    *,
+    external_post_token: str,
+    request_digest: str,
+    now: datetime,
+    external_upload_token: str | None = None,
 ) -> PublishJob:
     """提交发帖 → SUBMITTED。**幂等硬拦**：已提交过就抛异常，绝不重复发布。"""
     if not can_submit(job):
@@ -169,62 +217,82 @@ def record_submission(
         )
     assert_transition(job.state, PublishState.SUBMITTED)
     attempt = PublishAttempt(
-        attempt=len(job.attempts) + 1, request_digest=request_digest,
+        attempt=len(job.attempts) + 1,
+        request_digest=request_digest,
         external_upload_token=external_upload_token,
-        external_post_token=external_post_token, at=now,
+        external_post_token=external_post_token,
+        at=now,
     )
-    return job.model_copy(update={
-        "state": PublishState.SUBMITTED,
-        "attempts": [*job.attempts, attempt],
-        "updated_at": now,
-    })
+    return job.model_copy(
+        update={
+            "state": PublishState.SUBMITTED,
+            "attempts": [*job.attempts, attempt],
+            "updated_at": now,
+        }
+    )
 
 
 def reconcile_publish(
-    job: PublishJob, *, found_external_post: bool, now: datetime,
-    external_id: str | None = None, external_url: str | None = None,
+    job: PublishJob,
+    *,
+    found_external_post: bool,
+    now: datetime,
+    external_id: str | None = None,
+    external_url: str | None = None,
 ) -> PublishJob:
     """§5 超时/未知后对账：查到已存在外部帖子 → SUCCEEDED_RECONCILED；否则转 VERIFYING
     继续查，**绝不盲目重发**。只对已提交（post-submit）的 Job 有意义。"""
     if job.state not in (
-        PublishState.SUBMITTED, PublishState.VERIFYING,
+        PublishState.SUBMITTED,
+        PublishState.VERIFYING,
         PublishState.WAITING_FOR_HUMAN,
     ):
-        raise IllegalPublishTransition(
-            f"reconcile 只用于已提交的 Job，当前 {job.state.value}"
-        )
+        raise IllegalPublishTransition(f"reconcile 只用于已提交的 Job，当前 {job.state.value}")
     if found_external_post:
         if not external_id:
             raise ValueError("found_external_post=True 时必须提供 external_id")
         assert_transition(job.state, PublishState.SUCCEEDED_RECONCILED)
-        return job.model_copy(update={
-            "state": PublishState.SUCCEEDED_RECONCILED,
-            "external_post_id": external_id, "external_url": external_url,
-            "updated_at": now,
-        })
+        return job.model_copy(
+            update={
+                "state": PublishState.SUCCEEDED_RECONCILED,
+                "external_post_id": external_id,
+                "external_url": external_url,
+                "updated_at": now,
+            }
+        )
     # 未查到 → 继续校验（不回退、不重发）
     target = (
-        PublishState.VERIFYING if can_transition(job.state, PublishState.VERIFYING)
-        else job.state
+        PublishState.VERIFYING if can_transition(job.state, PublishState.VERIFYING) else job.state
     )
     return job.model_copy(update={"state": target, "updated_at": now})
 
 
 def confirm_success(
-    job: PublishJob, *, external_id: str, now: datetime,
-    external_url: str | None = None, content_fingerprint: str | None = None,
+    job: PublishJob,
+    *,
+    external_id: str,
+    now: datetime,
+    external_url: str | None = None,
+    content_fingerprint: str | None = None,
 ) -> PublishJob:
     """确认发布成功（§4.10 保存外部 ID/URL/指纹）→ SUCCEEDED。"""
     assert_transition(job.state, PublishState.SUCCEEDED)
-    return job.model_copy(update={
-        "state": PublishState.SUCCEEDED, "external_post_id": external_id,
-        "external_url": external_url, "content_fingerprint": content_fingerprint,
-        "updated_at": now,
-    })
+    return job.model_copy(
+        update={
+            "state": PublishState.SUCCEEDED,
+            "external_post_id": external_id,
+            "external_url": external_url,
+            "content_fingerprint": content_fingerprint,
+            "updated_at": now,
+        }
+    )
 
 
 def mark_manually_completed(
-    job: PublishJob, *, external_id: str, now: datetime,
+    job: PublishJob,
+    *,
+    external_id: str,
+    now: datetime,
     external_url: str | None = None,
 ) -> PublishJob:
     """§5 手工完成：人工在系统外发布了（或对账确认已存在）→ SUCCEEDED_RECONCILED，
@@ -238,19 +306,25 @@ def mark_manually_completed(
             f"手工完成只用于 WAITING_FOR_HUMAN 的 Job，当前 {job.state.value}"
         )
     assert_transition(job.state, PublishState.SUCCEEDED_RECONCILED)
-    return job.model_copy(update={
-        "state": PublishState.SUCCEEDED_RECONCILED,
-        "external_post_id": external_id, "external_url": external_url,
-        "updated_at": now,
-    })
+    return job.model_copy(
+        update={
+            "state": PublishState.SUCCEEDED_RECONCILED,
+            "external_post_id": external_id,
+            "external_url": external_url,
+            "updated_at": now,
+        }
+    )
 
 
 def to_waiting_for_human(job: PublishJob, *, now: datetime) -> PublishJob:
     """挑战/授权失败 → WAITING_FOR_HUMAN（§4.5/§13，不盲目继续）。"""
     assert_transition(job.state, PublishState.WAITING_FOR_HUMAN)
-    return job.model_copy(update={
-        "state": PublishState.WAITING_FOR_HUMAN, "updated_at": now,
-    })
+    return job.model_copy(
+        update={
+            "state": PublishState.WAITING_FOR_HUMAN,
+            "updated_at": now,
+        }
+    )
 
 
 def validate_publish_job(job: PublishJob) -> list[PublishJobIssue]:
@@ -259,33 +333,47 @@ def validate_publish_job(job: PublishJob) -> list[PublishJobIssue]:
     posted = [a for a in job.attempts if a.external_post_token]
     if len(posted) > 1:
         tokens = {a.external_post_token for a in posted}
-        issues.append(PublishJobIssue(
-            PublishJobIssueKind.DOUBLE_SUBMIT, job.id,
-            f"{len(posted)} 次带外部 post token 的提交（tokens={tokens}）——重复发布风险",
-        ))
+        issues.append(
+            PublishJobIssue(
+                PublishJobIssueKind.DOUBLE_SUBMIT,
+                job.id,
+                f"{len(posted)} 次带外部 post token 的提交（tokens={tokens}）——重复发布风险",
+            )
+        )
     if (
         job.state in (PublishState.SUCCEEDED, PublishState.SUCCEEDED_RECONCILED)
         and not job.external_post_id
     ):
-        issues.append(PublishJobIssue(
-            PublishJobIssueKind.SUCCEEDED_WITHOUT_EXTERNAL_ID, job.id,
-            "成功态却无 external_post_id",
-        ))
+        issues.append(
+            PublishJobIssue(
+                PublishJobIssueKind.SUCCEEDED_WITHOUT_EXTERNAL_ID,
+                job.id,
+                "成功态却无 external_post_id",
+            )
+        )
     expected = compute_idempotency_key(
-        account_id=job.account_id, platform=job.platform,
-        render_digest=job.render_digest, metadata_digest=job.metadata_digest,
+        account_id=job.account_id,
+        platform=job.platform,
+        render_digest=job.render_digest,
+        metadata_digest=job.metadata_digest,
         scheduled_window=job.scheduled_window,
     )
     if expected != job.idempotency_key:
-        issues.append(PublishJobIssue(
-            PublishJobIssueKind.IDEMPOTENCY_KEY_MISMATCH, job.id,
-            "idempotency_key 与按 Job 字段重算的不一致",
-        ))
+        issues.append(
+            PublishJobIssue(
+                PublishJobIssueKind.IDEMPOTENCY_KEY_MISMATCH,
+                job.id,
+                "idempotency_key 与按 Job 字段重算的不一致",
+            )
+        )
     if job.state is PublishState.SUBMITTED and not job.attempts:
-        issues.append(PublishJobIssue(
-            PublishJobIssueKind.SUBMITTED_WITHOUT_ATTEMPT, job.id,
-            "SUBMITTED 却无任何 attempt 记录",
-        ))
+        issues.append(
+            PublishJobIssue(
+                PublishJobIssueKind.SUBMITTED_WITHOUT_ATTEMPT,
+                job.id,
+                "SUBMITTED 却无任何 attempt 记录",
+            )
+        )
     return issues
 
 

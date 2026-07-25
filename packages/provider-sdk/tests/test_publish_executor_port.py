@@ -19,9 +19,14 @@ _T0 = datetime(2026, 7, 25, tzinfo=UTC)
 
 def _job(window: str = "immediate") -> PublishJob:
     return new_publish_job(
-        id="j", account_id="a", platform=PublishPlatform.TIKTOK,
-        method=PublishMethod.OFFICIAL_API, render_digest="r", metadata_digest="m",
-        scheduled_window=window, created_at=_T0,
+        id="j",
+        account_id="a",
+        platform=PublishPlatform.TIKTOK,
+        method=PublishMethod.OFFICIAL_API,
+        render_digest="r",
+        metadata_digest="m",
+        scheduled_window=window,
+        created_at=_T0,
     ).model_copy(update={"state": PublishState.UPLOADING})
 
 
@@ -55,12 +60,18 @@ def test_fake_different_jobs_get_different_posts():
 
 
 def test_fake_challenge_and_auth_route_to_status():
-    assert FakeTikTokPublishExecutor(challenge=True).submit(
-        _job()).status is PublishExecStatus.CHALLENGE
-    assert FakeTikTokPublishExecutor(auth_required=True).submit(
-        _job()).status is PublishExecStatus.AUTH_REQUIRED
-    assert FakeTikTokPublishExecutor(auth_required=True).creator_info(
-    ).status is PublishExecStatus.AUTH_REQUIRED
+    assert (
+        FakeTikTokPublishExecutor(challenge=True).submit(_job()).status
+        is PublishExecStatus.CHALLENGE
+    )
+    assert (
+        FakeTikTokPublishExecutor(auth_required=True).submit(_job()).status
+        is PublishExecStatus.AUTH_REQUIRED
+    )
+    assert (
+        FakeTikTokPublishExecutor(auth_required=True).creator_info().status
+        is PublishExecStatus.AUTH_REQUIRED
+    )
 
 
 def test_fake_query_status_finds_after_submit():

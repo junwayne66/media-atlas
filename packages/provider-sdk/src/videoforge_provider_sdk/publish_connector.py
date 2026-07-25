@@ -36,8 +36,9 @@ class PublishConnector(Protocol):
 class UnconfiguredPublishConnector:
     """诚实占位：无真实平台账号/凭据 → 上报不可用 + 未授权（绝不假装能发）。"""
 
-    def __init__(self, *, platform: PublishPlatform,
-                  method: PublishMethod = PublishMethod.OFFICIAL_API) -> None:
+    def __init__(
+        self, *, platform: PublishPlatform, method: PublishMethod = PublishMethod.OFFICIAL_API
+    ) -> None:
         self.platform = platform
         self.method = method
 

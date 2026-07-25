@@ -165,8 +165,7 @@ class PreflightReport(ContractModel):
     @model_validator(mode="after")
     def _check_gate(self) -> "PreflightReport":
         if self.publishable and any(
-            f.severity in (ReviewSeverity.ERROR, ReviewSeverity.FATAL)
-            for f in self.findings
+            f.severity in (ReviewSeverity.ERROR, ReviewSeverity.FATAL) for f in self.findings
         ):
             raise ValueError(
                 "publishable=True 不能与 ERROR/FATAL 发现并存"

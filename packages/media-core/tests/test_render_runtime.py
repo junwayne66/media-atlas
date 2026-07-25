@@ -43,25 +43,30 @@ from videoforge_media_core import (
     sha256_file,
 )
 
-_NEEDS_FFMPEG = pytest.mark.skipif(
-    shutil.which("ffmpeg") is None, reason="需要系统 ffmpeg"
-)
+_NEEDS_FFMPEG = pytest.mark.skipif(shutil.which("ffmpeg") is None, reason="需要系统 ffmpeg")
 
 
 # --- 纯单元：argv 组装（无需 ffmpeg）--------------------------------------
 
+
 def test_assemble_injects_filter_complex_before_map_as_single_token():
     graph = FfmpegRenderGraph(
-        args=["ffmpeg", "-y", "-i", "/w/a.mp4", "-map", "[v]",
-              "-c:v", "libx264", "/w/out.mp4"],
+        args=["ffmpeg", "-y", "-i", "/w/a.mp4", "-map", "[v]", "-c:v", "libx264", "/w/out.mp4"],
         filter_complex=FilterGraph(
-            nodes=[FilterNode(id="n", filter="trim",
-                               params={"start": "0", "end": "2"},
-                               inputs=["0:v"], outputs=["v"])],
+            nodes=[
+                FilterNode(
+                    id="n",
+                    filter="trim",
+                    params={"start": "0", "end": "2"},
+                    inputs=["0:v"],
+                    outputs=["v"],
+                )
+            ],
             sinks=["v"],
         ),
         inputs=[RenderInput(asset_id="a", sha256="a" * 64, resolved_path="/w/a.mp4")],
-        output_path="/w/out.mp4", target=RenderTargetKind.MP4_H264,
+        output_path="/w/out.mp4",
+        target=RenderTargetKind.MP4_H264,
         tool_version="8.1.2",
     )
     argv = assemble_render_argv(graph)
@@ -77,7 +82,9 @@ def test_assemble_no_filter_when_absent():
         args=["ffmpeg", "-i", "/w/a.mp4", "-c", "copy", "/w/out.mp4"],
         filter_complex=None,
         inputs=[RenderInput(asset_id="a", sha256="a" * 64, resolved_path="/w/a.mp4")],
-        output_path="/w/out.mp4", target=RenderTargetKind.MP4_H264, tool_version="8.1.2",
+        output_path="/w/out.mp4",
+        target=RenderTargetKind.MP4_H264,
+        tool_version="8.1.2",
     )
     argv = assemble_render_argv(graph)
     assert "-filter_complex" not in argv
@@ -86,12 +93,29 @@ def test_assemble_no_filter_when_absent():
 
 # --- Golden Media 集成 -----------------------------------------------------
 
+
 def _clip(dst: Path, source: str) -> None:
     # 用 -t（mandelbrot 无 duration 选项）；testsrc 与 mandelbrot 内容显著不同，供负控。
     subprocess.run(
-        ["ffmpeg", "-y", "-v", "error", "-f", "lavfi",
-         "-i", f"{source}=size=320x240:rate=30", "-t", "5",
-         "-c:v", "libx264", "-crf", "23", "-pix_fmt", "yuv420p", str(dst)],
+        [
+            "ffmpeg",
+            "-y",
+            "-v",
+            "error",
+            "-f",
+            "lavfi",
+            "-i",
+            f"{source}=size=320x240:rate=30",
+            "-t",
+            "5",
+            "-c:v",
+            "libx264",
+            "-crf",
+            "23",
+            "-pix_fmt",
+            "yuv420p",
+            str(dst),
+        ],
         check=True,
     )
 
@@ -115,22 +139,32 @@ def env(tmp_path_factory):
     def timeline(order: list[str]) -> CreativeTimeline:
         def rt(v: int) -> RationalTime:
             return RationalTime(value=v, rate=30)
+
         segs = [
-            Segment(id=f"s{i}", source_ref=ref,
-                     time_range=RationalTimeRange(start=rt(0), duration=rt(60)))
+            Segment(
+                id=f"s{i}",
+                source_ref=ref,
+                time_range=RationalTimeRange(start=rt(0), duration=rt(60)),
+            )
             for i, ref in enumerate(order)
         ]
         return CreativeTimeline(
-            id="tl-golden", rate=30, duration=rt(120),
+            id="tl-golden",
+            rate=30,
+            duration=rt(120),
             created_at=datetime(2026, 7, 26, tzinfo=UTC),
             tracks=[Track(id="t-v1", kind=TrackKind.V1_PRIMARY_VIDEO, segments=segs)],
         )
 
     def compile_graph(order: list[str], out: str, stage: RenderStage):
         tl = timeline(order)
-        cfg = CompileConfig(output_path=str(d / out), allowed_input_roots=(str(d),),
-                             target=RenderTargetKind.MP4_H264, stage=stage,
-                             aspect_ratio="9:16")
+        cfg = CompileConfig(
+            output_path=str(d / out),
+            allowed_input_roots=(str(d),),
+            target=RenderTargetKind.MP4_H264,
+            stage=stage,
+            aspect_ratio="9:16",
+        )
         return tl, compile_timeline(tl, resolved, cfg, tool_version="8.1.2")
 
     return d, compile_graph
@@ -156,8 +190,9 @@ def test_proxy_and_final_same_cut_points(env):
     _, g_proxy = compile_graph(["c0", "c1"], "proxy.mp4", RenderStage.PROXY)
     _, g_final = compile_graph(["c0", "c1"], "final.mp4", RenderStage.FINAL)
     # ① 结构：trim/concat 切点滤镜节点逐一相同（仅编码段不同：crf/preset）
-    assert ([(n.filter, n.params) for n in g_proxy.filter_complex.nodes]
-            == [(n.filter, n.params) for n in g_final.filter_complex.nodes])
+    assert [(n.filter, n.params) for n in g_proxy.filter_complex.nodes] == [
+        (n.filter, n.params) for n in g_final.filter_complex.nodes
+    ]
 
     rr = RenderRuntime()
     rp = rr.render(g_proxy)
@@ -186,8 +221,12 @@ def test_render_output_digest_feeds_manifest_cache_key(env):
     rr = RenderRuntime()
     result = rr.render(graph)
     manifest = build_render_manifest(
-        tl, graph, manifest_id="rm1", stage=RenderStage.FINAL,
-        created_at=datetime(2026, 7, 26, tzinfo=UTC), tool_version=result.ffmpeg_version,
+        tl,
+        graph,
+        manifest_id="rm1",
+        stage=RenderStage.FINAL,
+        created_at=datetime(2026, 7, 26, tzinfo=UTC),
+        tool_version=result.ffmpeg_version,
         output_digest=result.output_digest,
     )
     assert manifest.output_digest == result.output_digest

@@ -25,28 +25,34 @@ _OBS = datetime(2026, 7, 26, 12, 0, tzinfo=UTC)
 
 def _snap(**over) -> PerformanceSnapshot:
     base = dict(
-        id="rec", platform=PublishPlatform.TIKTOK, platform_post_id="p1",
-        account_id="a1", observed_at=_OBS, age_hours=1.0, source_confidence=0.9,
+        id="rec",
+        platform=PublishPlatform.TIKTOK,
+        platform_post_id="p1",
+        account_id="a1",
+        observed_at=_OBS,
+        age_hours=1.0,
+        source_confidence=0.9,
     )
     base.update(over)
     return PerformanceSnapshot(**base)
 
 
 def _fetch(conn, *, post="p1", age=1.0):
-    return conn.fetch(platform_post_id=post, account_id="a1", observed_at=_OBS,
-                       age_hours=age)
+    return conn.fetch(platform_post_id=post, account_id="a1", observed_at=_OBS, age_hours=age)
 
 
 # --- 端口一致性 -------------------------------------------------------------
 
+
 def test_fakes_satisfy_protocol():
-    assert isinstance(UnconfiguredMetricsConnector(platform=PublishPlatform.TIKTOK),
-                       MetricsConnector)
-    assert isinstance(FakeMetricsConnector(platform=PublishPlatform.DOUYIN),
-                       MetricsConnector)
+    assert isinstance(
+        UnconfiguredMetricsConnector(platform=PublishPlatform.TIKTOK), MetricsConnector
+    )
+    assert isinstance(FakeMetricsConnector(platform=PublishPlatform.DOUYIN), MetricsConnector)
 
 
 # --- Unconfigured 诚实 ------------------------------------------------------
+
 
 def test_unconfigured_reports_unavailable_and_never_fetches():
     conn = UnconfiguredMetricsConnector(platform=PublishPlatform.TIKTOK)
@@ -61,10 +67,12 @@ def test_unconfigured_reports_unavailable_and_never_fetches():
 
 # --- Fake 回放 + null 保持 --------------------------------------------------
 
+
 def test_fake_replays_recorded_snapshot_and_preserves_null():
     snap = _snap(views=100, likes=5)  # 只给 views/likes，其余 None
     conn = FakeMetricsConnector(
-        platform=PublishPlatform.TIKTOK, recorded={("p1", 1.0): snap},
+        platform=PublishPlatform.TIKTOK,
+        recorded={("p1", 1.0): snap},
         provided_fields=(MetricField.VIEWS, MetricField.LIKES),
         min_seconds_between_calls=30,
     )
@@ -79,16 +87,16 @@ def test_fake_replays_recorded_snapshot_and_preserves_null():
 
 
 def test_fake_not_found_when_unrecorded():
-    conn = FakeMetricsConnector(platform=PublishPlatform.TIKTOK,
-                                 recorded={("p1", 1.0): _snap(views=1)})
+    conn = FakeMetricsConnector(
+        platform=PublishPlatform.TIKTOK, recorded={("p1", 1.0): _snap(views=1)}
+    )
     r = _fetch(conn, age=72.0)  # 未录制的年龄
     assert r.status is MetricsFetchStatus.NOT_FOUND and r.snapshot is None
 
 
 def test_fake_deep_copies_so_caller_mutation_does_not_pollute():
     snap = _snap(views=100)
-    conn = FakeMetricsConnector(platform=PublishPlatform.TIKTOK,
-                                 recorded={("p1", 1.0): snap})
+    conn = FakeMetricsConnector(platform=PublishPlatform.TIKTOK, recorded={("p1", 1.0): snap})
     first = _fetch(conn).snapshot
     first.views = 999  # 调用方改动返回值
     second = _fetch(conn).snapshot
@@ -99,13 +107,15 @@ def test_fake_deep_copies_so_caller_mutation_does_not_pollute():
 
 
 def test_fake_injected_rate_limit_auth_fail():
-    rl = _fetch(FakeMetricsConnector(platform=PublishPlatform.TIKTOK,
-                                      rate_limited=True, retry_after_seconds=120))
+    rl = _fetch(
+        FakeMetricsConnector(
+            platform=PublishPlatform.TIKTOK, rate_limited=True, retry_after_seconds=120
+        )
+    )
     assert rl.status is MetricsFetchStatus.RATE_LIMITED
     assert rl.retry_after_seconds == 120 and rl.snapshot is None
 
-    au = _fetch(FakeMetricsConnector(platform=PublishPlatform.TIKTOK,
-                                      auth_required=True))
+    au = _fetch(FakeMetricsConnector(platform=PublishPlatform.TIKTOK, auth_required=True))
     assert au.status is MetricsFetchStatus.AUTH_REQUIRED and au.snapshot is None
 
     fa = _fetch(FakeMetricsConnector(platform=PublishPlatform.TIKTOK, fail=True))
@@ -113,14 +123,19 @@ def test_fake_injected_rate_limit_auth_fail():
 
 
 def test_fake_determinism():
-    conn = FakeMetricsConnector(platform=PublishPlatform.TIKTOK,
-                                 recorded={("p1", 1.0): _snap(views=100, likes=5)})
+    conn = FakeMetricsConnector(
+        platform=PublishPlatform.TIKTOK, recorded={("p1", 1.0): _snap(views=100, likes=5)}
+    )
     a, b = _fetch(conn), _fetch(conn)
     assert (a.status, a.snapshot.views, a.snapshot.likes) == (
-        b.status, b.snapshot.views, b.snapshot.likes)
+        b.status,
+        b.snapshot.views,
+        b.snapshot.likes,
+    )
 
 
 # --- 零网络（红线）---------------------------------------------------------
+
 
 def test_module_has_zero_network_imports():
     # Fake/Unconfigured 承诺：零网络、零 subprocess——用 AST 检查真实 import。
@@ -132,7 +147,11 @@ def test_module_has_zero_network_imports():
         elif isinstance(node, ast.ImportFrom) and node.module:
             imported.add(node.module.split(".")[0])
     allowed = {
-        "__future__", "dataclasses", "datetime", "enum", "typing",
+        "__future__",
+        "dataclasses",
+        "datetime",
+        "enum",
+        "typing",
         "videoforge_contracts",
     }
     forbidden = {"requests", "httpx", "socket", "urllib", "subprocess", "aiohttp"}

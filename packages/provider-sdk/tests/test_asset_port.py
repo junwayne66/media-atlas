@@ -31,15 +31,27 @@ _STOCK = AssetLicense(type=AssetLicenseType.LICENSED_STOCK, holder="stock.co")
 
 def _spec(aid: str, source: AssetSource, *, semantic=0.8, license=_OWNED) -> AssetCandidateSpec:
     return AssetCandidateSpec(
-        asset_id=aid, source=source, license=license, query="q",
+        asset_id=aid,
+        source=source,
+        license=license,
+        query="q",
         provider=f"{source.value.lower()}.fake",
-        semantic=semantic, composition=0.7, resolution=0.7, motion=0.5, color=0.5, brand_ok=1.0,
+        semantic=semantic,
+        composition=0.7,
+        resolution=0.7,
+        motion=0.5,
+        color=0.5,
+        brand_ok=1.0,
     )
 
 
 def _slot() -> AssetPlanSlot:
     return AssetPlanSlot(
-        slot_id="slot-0", start_ms=0, end_ms=5000, role=AssetRole.B_ROLL, query="ai chip demo",
+        slot_id="slot-0",
+        start_ms=0,
+        end_ms=5000,
+        role=AssetRole.B_ROLL,
+        query="ai chip demo",
         composition=CompositionSpec(aspect_ratio="9:16", safe_area="center"),
         allowed_sources=[AssetSource.SOURCE, AssetSource.OWN_LIBRARY, AssetSource.STOCK],
         fallback=AssetRole.INFO_CARD,
@@ -48,9 +60,17 @@ def _slot() -> AssetPlanSlot:
 
 def _to_domain_cand(s: AssetCandidateSpec) -> AssetCandidate:
     return AssetCandidate(
-        asset_id=s.asset_id, source=s.source, license=s.license, query=s.query,
-        provider=s.provider, semantic=s.semantic, composition=s.composition,
-        resolution=s.resolution, motion=s.motion, color=s.color, brand_ok=s.brand_ok,
+        asset_id=s.asset_id,
+        source=s.source,
+        license=s.license,
+        query=s.query,
+        provider=s.provider,
+        semantic=s.semantic,
+        composition=s.composition,
+        resolution=s.resolution,
+        motion=s.motion,
+        color=s.color,
+        brand_ok=s.brand_ok,
         reuse_count=s.reuse_count,
     )
 
@@ -86,15 +106,24 @@ def test_fake_deterministic_and_deep_copies_license() -> None:
 
 def test_end_to_end_multi_source_resolve() -> None:
     # SOURCE 与 OWN_LIBRARY 都有候选，Resolver 应按优先级选中 SOURCE
-    src_fake = FakeAssetSourceProvider(AssetSource.SOURCE, pool={
-        "B_ROLL": [_spec("src-1", AssetSource.SOURCE, semantic=0.6)],
-    })
-    own_fake = FakeAssetSourceProvider(AssetSource.OWN_LIBRARY, pool={
-        "B_ROLL": [_spec("own-1", AssetSource.OWN_LIBRARY, semantic=0.9)],
-    })
-    stock_fake = FakeAssetSourceProvider(AssetSource.STOCK, pool={
-        "B_ROLL": [_spec("stock-1", AssetSource.STOCK, license=_STOCK)],
-    })
+    src_fake = FakeAssetSourceProvider(
+        AssetSource.SOURCE,
+        pool={
+            "B_ROLL": [_spec("src-1", AssetSource.SOURCE, semantic=0.6)],
+        },
+    )
+    own_fake = FakeAssetSourceProvider(
+        AssetSource.OWN_LIBRARY,
+        pool={
+            "B_ROLL": [_spec("own-1", AssetSource.OWN_LIBRARY, semantic=0.9)],
+        },
+    )
+    stock_fake = FakeAssetSourceProvider(
+        AssetSource.STOCK,
+        pool={
+            "B_ROLL": [_spec("stock-1", AssetSource.STOCK, license=_STOCK)],
+        },
+    )
     req = AssetSearchRequest(query="ai chip demo", role="B_ROLL", aspect_ratio="9:16")
     candidates_by_source = {
         AssetSource.SOURCE: [_to_domain_cand(c) for c in src_fake.search(req).candidates],
@@ -127,8 +156,13 @@ def test_fake_deep_copies_input_licenses() -> None:
 
 def test_fake_never_fabricates_license() -> None:
     # Fake 只回放构造时注入的候选；无对应 role 时返回空列表，绝不凭空造 license
-    fake = FakeAssetSourceProvider(AssetSource.STOCK, pool={"TALKING_HEAD": [
-        _spec("t-1", AssetSource.STOCK, license=_STOCK),
-    ]})
+    fake = FakeAssetSourceProvider(
+        AssetSource.STOCK,
+        pool={
+            "TALKING_HEAD": [
+                _spec("t-1", AssetSource.STOCK, license=_STOCK),
+            ]
+        },
+    )
     result = fake.search(AssetSearchRequest(query="q", role="B_ROLL", aspect_ratio="9:16"))
     assert result.ok and result.candidates == []

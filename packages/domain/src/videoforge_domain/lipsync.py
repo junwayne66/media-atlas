@@ -98,9 +98,7 @@ def assess_eligibility(
     # 与脸数无关的检查
     if features.speaker_probability < criteria.min_speaker_probability:
         reasons.append(LipSyncIneligibleReason.LOW_SPEAKER_PROBABILITY)
-    if not (
-        criteria.min_duration_ms <= features.duration_ms <= criteria.max_duration_ms
-    ):
+    if not (criteria.min_duration_ms <= features.duration_ms <= criteria.max_duration_ms):
         reasons.append(LipSyncIneligibleReason.DURATION_OUT_OF_RANGE)
     if criteria.require_dub_aligned and not features.dub_aligned:
         reasons.append(LipSyncIneligibleReason.DUB_NOT_ALIGNED)
@@ -142,7 +140,9 @@ def decide_lipsync(
     # mode=OFF：不评估，保留非口型配音
     if mode is LipSyncMode.OFF:
         return LipSyncSegmentDecision(
-            segment_id=segment_id, start_ms=start_ms, end_ms=end_ms,
+            segment_id=segment_id,
+            start_ms=start_ms,
+            end_ms=end_ms,
             eligible=False,
             ineligible_reasons=[LipSyncIneligibleReason.MODE_OFF],
             method=LipSyncMethod.KEEP_UNSYNCED,
@@ -160,9 +160,14 @@ def decide_lipsync(
         )
         reason_str = "/".join(r.value for r in reasons)
         return LipSyncSegmentDecision(
-            segment_id=segment_id, start_ms=start_ms, end_ms=end_ms,
-            eligible=False, ineligible_reasons=reasons, method=method,
-            needs_review=True, review_reasons=review,
+            segment_id=segment_id,
+            start_ms=start_ms,
+            end_ms=end_ms,
+            eligible=False,
+            ineligible_reasons=reasons,
+            method=method,
+            needs_review=True,
+            review_reasons=review,
             rationale=f"资格不符（{reason_str}）→ 回退 {method.value}",
         )
 
@@ -172,8 +177,11 @@ def decide_lipsync(
     if qa is None:
         # 意图计划：计划 GPU 合成
         return LipSyncSegmentDecision(
-            segment_id=segment_id, start_ms=start_ms, end_ms=end_ms,
-            eligible=True, method=LipSyncMethod.GPU_SYNTHESIS,
+            segment_id=segment_id,
+            start_ms=start_ms,
+            end_ms=end_ms,
+            eligible=True,
+            method=LipSyncMethod.GPU_SYNTHESIS,
             needs_review=force_review,
             review_reasons=[LipSyncReviewReason.FORCE_REVIEW] if force_review else [],
             rationale=(
@@ -187,9 +195,13 @@ def decide_lipsync(
     # QA_PASS_WITHOUT_ARTIFACT 判违（build/validate 自洽性，verifier REFUTED 后修）。
     if qa.passed and synthesized_artifact_id is not None:
         return LipSyncSegmentDecision(
-            segment_id=segment_id, start_ms=start_ms, end_ms=end_ms,
-            eligible=True, method=LipSyncMethod.GPU_SYNTHESIS,
-            synthesized_artifact_id=synthesized_artifact_id, qa=qa,
+            segment_id=segment_id,
+            start_ms=start_ms,
+            end_ms=end_ms,
+            eligible=True,
+            method=LipSyncMethod.GPU_SYNTHESIS,
+            synthesized_artifact_id=synthesized_artifact_id,
+            qa=qa,
             needs_review=force_review,
             review_reasons=[LipSyncReviewReason.FORCE_REVIEW] if force_review else [],
             rationale="资格合格 + QA 通过 + 有产物 → GPU 合成",
@@ -198,8 +210,7 @@ def decide_lipsync(
     # 合格但合成不完整（QA 未过，或 QA 过但缺产物）→ 自动降级（§13：不阻塞，形成警告）
     method = resolve_fallback(availability)
     primary = (
-        LipSyncReviewReason.QA_FAILED if not qa.passed
-        else LipSyncReviewReason.SYNTHESIS_FAILED
+        LipSyncReviewReason.QA_FAILED if not qa.passed else LipSyncReviewReason.SYNTHESIS_FAILED
     )
     review = [primary]
     review.append(
@@ -209,10 +220,15 @@ def decide_lipsync(
     )
     cause = "QA 未过" if not qa.passed else "QA 通过但缺产物"
     return LipSyncSegmentDecision(
-        segment_id=segment_id, start_ms=start_ms, end_ms=end_ms,
-        eligible=True, method=method, qa=qa,
+        segment_id=segment_id,
+        start_ms=start_ms,
+        end_ms=end_ms,
+        eligible=True,
+        method=method,
+        qa=qa,
         fallback_from=LipSyncMethod.GPU_SYNTHESIS,
-        needs_review=True, review_reasons=review,
+        needs_review=True,
+        review_reasons=review,
         rationale=f"资格合格但合成不完整（{cause}）→ 自动降级 {method.value}",
     )
 
@@ -244,16 +260,25 @@ def plan_lipsync(
     criteria = criteria or LipSyncEligibilityCriteria()
     decisions = [
         decide_lipsync(
-            segment_id=inp.segment_id, start_ms=inp.start_ms, end_ms=inp.end_ms,
-            features=inp.features, availability=inp.availability,
-            criteria=criteria, mode=mode, qa=inp.qa,
+            segment_id=inp.segment_id,
+            start_ms=inp.start_ms,
+            end_ms=inp.end_ms,
+            features=inp.features,
+            availability=inp.availability,
+            criteria=criteria,
+            mode=mode,
+            qa=inp.qa,
             synthesized_artifact_id=inp.synthesized_artifact_id,
         )
         for inp in inputs
     ]
     return LipSyncPlan(
-        id=id, localization_variant_id=localization_variant_id, mode=mode,
-        criteria=criteria, decisions=decisions, created_at=created_at,
+        id=id,
+        localization_variant_id=localization_variant_id,
+        mode=mode,
+        criteria=criteria,
+        decisions=decisions,
+        created_at=created_at,
         provider=provider,
     )
 
@@ -263,21 +288,24 @@ def validate_lipsync_plan(plan: LipSyncPlan) -> list[LipSyncIssue]:
     issues: list[LipSyncIssue] = []
 
     if not plan.decisions:
-        issues.append(LipSyncIssue(
-            LipSyncIssueKind.EMPTY_PLAN, plan.id, "计划没有任何决策",
-        ))
+        issues.append(
+            LipSyncIssue(
+                LipSyncIssueKind.EMPTY_PLAN,
+                plan.id,
+                "计划没有任何决策",
+            )
+        )
 
     for d in plan.decisions:
         # 红线：QA 未过却仍标 GPU_SYNTHESIS（未自动降级）
-        if (
-            d.method is LipSyncMethod.GPU_SYNTHESIS
-            and d.qa is not None
-            and not d.qa.passed
-        ):
-            issues.append(LipSyncIssue(
-                LipSyncIssueKind.QA_FAILED_NOT_DOWNGRADED, d.segment_id,
-                "QA 未通过却仍标 GPU_SYNTHESIS——必须自动降级到回退阶梯（§10.2/§13）",
-            ))
+        if d.method is LipSyncMethod.GPU_SYNTHESIS and d.qa is not None and not d.qa.passed:
+            issues.append(
+                LipSyncIssue(
+                    LipSyncIssueKind.QA_FAILED_NOT_DOWNGRADED,
+                    d.segment_id,
+                    "QA 未通过却仍标 GPU_SYNTHESIS——必须自动降级到回退阶梯（§10.2/§13）",
+                )
+            )
         # GPU QA 通过却无产物
         if (
             d.method is LipSyncMethod.GPU_SYNTHESIS
@@ -285,35 +313,44 @@ def validate_lipsync_plan(plan: LipSyncPlan) -> list[LipSyncIssue]:
             and d.qa.passed
             and d.synthesized_artifact_id is None
         ):
-            issues.append(LipSyncIssue(
-                LipSyncIssueKind.QA_PASS_WITHOUT_ARTIFACT, d.segment_id,
-                "GPU_SYNTHESIS QA 通过却缺 synthesized_artifact_id",
-            ))
+            issues.append(
+                LipSyncIssue(
+                    LipSyncIssueKind.QA_PASS_WITHOUT_ARTIFACT,
+                    d.segment_id,
+                    "GPU_SYNTHESIS QA 通过却缺 synthesized_artifact_id",
+                )
+            )
         # FORCE_REVIEW 模式下合格的 GPU 决策必须被标复核
         if (
             plan.mode is LipSyncMode.FORCE_REVIEW
             and d.method is LipSyncMethod.GPU_SYNTHESIS
-            and not (
-                d.needs_review
-                and LipSyncReviewReason.FORCE_REVIEW in d.review_reasons
-            )
+            and not (d.needs_review and LipSyncReviewReason.FORCE_REVIEW in d.review_reasons)
         ):
-            issues.append(LipSyncIssue(
-                LipSyncIssueKind.FORCE_REVIEW_NOT_FLAGGED, d.segment_id,
-                "mode=FORCE_REVIEW 但 GPU_SYNTHESIS 决策未标强制复核",
-            ))
+            issues.append(
+                LipSyncIssue(
+                    LipSyncIssueKind.FORCE_REVIEW_NOT_FLAGGED,
+                    d.segment_id,
+                    "mode=FORCE_REVIEW 但 GPU_SYNTHESIS 决策未标强制复核",
+                )
+            )
         # 自动降级必须形成警告
         if d.fallback_from is not None and not d.needs_review:
-            issues.append(LipSyncIssue(
-                LipSyncIssueKind.DOWNGRADE_WITHOUT_WARNING, d.segment_id,
-                f"从 {d.fallback_from.value} 降级却未置 needs_review（§13 须形成警告）",
-            ))
+            issues.append(
+                LipSyncIssue(
+                    LipSyncIssueKind.DOWNGRADE_WITHOUT_WARNING,
+                    d.segment_id,
+                    f"从 {d.fallback_from.value} 降级却未置 needs_review（§13 须形成警告）",
+                )
+            )
         # OFF 模式全部保留非口型配音
         if plan.mode is LipSyncMode.OFF and d.method is not LipSyncMethod.KEEP_UNSYNCED:
-            issues.append(LipSyncIssue(
-                LipSyncIssueKind.OFF_MODE_NOT_KEEP_UNSYNCED, d.segment_id,
-                f"mode=OFF 但片段 method={d.method.value}（应 KEEP_UNSYNCED）",
-            ))
+            issues.append(
+                LipSyncIssue(
+                    LipSyncIssueKind.OFF_MODE_NOT_KEEP_UNSYNCED,
+                    d.segment_id,
+                    f"mode=OFF 但片段 method={d.method.value}（应 KEEP_UNSYNCED）",
+                )
+            )
     return issues
 
 

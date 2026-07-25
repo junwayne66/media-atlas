@@ -90,8 +90,7 @@ class _UnconfiguredPublishExecutorBase:
             status=PublishExecStatus.UNCONFIGURED,
             error_code=PublishExecErrorCode.ENGINE_UNAVAILABLE,
             detail=(
-                f"未配置真实{self._PLATFORM}官方 API"
-                "（需账号 + 应用审核 + 凭据，stop-condition）"
+                f"未配置真实{self._PLATFORM}官方 API（需账号 + 应用审核 + 凭据，stop-condition）"
             ),
         )
 
@@ -137,9 +136,15 @@ class _FakePublishExecutorBase:
     def _post_url(self, post_id: str) -> str:
         return f"https://example.com/{post_id}"
 
-    def __init__(self, *, name: str, challenge: bool = False,
-                  auth_required: bool = False, rate_limited: bool = False,
-                  preexisting: bool = False) -> None:
+    def __init__(
+        self,
+        *,
+        name: str,
+        challenge: bool = False,
+        auth_required: bool = False,
+        rate_limited: bool = False,
+        preexisting: bool = False,
+    ) -> None:
         self.name = name
         self.challenge = challenge
         self.auth_required = auth_required
@@ -149,14 +154,11 @@ class _FakePublishExecutorBase:
 
     def _injected_error(self) -> tuple[PublishExecStatus, PublishExecErrorCode, str] | None:
         if self.auth_required:
-            return (PublishExecStatus.AUTH_REQUIRED,
-                    PublishExecErrorCode.AUTH_REQUIRED, "需授权")
+            return (PublishExecStatus.AUTH_REQUIRED, PublishExecErrorCode.AUTH_REQUIRED, "需授权")
         if self.challenge:
-            return (PublishExecStatus.CHALLENGE,
-                    PublishExecErrorCode.CHALLENGE, "风控挑战")
+            return (PublishExecStatus.CHALLENGE, PublishExecErrorCode.CHALLENGE, "风控挑战")
         if self.rate_limited:
-            return (PublishExecStatus.FAILED,
-                    PublishExecErrorCode.RATE_LIMITED, "限流")
+            return (PublishExecStatus.FAILED, PublishExecErrorCode.RATE_LIMITED, "限流")
         return None
 
     def creator_info(self) -> CreatorInfoResult:
@@ -167,7 +169,8 @@ class _FakePublishExecutorBase:
                 detail=f"{self._LABEL}：需授权",
             )
         return CreatorInfoResult(
-            status=PublishExecStatus.OK, can_post=True,
+            status=PublishExecStatus.OK,
+            can_post=True,
             privacy_options=("PUBLIC", "FOLLOWERS", "PRIVATE"),
         )
 
@@ -175,8 +178,7 @@ class _FakePublishExecutorBase:
         err = self._injected_error()
         if err is not None:
             status, code, detail = err
-            return SubmitResult(status=status, error_code=code,
-                                 detail=f"{self._LABEL}：{detail}")
+            return SubmitResult(status=status, error_code=code, detail=f"{self._LABEL}：{detail}")
         key = job.idempotency_key
         if key in self._posted:  # 幂等：已提交过 → 返回同一帖子，不重复发布
             return SubmitResult(
@@ -189,7 +191,8 @@ class _FakePublishExecutorBase:
         external_post_id = f"fake-post-{key[:16]}"
         self._posted[key] = external_post_id
         return SubmitResult(
-            status=PublishExecStatus.OK, external_post_id=external_post_id,
+            status=PublishExecStatus.OK,
+            external_post_id=external_post_id,
             external_post_token=f"tok-{key[:12]}",
             warnings=[f"{self._LABEL}：非真实发布"],
         )
@@ -199,8 +202,10 @@ class _FakePublishExecutorBase:
         if self.preexisting or key in self._posted:
             post_id = self._posted.get(key, f"fake-post-{key[:16]}")
             return StatusResult(
-                status=PublishExecStatus.OK, found_post=True,
-                external_post_id=post_id, external_url=self._post_url(post_id),
+                status=PublishExecStatus.OK,
+                found_post=True,
+                external_post_id=post_id,
+                external_url=self._post_url(post_id),
             )
         return StatusResult(status=PublishExecStatus.OK, found_post=False)
 
@@ -211,11 +216,22 @@ class FakeTikTokPublishExecutor(_FakePublishExecutorBase):
     def _post_url(self, post_id: str) -> str:
         return f"https://www.tiktok.com/@fake/video/{post_id}"
 
-    def __init__(self, *, name: str = "publish.tiktok.fake",
-                  challenge: bool = False, auth_required: bool = False,
-                  rate_limited: bool = False, preexisting: bool = False) -> None:
-        super().__init__(name=name, challenge=challenge, auth_required=auth_required,
-                          rate_limited=rate_limited, preexisting=preexisting)
+    def __init__(
+        self,
+        *,
+        name: str = "publish.tiktok.fake",
+        challenge: bool = False,
+        auth_required: bool = False,
+        rate_limited: bool = False,
+        preexisting: bool = False,
+    ) -> None:
+        super().__init__(
+            name=name,
+            challenge=challenge,
+            auth_required=auth_required,
+            rate_limited=rate_limited,
+            preexisting=preexisting,
+        )
 
 
 class FakeDouyinPublishExecutor(_FakePublishExecutorBase):
@@ -224,11 +240,22 @@ class FakeDouyinPublishExecutor(_FakePublishExecutorBase):
     def _post_url(self, post_id: str) -> str:
         return f"https://www.douyin.com/video/{post_id}"
 
-    def __init__(self, *, name: str = "publish.douyin.fake",
-                  challenge: bool = False, auth_required: bool = False,
-                  rate_limited: bool = False, preexisting: bool = False) -> None:
-        super().__init__(name=name, challenge=challenge, auth_required=auth_required,
-                          rate_limited=rate_limited, preexisting=preexisting)
+    def __init__(
+        self,
+        *,
+        name: str = "publish.douyin.fake",
+        challenge: bool = False,
+        auth_required: bool = False,
+        rate_limited: bool = False,
+        preexisting: bool = False,
+    ) -> None:
+        super().__init__(
+            name=name,
+            challenge=challenge,
+            auth_required=auth_required,
+            rate_limited=rate_limited,
+            preexisting=preexisting,
+        )
 
 
 class UnconfiguredBrowserPublishExecutor(_UnconfiguredPublishExecutorBase):
@@ -252,9 +279,14 @@ class FakeBrowserPublishExecutor(_FakePublishExecutorBase):
     def _post_url(self, post_id: str) -> str:
         return f"https://www.tiktok.com/@fake/video/{post_id}"
 
-    def __init__(self, *, name: str = "publish.browser.fake", allowed: bool = True,
-                  challenge_signal: str | None = None,
-                  preexisting: bool = False) -> None:
+    def __init__(
+        self,
+        *,
+        name: str = "publish.browser.fake",
+        allowed: bool = True,
+        challenge_signal: str | None = None,
+        preexisting: bool = False,
+    ) -> None:
         super().__init__(name=name, preexisting=preexisting)
         self.allowed = allowed
         self.challenge_signal = challenge_signal
@@ -280,8 +312,7 @@ class FakeBrowserPublishExecutor(_FakePublishExecutorBase):
                 status=PublishExecStatus.CHALLENGE,
                 error_code=PublishExecErrorCode.CHALLENGE,
                 detail=(
-                    f"浏览器遇挑战信号 {self.challenge_signal!r} → 转人工"
-                    "（绝不自动绕过，§6/§13）"
+                    f"浏览器遇挑战信号 {self.challenge_signal!r} → 转人工（绝不自动绕过，§6/§13）"
                 ),
             )
         return super().submit(job)
@@ -308,9 +339,14 @@ class FakeAndroidPublishExecutor(_FakePublishExecutorBase):
     def _post_url(self, post_id: str) -> str:
         return f"https://www.tiktok.com/@fake/video/{post_id}"
 
-    def __init__(self, *, name: str = "publish.android.fake", device_ready: bool = True,
-                  device_confirm_required: bool = False,
-                  preexisting: bool = False) -> None:
+    def __init__(
+        self,
+        *,
+        name: str = "publish.android.fake",
+        device_ready: bool = True,
+        device_confirm_required: bool = False,
+        preexisting: bool = False,
+    ) -> None:
         super().__init__(name=name, preexisting=preexisting)
         self.device_ready = device_ready
         self.device_confirm_required = device_confirm_required

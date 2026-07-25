@@ -35,30 +35,48 @@ class P3Sample:
     blueprint: VideoBlueprint
 
 
-def _bp(sid: str, dur_ms: int, beats: list[tuple[str, int, int, str]],
-        claims: list[tuple[str, str, ClaimSourceStatus]]) -> VideoBlueprint:
+def _bp(
+    sid: str,
+    dur_ms: int,
+    beats: list[tuple[str, int, int, str]],
+    claims: list[tuple[str, str, ClaimSourceStatus]],
+) -> VideoBlueprint:
     """构造 blueprint：beats 是 [(kind, start, end, summary)]；claims 是 [(id, text, status)]。"""
     rhet = [
-        RhetoricalBeat(id=f"{sid}-r{i}", kind=RhetoricalBeatKind(k),
-                        start_ms=s, end_ms=e, summary=summary)
+        RhetoricalBeat(
+            id=f"{sid}-r{i}", kind=RhetoricalBeatKind(k), start_ms=s, end_ms=e, summary=summary
+        )
         for i, (k, s, e, summary) in enumerate(beats)
     ]
     cs = [
-        Claim(id=cid, text=text, source_status=status,
-              evidence=[EvidenceSpan(kind="transcript", ref_id=f"{sid}-seg-0",
-                                        start_ms=0, end_ms=2000)])
+        Claim(
+            id=cid,
+            text=text,
+            source_status=status,
+            evidence=[
+                EvidenceSpan(kind="transcript", ref_id=f"{sid}-seg-0", start_ms=0, end_ms=2000)
+            ],
+        )
         for cid, text, status in claims
     ]
     return VideoBlueprint(
-        id=f"bp-{sid}", source_artifact_id=f"art-{sid}",
-        duration_ms=dur_ms, claims=cs, rhetorical_beats=rhet,
+        id=f"bp-{sid}",
+        source_artifact_id=f"art-{sid}",
+        duration_ms=dur_ms,
+        claims=cs,
+        rhetorical_beats=rhet,
         visual_beats=[
-            VisualBeat(id=f"{sid}-v0", kind=VisualBeatKind.PERSON,
-                        start_ms=0, end_ms=dur_ms // 2),
-            VisualBeat(id=f"{sid}-v1", kind=VisualBeatKind.SCREEN_RECORD,
-                        start_ms=dur_ms // 2, end_ms=dur_ms),
+            VisualBeat(id=f"{sid}-v0", kind=VisualBeatKind.PERSON, start_ms=0, end_ms=dur_ms // 2),
+            VisualBeat(
+                id=f"{sid}-v1",
+                kind=VisualBeatKind.SCREEN_RECORD,
+                start_ms=dur_ms // 2,
+                end_ms=dur_ms,
+            ),
         ],
-        coverage=1.0, fusion_provider="fake", created_at=_T0,
+        coverage=1.0,
+        fusion_provider="fake",
+        created_at=_T0,
     )
 
 
@@ -106,19 +124,27 @@ def build_samples() -> list[P3Sample]:
     for i, (topic, text, status) in enumerate(_ZH_TOPICS):
         dur = DURATIONS[i % len(DURATIONS)]
         cat = "ai" if topic.startswith("ai-") else "non-ai"
-        samples.append(P3Sample(
-            id=f"zh-{topic}", language="zh-CN", category=cat, duration_target_ms=dur,
-            blueprint=_bp(topic, dur, _standard_beats(dur),
-                           [(f"c-{topic}-0", text, status)]),
-        ))
+        samples.append(
+            P3Sample(
+                id=f"zh-{topic}",
+                language="zh-CN",
+                category=cat,
+                duration_target_ms=dur,
+                blueprint=_bp(topic, dur, _standard_beats(dur), [(f"c-{topic}-0", text, status)]),
+            )
+        )
     for i, (topic, text, status) in enumerate(_EN_TOPICS):
         dur = DURATIONS[i % len(DURATIONS)]
         cat = "ai" if topic.startswith("ai-") else "non-ai"
-        samples.append(P3Sample(
-            id=f"en-{topic}", language="en-US", category=cat, duration_target_ms=dur,
-            blueprint=_bp(topic, dur, _standard_beats(dur),
-                           [(f"c-{topic}-0", text, status)]),
-        ))
+        samples.append(
+            P3Sample(
+                id=f"en-{topic}",
+                language="en-US",
+                category=cat,
+                duration_target_ms=dur,
+                blueprint=_bp(topic, dur, _standard_beats(dur), [(f"c-{topic}-0", text, status)]),
+            )
+        )
     return samples
 
 

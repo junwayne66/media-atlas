@@ -12,11 +12,16 @@ from videoforge_provider_sdk import (
 )
 
 
-def _req(text: str, lang: str, direction=DurationRewriteDirection.SHORTER,
-         *, keep=()) -> DurationRewriteRequest:
+def _req(
+    text: str, lang: str, direction=DurationRewriteDirection.SHORTER, *, keep=()
+) -> DurationRewriteRequest:
     return DurationRewriteRequest(
-        sentence_id="s", text=text, language=lang,
-        current_estimate_ms=3000, target_ms=2000, direction=direction,
+        sentence_id="s",
+        text=text,
+        language=lang,
+        current_estimate_ms=3000,
+        target_ms=2000,
+        direction=direction,
         must_keep_terms=keep,
     )
 
@@ -34,9 +39,7 @@ def test_unconfigured_never_rewrites():
 
 
 def test_fake_shorter_removes_english_vocables():
-    r = FakeDurationRewriteProvider().rewrite(
-        _req("um uh this is the point", "en-US")
-    )
+    r = FakeDurationRewriteProvider().rewrite(_req("um uh this is the point", "en-US"))
     assert r.status is DurationRewriteStatus.OK
     assert r.rewritten_text == "this is the point"
     assert r.claims_unchanged is True
@@ -84,9 +87,7 @@ def test_fake_filler_set_excludes_lexical_content_words():
 
 def test_fake_estimate_matches_domain_estimate():
     # provider 内联估算必须与 domain.estimate_duration_ms 逐位一致
-    r = FakeDurationRewriteProvider().rewrite(
-        _req("um uh this is the point", "en-US")
-    )
+    r = FakeDurationRewriteProvider().rewrite(_req("um uh this is the point", "en-US"))
     assert r.estimated_ms == estimate_duration_ms(r.rewritten_text, "en-US")
     rz = FakeDurationRewriteProvider().rewrite(_req("嗯，这个模型很快", "zh-CN"))
     assert rz.estimated_ms == estimate_duration_ms(rz.rewritten_text, "zh-CN")
@@ -100,9 +101,7 @@ def test_fake_no_filler_makes_no_change():
 
 def test_fake_never_removes_must_keep_term():
     # 'um' 恰是犹豫音，但作为 must_keep_terms → 保护不删；同句其它犹豫音 'uh' 仍删
-    r = FakeDurationRewriteProvider().rewrite(
-        _req("um uh the brand", "en-US", keep=("um",))
-    )
+    r = FakeDurationRewriteProvider().rewrite(_req("um uh the brand", "en-US", keep=("um",)))
     assert r.status is DurationRewriteStatus.OK
     assert r.rewritten_text == "um the brand"  # 'uh' 删，'um' 因保护留下
     assert "um" in r.rewritten_text.split()
@@ -128,7 +127,9 @@ def test_fake_is_deterministic():
     a = p.rewrite(req)
     b = p.rewrite(req)
     assert (a.status, a.rewritten_text, a.estimated_ms) == (
-        b.status, b.rewritten_text, b.estimated_ms
+        b.status,
+        b.rewritten_text,
+        b.estimated_ms,
     )
     # 输入未被 provider 改动
     assert req.text == "um uh this is the point"

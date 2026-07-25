@@ -29,12 +29,18 @@ from videoforge_contracts import (
 )
 
 # 会被 Ducking 压低的轨（背景类）；人声轨作为 sidechain 触发源
-_VOICE_KINDS = frozenset({
-    AudioMixTrackKind.ORIGINAL_VOICE, AudioMixTrackKind.VOICE_DUB,
-})
-_DUCKABLE_KINDS = frozenset({
-    AudioMixTrackKind.MUSIC, AudioMixTrackKind.AMBIENCE,
-})
+_VOICE_KINDS = frozenset(
+    {
+        AudioMixTrackKind.ORIGINAL_VOICE,
+        AudioMixTrackKind.VOICE_DUB,
+    }
+)
+_DUCKABLE_KINDS = frozenset(
+    {
+        AudioMixTrackKind.MUSIC,
+        AudioMixTrackKind.AMBIENCE,
+    }
+)
 
 
 class AudioMixIssueKind(StrEnum):
@@ -59,8 +65,11 @@ def default_ducking_policy() -> DuckingPolicy:
     """§9 合规默认：语音活动 sidechain。"""
     return DuckingPolicy(
         sidechain=DuckingSidechain.VOICE_ACTIVITY,
-        threshold_db=-20.0, ratio=8.0,
-        attack_ms=20, release_ms=300, reduction_db=-8.0,
+        threshold_db=-20.0,
+        ratio=8.0,
+        attack_ms=20,
+        release_ms=300,
+        reduction_db=-8.0,
     )
 
 
@@ -116,57 +125,77 @@ def validate_audio_mix_plan(plan: AudioMixPlan) -> list[AudioMixIssue]:
     by_id = {t.id: t for t in plan.tracks}
 
     if not plan.tracks:
-        issues.append(AudioMixIssue(
-            AudioMixIssueKind.EMPTY_MIX, plan.id, "没有任何音轨",
-        ))
+        issues.append(
+            AudioMixIssue(
+                AudioMixIssueKind.EMPTY_MIX,
+                plan.id,
+                "没有任何音轨",
+            )
+        )
         return issues  # 空计划后续检查无意义
 
     has_voice = any(t.kind in _VOICE_KINDS for t in plan.tracks)
     if not has_voice:
-        issues.append(AudioMixIssue(
-            AudioMixIssueKind.NO_VOICE_TRACK, plan.id,
-            "计划无 VOICE_DUB / ORIGINAL_VOICE 人声轨",
-        ))
+        issues.append(
+            AudioMixIssue(
+                AudioMixIssueKind.NO_VOICE_TRACK,
+                plan.id,
+                "计划无 VOICE_DUB / ORIGINAL_VOICE 人声轨",
+            )
+        )
 
     # Ducking sidechain：切点触发会泵动
-    if plan.ducking is not None and (
-        plan.ducking.sidechain is DuckingSidechain.CUT_POINT
-    ):
-        issues.append(AudioMixIssue(
-            AudioMixIssueKind.DUCKING_CUT_POINT, plan.id,
-            "Ducking sidechain=CUT_POINT 会在每个切点泵动；应改用 VOICE_ACTIVITY（§9）",
-        ))
+    if plan.ducking is not None and (plan.ducking.sidechain is DuckingSidechain.CUT_POINT):
+        issues.append(
+            AudioMixIssue(
+                AudioMixIssueKind.DUCKING_CUT_POINT,
+                plan.id,
+                "Ducking sidechain=CUT_POINT 会在每个切点泵动；应改用 VOICE_ACTIVITY（§9）",
+            )
+        )
 
     for t in plan.tracks:
         # 轨越界
         if t.end_ms > plan.total_duration_ms:
-            issues.append(AudioMixIssue(
-                AudioMixIssueKind.TRACK_OUT_OF_BOUNDS, t.id,
-                f"轨 end_ms={t.end_ms} 超 total_duration_ms={plan.total_duration_ms}",
-            ))
+            issues.append(
+                AudioMixIssue(
+                    AudioMixIssueKind.TRACK_OUT_OF_BOUNDS,
+                    t.id,
+                    f"轨 end_ms={t.end_ms} 超 total_duration_ms={plan.total_duration_ms}",
+                )
+            )
         if t.ducked_by is None:
             continue
         # 声明被 duck 但没有 ducking 策略
         if plan.ducking is None:
-            issues.append(AudioMixIssue(
-                AudioMixIssueKind.DUCKING_WITHOUT_POLICY, t.id,
-                f"轨声明 ducked_by={t.ducked_by!r} 但 plan.ducking 缺失",
-            ))
+            issues.append(
+                AudioMixIssue(
+                    AudioMixIssueKind.DUCKING_WITHOUT_POLICY,
+                    t.id,
+                    f"轨声明 ducked_by={t.ducked_by!r} 但 plan.ducking 缺失",
+                )
+            )
         # 配音轨被压（反优先级）。注意：ORIGINAL_VOICE 被 VOICE_DUB 压是 §9 允许的
         # （替换配音时降低原声），故只拦 VOICE_DUB 被 Ducking。
         if t.kind is AudioMixTrackKind.VOICE_DUB:
-            issues.append(AudioMixIssue(
-                AudioMixIssueKind.VOICE_DUCKED, t.id,
-                f"配音轨 {t.id!r} 不应被 Ducking——目标语言配音须在上",
-            ))
+            issues.append(
+                AudioMixIssue(
+                    AudioMixIssueKind.VOICE_DUCKED,
+                    t.id,
+                    f"配音轨 {t.id!r} 不应被 Ducking——目标语言配音须在上",
+                )
+            )
         # 触发源必须是人声轨（合同已保证 ducked_by 指向存在的轨）
         source = by_id.get(t.ducked_by)
         if source is not None and source.kind not in _VOICE_KINDS:
-            issues.append(AudioMixIssue(
-                AudioMixIssueKind.DUCKED_BY_NON_VOICE, t.id,
-                f"轨 {t.id!r} 的 Ducking 触发源 {source.id!r}（{source.kind.value}）"
-                "不是人声轨；sidechain 应由人声活动驱动（§9）",
-            ))
+            issues.append(
+                AudioMixIssue(
+                    AudioMixIssueKind.DUCKED_BY_NON_VOICE,
+                    t.id,
+                    f"轨 {t.id!r} 的 Ducking 触发源 {source.id!r}（{source.kind.value}）"
+                    "不是人声轨；sidechain 应由人声活动驱动（§9）",
+                )
+            )
     return issues
 
 

@@ -131,11 +131,18 @@ class FakeAssetSourceProvider:
         pool = self._pool.get(request.role, [])
         cands = [
             AssetCandidateSpec(
-                asset_id=c.asset_id, source=c.source,
+                asset_id=c.asset_id,
+                source=c.source,
                 license=c.license.model_copy(deep=True),  # 许可诚实拷贝，绝不被外部改写
-                query=request.query, provider=self.name,
-                semantic=c.semantic, composition=c.composition, resolution=c.resolution,
-                motion=c.motion, color=c.color, brand_ok=c.brand_ok, reuse_count=c.reuse_count,
+                query=request.query,
+                provider=self.name,
+                semantic=c.semantic,
+                composition=c.composition,
+                resolution=c.resolution,
+                motion=c.motion,
+                color=c.color,
+                brand_ok=c.brand_ok,
+                reuse_count=c.reuse_count,
             )
             for c in pool[: request.limit]
         ]

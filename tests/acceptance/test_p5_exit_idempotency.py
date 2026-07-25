@@ -28,15 +28,13 @@ _T0 = datetime(2026, 7, 25, tzinfo=UTC)
 
 def _submitted():
     job = make_uploading_job()
-    return record_submission(job, external_post_token="p1", request_digest="rq",
-                              now=_T0)
+    return record_submission(job, external_post_token="p1", request_digest="rq", now=_T0)
 
 
 def test_timeout_then_reconcile_no_resubmit():
     # 提交 → 网络超时（未知）→ 对账查到已存在帖子 → SUCCEEDED_RECONCILED，绝不重发
     job = _submitted()
-    reconciled = reconcile_publish(job, found_external_post=True,
-                                    external_id="ext_9", now=_T0)
+    reconciled = reconcile_publish(job, found_external_post=True, external_id="ext_9", now=_T0)
     assert reconciled.state is PublishState.SUCCEEDED_RECONCILED
     assert reconciled.external_post_id == "ext_9"
     # 只有一次真实提交
@@ -48,8 +46,7 @@ def test_timeout_then_reconcile_no_resubmit():
 def test_blind_resubmit_is_refused():
     job = _submitted()
     with pytest.raises(IllegalPublishTransition, match="拒绝重复发布"):
-        record_submission(job, external_post_token="p2", request_digest="rq2",
-                           now=_T0)
+        record_submission(job, external_post_token="p2", request_digest="rq2", now=_T0)
 
 
 def test_resubmit_refused_even_after_human_recovery_loop():
@@ -76,13 +73,15 @@ def test_reconcile_not_found_keeps_querying_no_resubmit():
     assert verifying.state is PublishState.VERIFYING  # 继续查，不重发
     # 仍视为已提交，不会再提交
     with pytest.raises(IllegalPublishTransition):
-        record_submission(verifying.model_copy(update={"state": PublishState.UPLOADING}),
-                           external_post_token="x", request_digest="x", now=_T0)
+        record_submission(
+            verifying.model_copy(update={"state": PublishState.UPLOADING}),
+            external_post_token="x",
+            request_digest="x",
+            now=_T0,
+        )
 
 
 def test_no_job_ever_has_two_post_tokens():
     # 走完对账/成功后，护栏确保永不出现两个外部 post token（DOUBLE_SUBMIT）
-    job = reconcile_publish(_submitted(), found_external_post=True,
-                             external_id="e", now=_T0)
-    assert PublishJobIssueKind.DOUBLE_SUBMIT not in {
-        i.kind for i in validate_publish_job(job)}
+    job = reconcile_publish(_submitted(), found_external_post=True, external_id="e", now=_T0)
+    assert PublishJobIssueKind.DOUBLE_SUBMIT not in {i.kind for i in validate_publish_job(job)}

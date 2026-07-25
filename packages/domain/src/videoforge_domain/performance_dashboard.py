@@ -62,6 +62,7 @@ _METRIC_ATTR: dict[MetricField, str] = {
 
 # --- 统计原语（确定性，可复现）---------------------------------------------
 
+
 def percentile(sorted_values: list[float], q: float) -> float | None:
     """线性插值分位数（type-7，numpy 默认）。q ∈ [0,1]。空 → None；单元素 → 该值。"""
     if not sorted_values:
@@ -83,6 +84,7 @@ def _stats(values: list[float]) -> tuple[float | None, float | None, float | Non
 
 # --- 取值 / 相对指标（null-aware）------------------------------------------
 
+
 def metric_value_at_age(
     record: VideoPerformanceRecord, age_hours: float, metric: MetricField
 ) -> float | None:
@@ -102,12 +104,11 @@ def relative_value(
     metric: MetricField,
 ) -> float | None:
     """账号内相对指标：`指标/账号基线中位数`。指标缺失或基线为空/0 → None（绝不当 0）。"""
-    return relative_to_baseline(
-        metric_value_at_age(record, age_hours, metric), baseline_median
-    )
+    return relative_to_baseline(metric_value_at_age(record, age_hours, metric), baseline_median)
 
 
 # --- 分桶 -------------------------------------------------------------------
+
 
 def duration_bucket(duration_ms: int | None) -> str | None:
     if duration_ms is None:
@@ -149,18 +150,20 @@ def bucket_for(dimension: GroupDimension, features: PerformanceFeatures) -> str 
 
 # --- 基线 -------------------------------------------------------------------
 
+
 def compute_account_baseline_entry(
     records: list[VideoPerformanceRecord], age_hours: float, metric: MetricField
 ) -> AccountBaselineEntry:
     """账号在 (age, metric) 的基线：只用**非空**指标样本（null 排除，绝不当 0）。"""
-    values = [
-        v for r in records
-        if (v := metric_value_at_age(r, age_hours, metric)) is not None
-    ]
+    values = [v for r in records if (v := metric_value_at_age(r, age_hours, metric)) is not None]
     median, p25, p75, count = _stats(values)
     return AccountBaselineEntry(
-        age_hours=age_hours, metric=metric,
-        median=median, p25=p25, p75=p75, sample_count=count,
+        age_hours=age_hours,
+        metric=metric,
+        median=median,
+        p25=p25,
+        p75=p75,
+        sample_count=count,
     )
 
 
@@ -175,17 +178,17 @@ def build_account_baseline(
 ) -> AccountBaseline:
     """某账号的多 age×metric 基线。按 account_id + platform 过滤（账号内，绝不跨账号）。"""
     mine = [r for r in records if r.account_id == account_id and r.platform == platform]
-    entries = [
-        compute_account_baseline_entry(mine, age, m)
-        for age in ages_hours for m in metrics
-    ]
+    entries = [compute_account_baseline_entry(mine, age, m) for age in ages_hours for m in metrics]
     return AccountBaseline(
-        account_id=account_id, platform=platform,
-        generated_at=generated_at, entries=entries,
+        account_id=account_id,
+        platform=platform,
+        generated_at=generated_at,
+        entries=entries,
     )
 
 
 # --- 看板 -------------------------------------------------------------------
+
 
 def build_dashboard(
     records: list[VideoPerformanceRecord],
@@ -219,17 +222,29 @@ def build_dashboard(
                 grouped.setdefault(value, [])  # 该维度有此视频但相对值不可用 → count 0
         for value in sorted(grouped):
             median, p25, p75, count = _stats(grouped[value])
-            stats.append(PerformanceGroupStat(
-                dimension=dim, value=value, age_hours=age_hours, metric=metric,
-                sample_count=count, median_relative=median,
-                p25_relative=p25, p75_relative=p75,
-                enough_samples=count >= min_samples,
-            ))
+            stats.append(
+                PerformanceGroupStat(
+                    dimension=dim,
+                    value=value,
+                    age_hours=age_hours,
+                    metric=metric,
+                    sample_count=count,
+                    median_relative=median,
+                    p25_relative=p25,
+                    p75_relative=p75,
+                    enough_samples=count >= min_samples,
+                )
+            )
 
     return PerformanceDashboard(
-        account_id=account_id, platform=platform, generated_at=generated_at,
-        age_hours=age_hours, metric=metric, baseline=baseline,
-        min_samples=min_samples, group_stats=stats,
+        account_id=account_id,
+        platform=platform,
+        generated_at=generated_at,
+        age_hours=age_hours,
+        metric=metric,
+        baseline=baseline,
+        min_samples=min_samples,
+        group_stats=stats,
     )
 
 
@@ -239,8 +254,10 @@ def rank_groups(
     """按相对表现降序排序——**只排 enough_samples 的组**（样本不足绝不排序，§11 红线）。
     确定性 tie-break：维度名 → 值。"""
     eligible = [
-        g for g in dashboard.group_stats
-        if g.enough_samples and g.median_relative is not None
+        g
+        for g in dashboard.group_stats
+        if g.enough_samples
+        and g.median_relative is not None
         and (dimension is None or g.dimension is dimension)
     ]
     return sorted(
@@ -257,6 +274,7 @@ def insufficient_sample_groups(
 
 
 # --- 护栏 -------------------------------------------------------------------
+
 
 class DashboardIssueKind(StrEnum):
     ENOUGH_SAMPLES_INCONSISTENT = "ENOUGH_SAMPLES_INCONSISTENT"  # enough_samples 与阈值不符
@@ -279,18 +297,30 @@ def validate_dashboard(dashboard: PerformanceDashboard) -> list[DashboardIssue]:
     for g in dashboard.group_stats:
         ref = f"{g.dimension.value}:{g.value}"
         if g.enough_samples != (g.sample_count >= dashboard.min_samples):
-            issues.append(DashboardIssue(
-                DashboardIssueKind.ENOUGH_SAMPLES_INCONSISTENT, ref,
-                f"enough_samples={g.enough_samples} 但 count={g.sample_count} "
-                f"min={dashboard.min_samples}"))
+            issues.append(
+                DashboardIssue(
+                    DashboardIssueKind.ENOUGH_SAMPLES_INCONSISTENT,
+                    ref,
+                    f"enough_samples={g.enough_samples} 但 count={g.sample_count} "
+                    f"min={dashboard.min_samples}",
+                )
+            )
         if g.median_relative is not None and not has_baseline:
-            issues.append(DashboardIssue(
-                DashboardIssueKind.RELATIVE_WITHOUT_BASELINE, ref,
-                "median_relative 非空但账号无基线中位数"))
+            issues.append(
+                DashboardIssue(
+                    DashboardIssueKind.RELATIVE_WITHOUT_BASELINE,
+                    ref,
+                    "median_relative 非空但账号无基线中位数",
+                )
+            )
         if g.median_relative is not None and g.sample_count == 0:
-            issues.append(DashboardIssue(
-                DashboardIssueKind.MEDIAN_WITHOUT_SAMPLES, ref,
-                "median_relative 非空但 sample_count=0"))
+            issues.append(
+                DashboardIssue(
+                    DashboardIssueKind.MEDIAN_WITHOUT_SAMPLES,
+                    ref,
+                    "median_relative 非空但 sample_count=0",
+                )
+            )
     return issues
 
 
@@ -304,10 +334,14 @@ def validate_records_single_account(
     issues: list[DashboardIssue] = []
     for r in records:
         if r.account_id != account_id or r.platform != platform:
-            issues.append(DashboardIssue(
-                DashboardIssueKind.CROSS_ACCOUNT_RECORD, r.id,
-                f"记录 account={r.account_id}/{r.platform.value} "
-                f"≠ 目标 {account_id}/{platform.value}"))
+            issues.append(
+                DashboardIssue(
+                    DashboardIssueKind.CROSS_ACCOUNT_RECORD,
+                    r.id,
+                    f"记录 account={r.account_id}/{r.platform.value} "
+                    f"≠ 目标 {account_id}/{platform.value}",
+                )
+            )
     return issues
 
 

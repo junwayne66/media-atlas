@@ -15,7 +15,12 @@ _T0 = datetime(2026, 7, 23, tzinfo=UTC)
 
 def _seg(sid, start, end, conf, words=()) -> TranscriptSegment:
     return TranscriptSegment(
-        id=sid, start_ms=start, end_ms=end, language="zh-CN", text="…", confidence=conf,
+        id=sid,
+        start_ms=start,
+        end_ms=end,
+        language="zh-CN",
+        text="…",
+        confidence=conf,
         words=list(words),
     )
 
@@ -33,10 +38,16 @@ def _transcript(segments) -> Transcript:
 def test_marks_low_confidence_words_and_segments() -> None:
     t = _transcript(
         [
-            _seg("s0", 0, 1000, 0.95, [
-                TranscriptWord(text="高", start_ms=0, end_ms=400, confidence=0.95),
-                TranscriptWord(text="低", start_ms=400, end_ms=1000, confidence=0.4),
-            ]),
+            _seg(
+                "s0",
+                0,
+                1000,
+                0.95,
+                [
+                    TranscriptWord(text="高", start_ms=0, end_ms=400, confidence=0.95),
+                    TranscriptWord(text="低", start_ms=400, end_ms=1000, confidence=0.4),
+                ],
+            ),
             _seg("s1", 1000, 2000, 0.5),  # 段级置信度低
             _seg("s2", 2000, 3000, 0.9),  # 全高
         ]
@@ -63,9 +74,7 @@ def test_replayable() -> None:
 
 
 def test_needs_review_and_spans() -> None:
-    t = mark_low_confidence(
-        _transcript([_seg("s0", 100, 900, 0.4), _seg("s1", 900, 1800, 0.95)])
-    )
+    t = mark_low_confidence(_transcript([_seg("s0", 100, 900, 0.4), _seg("s1", 900, 1800, 0.95)]))
     assert needs_review(t) is True
     assert low_confidence_spans(t) == [(100, 900)]  # 只低置信段
 

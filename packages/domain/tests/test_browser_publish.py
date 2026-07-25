@@ -16,9 +16,14 @@ _WL = ["tiktok.com", "douyin.com"]
 
 # --- §6 域名白名单（host 锚定，防绕过）----------------------------------
 
+
 def test_whitelisted_hosts_allowed():
-    for url in ("https://www.tiktok.com/upload", "https://tiktok.com/x",
-                "https://m.douyin.com/x", "http://user:pw@www.tiktok.com:443/x"):
+    for url in (
+        "https://www.tiktok.com/upload",
+        "https://tiktok.com/x",
+        "https://m.douyin.com/x",
+        "http://user:pw@www.tiktok.com:443/x",
+    ):
         assert is_domain_allowed(url, _WL), url
 
 
@@ -81,6 +86,7 @@ def test_empty_whitelist_blocks_everything():
 
 # --- §6/§13 挑战分类（全部阻塞、转人工）--------------------------------
 
+
 def test_each_challenge_kind_classified():
     cases = {
         BrowserChallengeKind.LOGIN_EXPIRED: "请重新登录，会话过期",
@@ -106,8 +112,12 @@ def test_case_insensitive_challenge():
 
 def test_spaced_login_phrasings_are_caught():
     # verifier 观察：常见登录墙措辞（空格分隔）此前漏判 → 现在应识别为阻塞
-    for text in ("Please log in again", "Your session has expired, please log in",
-                 "You have been logged out", "Authentication required"):
+    for text in (
+        "Please log in again",
+        "Your session has expired, please log in",
+        "You have been logged out",
+        "Authentication required",
+    ):
         got = classify_browser_challenge(text)
         assert got is BrowserChallengeKind.LOGIN_EXPIRED, text
         assert is_blocking_challenge(got)
@@ -115,15 +125,22 @@ def test_spaced_login_phrasings_are_caught():
 
 # --- §6 选择器优先级 -----------------------------------------------------
 
+
 def test_selector_priority_prefers_role():
-    assert preferred_selector([
-        SelectorStrategy.CSS, SelectorStrategy.COORDINATE, SelectorStrategy.ROLE,
-    ]) is SelectorStrategy.ROLE
+    assert (
+        preferred_selector(
+            [
+                SelectorStrategy.CSS,
+                SelectorStrategy.COORDINATE,
+                SelectorStrategy.ROLE,
+            ]
+        )
+        is SelectorStrategy.ROLE
+    )
 
 
 def test_selector_coordinate_is_last_resort():
-    assert preferred_selector([SelectorStrategy.COORDINATE]) is (
-        SelectorStrategy.COORDINATE)
+    assert preferred_selector([SelectorStrategy.COORDINATE]) is (SelectorStrategy.COORDINATE)
 
 
 def test_selector_none_when_empty():
@@ -131,14 +148,20 @@ def test_selector_none_when_empty():
 
 
 def test_selector_order_full():
-    order = [SelectorStrategy.ROLE, SelectorStrategy.LABEL, SelectorStrategy.TEST_ID,
-             SelectorStrategy.CSS, SelectorStrategy.COORDINATE]
+    order = [
+        SelectorStrategy.ROLE,
+        SelectorStrategy.LABEL,
+        SelectorStrategy.TEST_ID,
+        SelectorStrategy.CSS,
+        SelectorStrategy.COORDINATE,
+    ]
     for i in range(len(order)):
         # 只提供第 i 及之后的 → 应选第 i 个（最高优先）
         assert preferred_selector(order[i:]) is order[i]
 
 
 # --- §6 Canary（页面结构契约）------------------------------------------
+
 
 def test_canary_ok_when_required_present():
     assert canary_ok(["a", "b", "c"], ["a", "b"])

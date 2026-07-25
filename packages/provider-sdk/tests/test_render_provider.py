@@ -22,11 +22,21 @@ _T0 = datetime(2026, 7, 23, tzinfo=UTC)
 
 def _request() -> RemotionRenderRequest:
     return RemotionRenderRequest(
-        id="req-0", timeline_id="tl-0", composition=RemotionComposition.CAPTIONS,
-        props=[RemotionProp(key="captions", value=[
-            {"text": "hello", "start_ms": 0, "end_ms": 1000},
-        ])],
-        duration_ms=45000, fps=30, width=1080, height=1920,
+        id="req-0",
+        timeline_id="tl-0",
+        composition=RemotionComposition.CAPTIONS,
+        props=[
+            RemotionProp(
+                key="captions",
+                value=[
+                    {"text": "hello", "start_ms": 0, "end_ms": 1000},
+                ],
+            )
+        ],
+        duration_ms=45000,
+        fps=30,
+        width=1080,
+        height=1920,
         entry_component_path="/staging/remotion/Root.tsx",
         output_path="/staging/out/captions.mp4",
         tool_version="remotion-4.0.240",

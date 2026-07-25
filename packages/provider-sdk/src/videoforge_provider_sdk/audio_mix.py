@@ -100,9 +100,13 @@ class FakeAudioMixProvider:
     - deep-copy 输入；无内部可变状态。
     """
 
-    def __init__(self, *, name: str = "audio_mix.fake",
-                  measured_lufs: float = -14.0,
-                  measured_true_peak_dbtp: float = -1.5) -> None:
+    def __init__(
+        self,
+        *,
+        name: str = "audio_mix.fake",
+        measured_lufs: float = -14.0,
+        measured_true_peak_dbtp: float = -1.5,
+    ) -> None:
         self.name = name
         self.measured_lufs = measured_lufs
         self.measured_true_peak_dbtp = measured_true_peak_dbtp
@@ -115,9 +119,7 @@ class FakeAudioMixProvider:
             true_peak_dbtp=self.measured_true_peak_dbtp,
         )
         true_peak_ok = self.measured_true_peak_dbtp <= target.true_peak_max_dbtp
-        loudness_in_tolerance = (
-            abs(self.measured_lufs - target.lufs) <= target.lufs_tolerance
-        )
+        loudness_in_tolerance = abs(self.measured_lufs - target.lufs) <= target.lufs_tolerance
         if not true_peak_ok:
             return AudioMixResult(
                 status=AudioMixStatus.FAILED,

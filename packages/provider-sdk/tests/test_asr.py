@@ -31,6 +31,7 @@ def _fake(name, langs, *, loc="local", hotwords=False):
 
 # —— 默认 Unconfigured：不静默假装 ——
 
+
 def test_unconfigured_provider_is_honest() -> None:
     r = UnconfiguredASRProvider().transcribe(ASRRequest(audio_path=_AUDIO, language_hint="zh-CN"))
     assert r.status is ASRStatus.UNCONFIGURED
@@ -39,6 +40,7 @@ def test_unconfigured_provider_is_honest() -> None:
 
 
 # —— Fake：回放录制转录 + 语言选择 ——
+
 
 def test_fake_returns_recorded_transcript_for_language() -> None:
     r = _fake("asr.local", ("zh-CN", "en-US")).transcribe(
@@ -85,7 +87,8 @@ def test_provider_without_hotword_support_does_not_boost_or_falsely_record() -> 
 def test_declared_language_without_fixture_fails_not_wrong_language() -> None:
     # 声明支持 fr-FR 但只录了 zh/en → 请求 fr-FR 诚实 FAILED，不回放别的语言冒充
     prov = FakeASRProvider(
-        name="asr.x", languages=("zh-CN", "fr-FR"),
+        name="asr.x",
+        languages=("zh-CN", "fr-FR"),
         transcripts=recorded_transcripts(),  # 只有 zh-CN/en-US
     )
     r = prov.transcribe(ASRRequest(audio_path=_AUDIO, language_hint="fr-FR"))
@@ -94,6 +97,7 @@ def test_declared_language_without_fixture_fails_not_wrong_language() -> None:
 
 
 # —— 路由：语言 + 策略 + 热词 ——
+
 
 def test_router_prefers_local_then_falls_back_to_cloud() -> None:
     local = _fake("asr.whisper_cpp", ("zh-CN", "en-US"), loc="local")
@@ -132,14 +136,17 @@ def test_router_falls_back_over_unconfigured() -> None:
 
 def test_router_all_unconfigured_returns_unconfigured() -> None:
     out = ASRRouter(
-        [UnconfiguredASRProvider("a", languages=("zh-CN",)),
-         UnconfiguredASRProvider("b", languages=("zh-CN",))]
+        [
+            UnconfiguredASRProvider("a", languages=("zh-CN",)),
+            UnconfiguredASRProvider("b", languages=("zh-CN",)),
+        ]
     ).transcribe(ASRRequest(audio_path=_AUDIO, language_hint="zh-CN"))
     assert out.result.status is ASRStatus.UNCONFIGURED
     assert not out.ok
 
 
 # —— 混语预分段端口 ——
+
 
 def test_language_segmenter_fake_and_unconfigured() -> None:
     spans = [LanguageSpan(0, 1600, "zh-CN"), LanguageSpan(1600, 3000, "en-US")]

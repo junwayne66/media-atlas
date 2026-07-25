@@ -33,20 +33,28 @@ _WEIGHTS = HighlightWeights(template_version="highlight-v1")
 
 def _transcript(n: int, seg_ms: int = 5000) -> Transcript:
     return Transcript(
-        id="tr", language="zh-CN",
+        id="tr",
+        language="zh-CN",
         segments=[
-            TranscriptSegment(id=f"seg-{i}", start_ms=i * seg_ms, end_ms=(i + 1) * seg_ms,
-                              language="zh-CN", text=f"第{i}句讲了一个要点并给出实测结论",
-                              confidence=0.9)
+            TranscriptSegment(
+                id=f"seg-{i}",
+                start_ms=i * seg_ms,
+                end_ms=(i + 1) * seg_ms,
+                language="zh-CN",
+                text=f"第{i}句讲了一个要点并给出实测结论",
+                confidence=0.9,
+            )
             for i in range(n)
         ],
-        models=TranscriptModels(asr_provider="asr.x"), created_at=_T0,
+        models=TranscriptModels(asr_provider="asr.x"),
+        created_at=_T0,
     )
 
 
 def _spec(start: int, end: int, text: str, idx: int, total: int) -> HighlightWindowSpec:
-    return HighlightWindowSpec(start_ms=start, end_ms=end, text=text,
-                              index_in_video=idx, total_windows=total)
+    return HighlightWindowSpec(
+        start_ms=start, end_ms=end, text=text, index_in_video=idx, total_windows=total
+    )
 
 
 def test_protocol_conformance() -> None:
@@ -77,9 +85,11 @@ def test_fake_deterministic_and_aligned() -> None:
 def test_fake_position_signal_hook_vs_ending() -> None:
     # 靠前窗口 hook 更强、靠后窗口 ending_payoff 更强（位置信号确定性）
     specs = [_spec(i * 5000, i * 5000 + 20000, "同样的文本", i, 4) for i in range(4)]
-    feats = FakeHighlightFeatureProvider().score(
-        HighlightFeatureRequest(windows=specs, video_duration_ms=40000)
-    ).features
+    feats = (
+        FakeHighlightFeatureProvider()
+        .score(HighlightFeatureRequest(windows=specs, video_duration_ms=40000))
+        .features
+    )
     assert feats[0].hook_strength > feats[-1].hook_strength
     assert feats[-1].ending_payoff > feats[0].ending_payoff
 
@@ -88,18 +98,21 @@ def test_end_to_end_transcript_to_top_n() -> None:
     tr = _transcript(8)  # 8 句 × 5s = 40s
     windows = build_candidate_windows(tr, min_ms=12000, max_ms=30000)
     assert windows
-    specs = [
-        _spec(w.start_ms, w.end_ms, w.text, i, len(windows)) for i, w in enumerate(windows)
-    ]
+    specs = [_spec(w.start_ms, w.end_ms, w.text, i, len(windows)) for i, w in enumerate(windows)]
     result_feats = FakeHighlightFeatureProvider().score(
         HighlightFeatureRequest(windows=specs, video_duration_ms=40000)
     )
     assert result_feats.ok
 
     hl = rank_highlights(
-        windows, result_feats.features, weights=_WEIGHTS, top_n=3,
-        id_prefix="01J2ZK3AC9V6XW8YQ4R5T6U7ZH", created_at=_T0,
-        source_transcript_id=tr.id, feature_provider="highlight.fake",
+        windows,
+        result_feats.features,
+        weights=_WEIGHTS,
+        top_n=3,
+        id_prefix="01J2ZK3AC9V6XW8YQ4R5T6U7ZH",
+        created_at=_T0,
+        source_transcript_id=tr.id,
+        feature_provider="highlight.fake",
     )
     assert 1 <= len(hl.candidates) <= 3
     assert hl.feature_provider == "highlight.fake"

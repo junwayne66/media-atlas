@@ -28,8 +28,10 @@ _T0 = datetime(2026, 7, 25, tzinfo=UTC)
 
 # 非 OK（须停/降级）的状态
 _NON_OK = {
-    PublishExecStatus.CHALLENGE, PublishExecStatus.AUTH_REQUIRED,
-    PublishExecStatus.FAILED, PublishExecStatus.UNCONFIGURED,
+    PublishExecStatus.CHALLENGE,
+    PublishExecStatus.AUTH_REQUIRED,
+    PublishExecStatus.FAILED,
+    PublishExecStatus.UNCONFIGURED,
 }
 
 
@@ -74,4 +76,5 @@ def test_challenge_classification_all_blocking():
     for sig in ("please log in again", "captcha", "设备确认", "内容警告", "风控异常"):
         assert is_blocking_challenge(classify_browser_challenge(sig)), sig
     assert not is_blocking_challenge(
-        classify_browser_challenge("upload complete, ready to publish"))
+        classify_browser_challenge("upload complete, ready to publish")
+    )

@@ -56,12 +56,18 @@ def build_beat_template(
     if not beats:
         # 无节拍 → 单槽铺满目标时长
         slot = BeatSlot(
-            id="slot-0", role=RhetoricalBeatKind.UNCLASSIFIED, start_ms=0,
-            end_ms=duration_target_ms, target_duration_ms=duration_target_ms,
+            id="slot-0",
+            role=RhetoricalBeatKind.UNCLASSIFIED,
+            start_ms=0,
+            end_ms=duration_target_ms,
+            target_duration_ms=duration_target_ms,
         )
         return BeatTemplate(
-            id=template_id, source_blueprint_id=blueprint.id,
-            duration_target_ms=duration_target_ms, slots=[slot], created_at=created_at,
+            id=template_id,
+            source_blueprint_id=blueprint.id,
+            duration_target_ms=duration_target_ms,
+            slots=[slot],
+            created_at=created_at,
         )
     source_dur = blueprint.duration_ms
     slots: list[BeatSlot] = []
@@ -87,8 +93,11 @@ def build_beat_template(
         )
         cursor = end
     return BeatTemplate(
-        id=template_id, source_blueprint_id=blueprint.id, duration_target_ms=duration_target_ms,
-        slots=slots, created_at=created_at,
+        id=template_id,
+        source_blueprint_id=blueprint.id,
+        duration_target_ms=duration_target_ms,
+        slots=slots,
+        created_at=created_at,
     )
 
 

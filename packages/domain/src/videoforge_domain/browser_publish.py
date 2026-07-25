@@ -47,27 +47,65 @@ class SelectorStrategy(StrEnum):
 
 
 _SELECTOR_PRIORITY: tuple[SelectorStrategy, ...] = (
-    SelectorStrategy.ROLE, SelectorStrategy.LABEL, SelectorStrategy.TEST_ID,
-    SelectorStrategy.CSS, SelectorStrategy.COORDINATE,
+    SelectorStrategy.ROLE,
+    SelectorStrategy.LABEL,
+    SelectorStrategy.TEST_ID,
+    SelectorStrategy.CSS,
+    SelectorStrategy.COORDINATE,
 )
 
 _CHALLENGE_KEYS: dict[BrowserChallengeKind, tuple[str, ...]] = {
     BrowserChallengeKind.LOGIN_EXPIRED: (
-        "login", "log in", "登录", "登陆", "sign in", "signin", "登入", "please sign",
-        "会话过期", "session expired", "session has expired", "logged out",
-        "authentication required", "未登录", "重新登录", "重新登陆",
+        "login",
+        "log in",
+        "登录",
+        "登陆",
+        "sign in",
+        "signin",
+        "登入",
+        "please sign",
+        "会话过期",
+        "session expired",
+        "session has expired",
+        "logged out",
+        "authentication required",
+        "未登录",
+        "重新登录",
+        "重新登陆",
     ),
     BrowserChallengeKind.CAPTCHA: (
-        "captcha", "验证码", "slider", "滑块", "拼图", "verify you are human", "人机验证",
+        "captcha",
+        "验证码",
+        "slider",
+        "滑块",
+        "拼图",
+        "verify you are human",
+        "人机验证",
     ),
     BrowserChallengeKind.DEVICE_CONFIRM: (
-        "device", "设备确认", "确认设备", "trust this device", "扫码确认", "二次确认",
+        "device",
+        "设备确认",
+        "确认设备",
+        "trust this device",
+        "扫码确认",
+        "二次确认",
     ),
     BrowserChallengeKind.CONTENT_WARNING: (
-        "content warning", "内容警告", "违规", "policy", "社区规范", "不适宜", "涉嫌",
+        "content warning",
+        "内容警告",
+        "违规",
+        "policy",
+        "社区规范",
+        "不适宜",
+        "涉嫌",
     ),
     BrowserChallengeKind.RISK_CONTROL: (
-        "风控", "risk", "abnormal", "异常", "安全验证", "security check",
+        "风控",
+        "risk",
+        "abnormal",
+        "异常",
+        "安全验证",
+        "security check",
     ),
 }
 
@@ -132,7 +170,8 @@ def preferred_selector(available: Iterable[SelectorStrategy]) -> SelectorStrateg
 
 
 def canary_ok(
-    observed_selectors: Iterable[str], required_selectors: Iterable[str],
+    observed_selectors: Iterable[str],
+    required_selectors: Iterable[str],
 ) -> bool:
     """§6 页面结构契约：所有必需选择器都在观察到的集合里才算通过。"""
     return set(required_selectors) <= set(observed_selectors)

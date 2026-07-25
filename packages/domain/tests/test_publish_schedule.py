@@ -30,6 +30,7 @@ def _at(h: int, m: int = 0) -> datetime:
 
 # --- §4.4 日程 -----------------------------------------------------------
 
+
 def test_parse_window():
     assert parse_publishing_window("18:00-22:00") == (time(18, 0), time(22, 0))
     assert parse_publishing_window("immediate") is None
@@ -64,8 +65,7 @@ def test_next_publish_time():
     # 窗口前 → 今天开窗
     assert next_publish_time("18:00-22:00", _at(12)) == _at(18)
     # 窗口后 → 明天开窗
-    assert next_publish_time("18:00-22:00", _at(23)) == datetime(
-        2026, 7, 26, 18, 0, tzinfo=UTC)
+    assert next_publish_time("18:00-22:00", _at(23)) == datetime(2026, 7, 26, 18, 0, tzinfo=UTC)
     # 窗口内 → 立即（原时刻）
     assert next_publish_time("18:00-22:00", _at(19)) == _at(19)
     # immediate → 立即
@@ -74,17 +74,25 @@ def test_next_publish_time():
 
 # --- §5 副本键（重复帖子防护）-------------------------------------------
 
+
 def _key(copy_index: int) -> str:
     return compute_copy_idempotency_key(
-        account_id="a", platform=PublishPlatform.TIKTOK, render_digest="r",
-        metadata_digest="m", scheduled_window="immediate", copy_index=copy_index,
+        account_id="a",
+        platform=PublishPlatform.TIKTOK,
+        render_digest="r",
+        metadata_digest="m",
+        scheduled_window="immediate",
+        copy_index=copy_index,
     )
 
 
 def test_copy_zero_equals_base_for_dedup():
     base = compute_idempotency_key(
-        account_id="a", platform=PublishPlatform.TIKTOK, render_digest="r",
-        metadata_digest="m", scheduled_window="immediate",
+        account_id="a",
+        platform=PublishPlatform.TIKTOK,
+        render_digest="r",
+        metadata_digest="m",
+        scheduled_window="immediate",
     )
     assert _key(0) == base  # 同内容 → 同键 → 去重，不重复发布
 
@@ -102,11 +110,17 @@ def test_negative_copy_index_rejected():
 
 # --- §5 手工完成 + reconcile-from-human 修复 ----------------------------
 
+
 def _human_waiting():
     j = new_publish_job(
-        id="j", account_id="a", platform=PublishPlatform.TIKTOK,
-        method=PublishMethod.ANDROID_DEVICE, render_digest="r", metadata_digest="m",
-        scheduled_window="immediate", created_at=_T0,
+        id="j",
+        account_id="a",
+        platform=PublishPlatform.TIKTOK,
+        method=PublishMethod.ANDROID_DEVICE,
+        render_digest="r",
+        metadata_digest="m",
+        scheduled_window="immediate",
+        created_at=_T0,
     ).model_copy(update={"state": PublishState.UPLOADING})
     j = record_submission(j, external_post_token="p1", request_digest="rq", now=_T0)
     return to_waiting_for_human(j, now=_T0)
@@ -126,9 +140,14 @@ def test_manual_completion_requires_external_id():
 
 def test_manual_completion_only_from_waiting_for_human():
     j = new_publish_job(
-        id="j", account_id="a", platform=PublishPlatform.TIKTOK,
-        method=PublishMethod.OFFICIAL_API, render_digest="r", metadata_digest="m",
-        scheduled_window="immediate", created_at=_T0,
+        id="j",
+        account_id="a",
+        platform=PublishPlatform.TIKTOK,
+        method=PublishMethod.OFFICIAL_API,
+        render_digest="r",
+        metadata_digest="m",
+        scheduled_window="immediate",
+        created_at=_T0,
     ).model_copy(update={"state": PublishState.UPLOADING})
     with pytest.raises(IllegalPublishTransition):
         mark_manually_completed(j, external_id="x", now=_T0)
@@ -139,13 +158,13 @@ def test_manual_completion_never_double_publishes():
     # 只有一次真实提交记录，手工完成不新增提交
     posted = [a for a in mc.attempts if a.external_post_token]
     assert len(posted) == 1
-    assert PublishJobIssueKind.DOUBLE_SUBMIT not in {
-        i.kind for i in validate_publish_job(mc)}
+    assert PublishJobIssueKind.DOUBLE_SUBMIT not in {i.kind for i in validate_publish_job(mc)}
 
 
 def test_reconcile_from_waiting_for_human_now_works():
     # VF-503 潜在不一致：reconcile 接受 WAITING_FOR_HUMAN 却被迁移表拒 → 现已修
-    rec = reconcile_publish(_human_waiting(), found_external_post=True,
-                             external_id="ext_rec", now=_T0)
+    rec = reconcile_publish(
+        _human_waiting(), found_external_post=True, external_id="ext_rec", now=_T0
+    )
     assert rec.state is PublishState.SUCCEEDED_RECONCILED
     assert rec.external_post_id == "ext_rec"

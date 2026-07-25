@@ -23,17 +23,24 @@ from videoforge_provider_sdk import (
 _T0 = datetime(2026, 7, 24, tzinfo=UTC)
 
 
-def _plan(*, lufs: float = -14.0, tol: float = 2.0,
-          true_peak: float = -1.0) -> AudioMixPlan:
+def _plan(*, lufs: float = -14.0, tol: float = 2.0, true_peak: float = -1.0) -> AudioMixPlan:
     return AudioMixPlan(
         id="am",
-        tracks=[AudioMixTrack(
-            id="dub", kind=AudioMixTrackKind.VOICE_DUB, start_ms=0, end_ms=8000,
-        )],
+        tracks=[
+            AudioMixTrack(
+                id="dub",
+                kind=AudioMixTrackKind.VOICE_DUB,
+                start_ms=0,
+                end_ms=8000,
+            )
+        ],
         loudness_target=LoudnessTarget(
-            lufs=lufs, lufs_tolerance=tol, true_peak_max_dbtp=true_peak,
+            lufs=lufs,
+            lufs_tolerance=tol,
+            true_peak_max_dbtp=true_peak,
         ),
-        total_duration_ms=8000, created_at=_T0,
+        total_duration_ms=8000,
+        created_at=_T0,
     )
 
 
@@ -84,9 +91,7 @@ def test_fake_loudness_out_of_tolerance_warns_but_ok():
 
 def test_fake_loudness_tolerance_boundary():
     # 差值恰好等于容差（≤）→ 在容差内
-    r = FakeAudioMixProvider(measured_lufs=-16.0).mix(
-        AudioMixRequest(_plan(lufs=-14.0, tol=2.0))
-    )
+    r = FakeAudioMixProvider(measured_lufs=-16.0).mix(AudioMixRequest(_plan(lufs=-14.0, tol=2.0)))
     assert r.loudness_in_tolerance is True
 
 
@@ -95,7 +100,9 @@ def test_fake_is_deterministic():
     a = p.mix(AudioMixRequest(_plan()))
     b = p.mix(AudioMixRequest(_plan()))
     assert (a.status, a.output_artifact_id, a.measured) == (
-        b.status, b.output_artifact_id, b.measured
+        b.status,
+        b.output_artifact_id,
+        b.measured,
     )
 
 
@@ -110,9 +117,11 @@ def test_fake_module_has_zero_io_imports():
         elif isinstance(node, ast.ImportFrom) and node.module:
             imported.add(node.module.split(".")[0])
     allowed = {
-        "__future__", "copy", "dataclasses", "enum", "typing",
+        "__future__",
+        "copy",
+        "dataclasses",
+        "enum",
+        "typing",
         "videoforge_contracts",
     }
-    assert imported <= allowed, (
-        f"audio_mix provider 引入了非白名单模块: {imported - allowed}"
-    )
+    assert imported <= allowed, f"audio_mix provider 引入了非白名单模块: {imported - allowed}"

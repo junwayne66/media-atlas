@@ -30,20 +30,27 @@ def _rt(v: int, rate: int = 30) -> RationalTime:
 
 
 def _seg(sid: str, start: int, dur: int, **kw) -> Segment:
-    return Segment(id=sid, time_range=RationalTimeRange(start=_rt(start), duration=_rt(dur)),
-                    **kw)
+    return Segment(id=sid, time_range=RationalTimeRange(start=_rt(start), duration=_rt(dur)), **kw)
 
 
 def _timeline() -> CreativeTimeline:
-    v4 = Track(id="v4", kind=TrackKind.V4_CAPTIONS, segments=[
-        _seg("cap0", 0, 45, script_sentence_id="s-0", speaker_id="host"),
-        _seg("cap1", 45, 90, script_sentence_id="s-1"),
-    ])
-    v1 = Track(id="v1", kind=TrackKind.V1_PRIMARY_VIDEO,
-                segments=[_seg("v0", 0, 150, source_ref="asset-a")])
+    v4 = Track(
+        id="v4",
+        kind=TrackKind.V4_CAPTIONS,
+        segments=[
+            _seg("cap0", 0, 45, script_sentence_id="s-0", speaker_id="host"),
+            _seg("cap1", 45, 90, script_sentence_id="s-1"),
+        ],
+    )
+    v1 = Track(
+        id="v1",
+        kind=TrackKind.V1_PRIMARY_VIDEO,
+        segments=[_seg("v0", 0, 150, source_ref="asset-a")],
+    )
     a0 = Track(id="a0", kind=TrackKind.A0_ORIGINAL, segments=[_seg("a0-0", 0, 150)])
-    return CreativeTimeline(id="tl", rate=30, duration=_rt(150),
-                             tracks=[v1, v4, a0], created_at=_T0)
+    return CreativeTimeline(
+        id="tl", rate=30, duration=_rt(150), tracks=[v1, v4, a0], created_at=_T0
+    )
 
 
 def _config(**over) -> RemotionCompileConfig:
@@ -59,9 +66,11 @@ def _config(**over) -> RemotionCompileConfig:
 
 # —— 编译 ——
 
+
 def test_compile_captions_composition_produces_typed_props() -> None:
-    req = compile_timeline_to_remotion(_timeline(), _config(),
-                                         request_id="req-0", tool_version="remotion-4.0.240")
+    req = compile_timeline_to_remotion(
+        _timeline(), _config(), request_id="req-0", tool_version="remotion-4.0.240"
+    )
     assert req.composition is RemotionComposition.CAPTIONS
     prop_map = {p.key: p.value for p in req.props}
     assert prop_map["composition"] == "CAPTIONS"
@@ -79,14 +88,23 @@ def test_compile_info_card_composition_skips_captions() -> None:
     # INFO_CARD 组件不需要 CAPTIONS 轨的 props
     tl = _timeline()
     # 加一个 V3 info card 轨
-    tl_with_info = tl.model_copy(update={
-        "tracks": [*tl.tracks, Track(id="v3", kind=TrackKind.V3_INFO_CARDS,
-                                        segments=[_seg("card0", 0, 60,
-                                                        template_slot="stat-block")])],
-    })
+    tl_with_info = tl.model_copy(
+        update={
+            "tracks": [
+                *tl.tracks,
+                Track(
+                    id="v3",
+                    kind=TrackKind.V3_INFO_CARDS,
+                    segments=[_seg("card0", 0, 60, template_slot="stat-block")],
+                ),
+            ],
+        }
+    )
     req = compile_timeline_to_remotion(
-        tl_with_info, _config(composition=RemotionComposition.INFO_CARD),
-        request_id="req-1", tool_version="remotion-4.0.240",
+        tl_with_info,
+        _config(composition=RemotionComposition.INFO_CARD),
+        request_id="req-1",
+        tool_version="remotion-4.0.240",
     )
     prop_map = {p.key: p.value for p in req.props}
     assert "info_cards" in prop_map
@@ -96,12 +114,14 @@ def test_compile_info_card_composition_skips_captions() -> None:
 
 # —— 安全：白名单强制（复用 VF-307 段级归一化）——
 
+
 def test_compile_rejects_entry_path_outside_whitelist() -> None:
     with pytest.raises(UnsafeInputPath, match="entry_component_path"):
         compile_timeline_to_remotion(
             _timeline(),
             _config(entry_component_path="/etc/passwd"),
-            request_id="req", tool_version="remotion-4.0.240",
+            request_id="req",
+            tool_version="remotion-4.0.240",
         )
 
 
@@ -110,7 +130,8 @@ def test_compile_rejects_output_path_outside_whitelist() -> None:
         compile_timeline_to_remotion(
             _timeline(),
             _config(output_path="/tmp/attack.mp4"),
-            request_id="req", tool_version="remotion-4.0.240",
+            request_id="req",
+            tool_version="remotion-4.0.240",
         )
 
 
@@ -120,15 +141,18 @@ def test_compile_rejects_dotdot_traversal_in_entry_path() -> None:
         compile_timeline_to_remotion(
             _timeline(),
             _config(entry_component_path="/staging/../../etc/passwd"),
-            request_id="req", tool_version="remotion-4.0.240",
+            request_id="req",
+            tool_version="remotion-4.0.240",
         )
 
 
 # —— serialize_props / cache key 复现 ——
 
+
 def test_serialize_props_deterministic() -> None:
-    req = compile_timeline_to_remotion(_timeline(), _config(),
-                                         request_id="req", tool_version="remotion-4.0.240")
+    req = compile_timeline_to_remotion(
+        _timeline(), _config(), request_id="req", tool_version="remotion-4.0.240"
+    )
     a = serialize_props(req.props)
     b = serialize_props(req.props)
     assert a == b
@@ -137,33 +161,57 @@ def test_serialize_props_deterministic() -> None:
 
 
 def test_remotion_cache_key_reproducible_and_sensitive() -> None:
-    req = compile_timeline_to_remotion(_timeline(), _config(),
-                                         request_id="req", tool_version="remotion-4.0.240")
-    m1 = build_remotion_render_manifest(req, manifest_id="m", created_at=_T0,
-                                          tool_version="remotion-4.0.240",
-                                          input_digests={"asset-a": "a" * 64})
+    req = compile_timeline_to_remotion(
+        _timeline(), _config(), request_id="req", tool_version="remotion-4.0.240"
+    )
+    m1 = build_remotion_render_manifest(
+        req,
+        manifest_id="m",
+        created_at=_T0,
+        tool_version="remotion-4.0.240",
+        input_digests={"asset-a": "a" * 64},
+    )
     k1 = remotion_manifest_cache_key(m1)
     assert k1 == remotion_manifest_cache_key(m1)  # 复现
-    m2 = build_remotion_render_manifest(req, manifest_id="m", created_at=_T0,
-                                          tool_version="remotion-4.0.241",  # 版本变
-                                          input_digests={"asset-a": "a" * 64})
+    m2 = build_remotion_render_manifest(
+        req,
+        manifest_id="m",
+        created_at=_T0,
+        tool_version="remotion-4.0.241",  # 版本变
+        input_digests={"asset-a": "a" * 64},
+    )
     assert remotion_manifest_cache_key(m2) != k1
 
 
 def test_remotion_cache_key_sensitive_to_props_change() -> None:
     tl = _timeline()
-    req1 = compile_timeline_to_remotion(tl, _config(),
-                                          request_id="req", tool_version="remotion-4.0.240")
+    req1 = compile_timeline_to_remotion(
+        tl, _config(), request_id="req", tool_version="remotion-4.0.240"
+    )
     # 改字幕文本（间接通过修改 timeline）应影响 cache key
-    tl2 = tl.model_copy(update={
-        "tracks": [t if t.id != "v4" else Track(id="v4", kind=TrackKind.V4_CAPTIONS, segments=[
-            _seg("cap0", 0, 60, script_sentence_id="s-0"),  # 时长变化
-        ]) for t in tl.tracks],
-    })
-    req2 = compile_timeline_to_remotion(tl2, _config(),
-                                          request_id="req", tool_version="remotion-4.0.240")
-    m1 = build_remotion_render_manifest(req1, manifest_id="m", created_at=_T0,
-                                          tool_version="remotion-4.0.240")
-    m2 = build_remotion_render_manifest(req2, manifest_id="m", created_at=_T0,
-                                          tool_version="remotion-4.0.240")
+    tl2 = tl.model_copy(
+        update={
+            "tracks": [
+                t
+                if t.id != "v4"
+                else Track(
+                    id="v4",
+                    kind=TrackKind.V4_CAPTIONS,
+                    segments=[
+                        _seg("cap0", 0, 60, script_sentence_id="s-0"),  # 时长变化
+                    ],
+                )
+                for t in tl.tracks
+            ],
+        }
+    )
+    req2 = compile_timeline_to_remotion(
+        tl2, _config(), request_id="req", tool_version="remotion-4.0.240"
+    )
+    m1 = build_remotion_render_manifest(
+        req1, manifest_id="m", created_at=_T0, tool_version="remotion-4.0.240"
+    )
+    m2 = build_remotion_render_manifest(
+        req2, manifest_id="m", created_at=_T0, tool_version="remotion-4.0.240"
+    )
     assert remotion_manifest_cache_key(m1) != remotion_manifest_cache_key(m2)

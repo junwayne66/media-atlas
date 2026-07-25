@@ -68,7 +68,8 @@ _TRANSLATION_FORBIDDEN = {
 
 
 def _find_kind_policy(
-    policy: TextLocalizationPolicy, kind: TextTrackKind,
+    policy: TextLocalizationPolicy,
+    kind: TextTrackKind,
 ) -> TextLocalizationKindPolicy | None:
     for p in policy.per_kind:
         if p.kind is kind:
@@ -140,9 +141,7 @@ def decide_strategy(
             translated_text=None,
             needs_review=True,
             review_reasons=[TextLocalizationReviewReason.UNKNOWN_KIND],
-            rationale=(
-                f"policy 未为 kind={track.kind.value} 配置策略，默认 SKIP + 交人工"
-            ),
+            rationale=(f"policy 未为 kind={track.kind.value} 配置策略，默认 SKIP + 交人工"),
         )
 
     # UI 授权确认
@@ -156,9 +155,7 @@ def decide_strategy(
             translated_text=translated_text,
             needs_review=True,
             review_reasons=[TextLocalizationReviewReason.LICENSE_UNCONFIRMED],
-            rationale=(
-                f"{track.kind.value} 需授权确认，默认旁注（LOCALIZE_ANNOTATION）而非覆盖"
-            ),
+            rationale=(f"{track.kind.value} 需授权确认，默认旁注（LOCALIZE_ANNOTATION）而非覆盖"),
         )
 
     strategy = kind_policy.default_strategy
@@ -196,7 +193,8 @@ def decide_strategy(
             f"{track.kind.value} 按 policy 默认 {kind_policy.default_strategy.value}"
             + (
                 f"，回退至 {strategy.value}（{','.join(r.value for r in reasons)}）"
-                if reasons else ""
+                if reasons
+                else ""
             )
         ),
     )
@@ -284,8 +282,9 @@ def validate_text_localization_plan(
     """本地化计划护栏——返回全部违规（空 = 通过）。"""
     issues: list[TextLocalizationIssue] = []
     if not plan.decisions:
-        issues.append(TextLocalizationIssue(
-            TextLocalizationIssueKind.EMPTY_PLAN, plan.id, "计划无决策"))
+        issues.append(
+            TextLocalizationIssue(TextLocalizationIssueKind.EMPTY_PLAN, plan.id, "计划无决策")
+        )
         return issues
     req_ids = {r.id for r in plan.clean_plate_requests}
     for d in plan.decisions:
@@ -295,80 +294,114 @@ def validate_text_localization_plan(
             TextLocalizationStrategy.REDRAW,
             TextLocalizationStrategy.REPLACE_OVERLAY,
         }:
-            issues.append(TextLocalizationIssue(
-                TextLocalizationIssueKind.BRAND_MARK_ILLEGAL_STRATEGY, ref,
-                f"BRAND_MARK 不得走 {d.strategy.value}（§6.1 授权红线）",
-            ))
+            issues.append(
+                TextLocalizationIssue(
+                    TextLocalizationIssueKind.BRAND_MARK_ILLEGAL_STRATEGY,
+                    ref,
+                    f"BRAND_MARK 不得走 {d.strategy.value}（§6.1 授权红线）",
+                )
+            )
         # UNKNOWN 不路由
         if d.source_kind is TextTrackKind.UNKNOWN and d.strategy not in {
             TextLocalizationStrategy.SKIP,
         }:
-            issues.append(TextLocalizationIssue(
-                TextLocalizationIssueKind.UNKNOWN_KIND_NOT_ROUTED, ref,
-                f"UNKNOWN kind 应 SKIP，实际 {d.strategy.value}",
-            ))
+            issues.append(
+                TextLocalizationIssue(
+                    TextLocalizationIssueKind.UNKNOWN_KIND_NOT_ROUTED,
+                    ref,
+                    f"UNKNOWN kind 应 SKIP，实际 {d.strategy.value}",
+                )
+            )
         # UI 未走 review 的红线
         kp = _find_kind_policy(policy, d.source_kind)
         if kp is None:
-            issues.append(TextLocalizationIssue(
-                TextLocalizationIssueKind.KIND_POLICY_MISSING, ref,
-                f"policy 未为 kind={d.source_kind.value} 配置",
-            ))
+            issues.append(
+                TextLocalizationIssue(
+                    TextLocalizationIssueKind.KIND_POLICY_MISSING,
+                    ref,
+                    f"policy 未为 kind={d.source_kind.value} 配置",
+                )
+            )
         elif kp.requires_license_check and not d.needs_review:
-            issues.append(TextLocalizationIssue(
-                TextLocalizationIssueKind.UI_NEEDS_LICENSE_REVIEW, ref,
-                f"kind {d.source_kind.value} 需授权确认但 decision 未标 needs_review",
-            ))
+            issues.append(
+                TextLocalizationIssue(
+                    TextLocalizationIssueKind.UI_NEEDS_LICENSE_REVIEW,
+                    ref,
+                    f"kind {d.source_kind.value} 需授权确认但 decision 未标 needs_review",
+                )
+            )
         # Clean Plate 引用一致
         if d.strategy is TextLocalizationStrategy.REDRAW and not d.clean_plate_request_id:
-            issues.append(TextLocalizationIssue(
-                TextLocalizationIssueKind.CLEAN_PLATE_MISSING, ref,
-                "REDRAW 必须挂 clean_plate_request_id",
-            ))
+            issues.append(
+                TextLocalizationIssue(
+                    TextLocalizationIssueKind.CLEAN_PLATE_MISSING,
+                    ref,
+                    "REDRAW 必须挂 clean_plate_request_id",
+                )
+            )
         if d.clean_plate_request_id and d.strategy is not TextLocalizationStrategy.REDRAW:
-            issues.append(TextLocalizationIssue(
-                TextLocalizationIssueKind.CLEAN_PLATE_UNJUSTIFIED, ref,
-                f"策略 {d.strategy.value} 不需要 Clean Plate 却挂了引用",
-            ))
+            issues.append(
+                TextLocalizationIssue(
+                    TextLocalizationIssueKind.CLEAN_PLATE_UNJUSTIFIED,
+                    ref,
+                    f"策略 {d.strategy.value} 不需要 Clean Plate 却挂了引用",
+                )
+            )
         if d.clean_plate_request_id and d.clean_plate_request_id not in req_ids:
             # pydantic model_validator 已拦，此处双保险
-            issues.append(TextLocalizationIssue(
-                TextLocalizationIssueKind.CLEAN_PLATE_MISSING, ref,
-                f"clean_plate_request_id {d.clean_plate_request_id!r} 不在 plan 中",
-            ))
+            issues.append(
+                TextLocalizationIssue(
+                    TextLocalizationIssueKind.CLEAN_PLATE_MISSING,
+                    ref,
+                    f"clean_plate_request_id {d.clean_plate_request_id!r} 不在 plan 中",
+                )
+            )
         # 译文与策略一致
         if d.strategy in _TRANSLATION_REQUIRED and not d.translated_text:
-            issues.append(TextLocalizationIssue(
-                TextLocalizationIssueKind.TRANSLATED_TEXT_MISSING, ref,
-                f"策略 {d.strategy.value} 需要 translated_text",
-            ))
+            issues.append(
+                TextLocalizationIssue(
+                    TextLocalizationIssueKind.TRANSLATED_TEXT_MISSING,
+                    ref,
+                    f"策略 {d.strategy.value} 需要 translated_text",
+                )
+            )
         if d.strategy in _TRANSLATION_FORBIDDEN and d.translated_text:
-            issues.append(TextLocalizationIssue(
-                TextLocalizationIssueKind.TRANSLATED_TEXT_ILLEGAL, ref,
-                f"策略 {d.strategy.value} 不应带 translated_text",
-            ))
+            issues.append(
+                TextLocalizationIssue(
+                    TextLocalizationIssueKind.TRANSLATED_TEXT_ILLEGAL,
+                    ref,
+                    f"策略 {d.strategy.value} 不应带 translated_text",
+                )
+            )
         # layout 溢出
         if (
             d.layout_expansion_ratio is not None
             and d.layout_expansion_ratio > policy.max_layout_expansion_ratio
             and d.strategy in _TRANSLATION_REQUIRED
         ):
-            issues.append(TextLocalizationIssue(
-                TextLocalizationIssueKind.LAYOUT_OVERFLOW, ref,
-                f"layout 扩张 {d.layout_expansion_ratio:.2f} > "
-                f"policy.max {policy.max_layout_expansion_ratio:.2f}",
-            ))
+            issues.append(
+                TextLocalizationIssue(
+                    TextLocalizationIssueKind.LAYOUT_OVERFLOW,
+                    ref,
+                    f"layout 扩张 {d.layout_expansion_ratio:.2f} > "
+                    f"policy.max {policy.max_layout_expansion_ratio:.2f}",
+                )
+            )
         # 术语表：preserve_source 术语在源里出现即必须在译文保留
         if glossary is not None and d.translated_text:
             for e in glossary.entries:
                 if not e.preserve_source:
                     continue
-                if _term_present_ci(d.source_text, e.source_term) and \
-                   not _term_present_ci(d.translated_text, e.source_term):
-                    issues.append(TextLocalizationIssue(
-                        TextLocalizationIssueKind.GLOSSARY_MUST_KEEP_TERM_LOST, ref,
-                        f"术语表要求原样保留 {e.source_term!r}，译文未含",
-                    ))
+                if _term_present_ci(d.source_text, e.source_term) and not _term_present_ci(
+                    d.translated_text, e.source_term
+                ):
+                    issues.append(
+                        TextLocalizationIssue(
+                            TextLocalizationIssueKind.GLOSSARY_MUST_KEEP_TERM_LOST,
+                            ref,
+                            f"术语表要求原样保留 {e.source_term!r}，译文未含",
+                        )
+                    )
     return issues
 
 

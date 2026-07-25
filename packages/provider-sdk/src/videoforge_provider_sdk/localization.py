@@ -101,14 +101,16 @@ class TranslateReflectAdaptProvider(Protocol):
 class UnconfiguredTRAProvider:
     """诚实占位：没有模型授权，绝不静默"翻译"。返回 UNCONFIGURED，上层路由至人工。"""
 
-    def __init__(self, *, name: str = "tra.unconfigured",
-                  execution_location: str = "local") -> None:
+    def __init__(
+        self, *, name: str = "tra.unconfigured", execution_location: str = "local"
+    ) -> None:
         self.name = name
         self.execution_location = execution_location
 
     def translate_reflect_adapt(self, request: TRARequest) -> TRAResult:
         return TRAResult(
-            status=TRAStatus.UNCONFIGURED, error_code=TRAErrorCode.MODEL_UNAVAILABLE,
+            status=TRAStatus.UNCONFIGURED,
+            error_code=TRAErrorCode.MODEL_UNAVAILABLE,
             error_detail=(
                 f"provider {self.name!r} 未配置真实 TRA 模型；"
                 f"target_language={request.target_language}"
@@ -117,7 +119,8 @@ class UnconfiguredTRAProvider:
 
     def health_check(self) -> TRAResult:
         return TRAResult(
-            status=TRAStatus.UNCONFIGURED, error_code=TRAErrorCode.MODEL_UNAVAILABLE,
+            status=TRAStatus.UNCONFIGURED,
+            error_code=TRAErrorCode.MODEL_UNAVAILABLE,
         )
 
 
@@ -140,8 +143,7 @@ class FakeTRAProvider:
     _CHARS_PER_SEC_ZH = 5.0
     _WORDS_PER_SEC_EN = 2.5
 
-    def __init__(self, *, name: str = "tra.fake",
-                  execution_location: str = "cloud") -> None:
+    def __init__(self, *, name: str = "tra.fake", execution_location: str = "cloud") -> None:
         self.name = name
         self.execution_location = execution_location
 
@@ -195,8 +197,10 @@ class FakeTRAProvider:
 
         # 若术语表存在但语言对不匹配 → 报错（不静默降级）
         if glossary is not None:
-            if glossary.source_language != sentence.source_language or \
-               glossary.target_language != request.target_language:
+            if (
+                glossary.source_language != sentence.source_language
+                or glossary.target_language != request.target_language
+            ):
                 return TRAResult(
                     status=TRAStatus.FAILED,
                     error_code=TRAErrorCode.UNSUPPORTED_LANGUAGE_PAIR,
@@ -208,9 +212,9 @@ class FakeTRAProvider:
 
         adapted, applied_terms = self._apply_glossary(sentence.source_text, glossary)
         draft = adapted  # Fake 不区分 draft/adapted（无真正 Adapt 阶段）
-        reflected_notes = [
-            f"应用术语 {t!r}" for t in applied_terms
-        ] or ["未启用术语替换（无术语表命中）"]
+        reflected_notes = [f"应用术语 {t!r}" for t in applied_terms] or [
+            "未启用术语替换（无术语表命中）"
+        ]
 
         # must_keep_terms 兜底：若某个术语在替换后从译文丢失，反回来提示（不改文本）。
         # 判定与 domain._text_contains_term 一致（word-boundary 仅 ASCII alnum 生效），

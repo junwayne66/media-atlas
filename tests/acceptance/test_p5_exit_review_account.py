@@ -25,18 +25,30 @@ _T0 = datetime(2026, 7, 25, tzinfo=UTC)
 
 def _approved(version: int, digest: str) -> ReviewDecision:
     sig = compute_approval_signature(
-        entity_id="var_1", entity_version=version, content_digest=digest,
-        decision=ReviewDecisionKind.APPROVED, scope="VARIANT", reviewer_id="u1",
+        entity_id="var_1",
+        entity_version=version,
+        content_digest=digest,
+        decision=ReviewDecisionKind.APPROVED,
+        scope="VARIANT",
+        reviewer_id="u1",
         policy_snapshot_id="p1",
     )
     return ReviewDecision(
-        id="rd1", decision=ReviewDecisionKind.APPROVED, scope=ReviewScope.VARIANT,
-        entity_id="var_1", entity_version=version, content_digest=digest,
-        reviewer_id="u1", policy_snapshot_id="p1", signature=sig, created_at=_T0,
+        id="rd1",
+        decision=ReviewDecisionKind.APPROVED,
+        scope=ReviewScope.VARIANT,
+        entity_id="var_1",
+        entity_version=version,
+        content_digest=digest,
+        reviewer_id="u1",
+        policy_snapshot_id="p1",
+        signature=sig,
+        created_at=_T0,
     )
 
 
 # --- §13：修改使旧审批失效 --------------------------------------------
+
 
 def test_approval_valid_until_modified():
     d = _approved(version=7, digest="abc")
@@ -47,21 +59,34 @@ def test_approval_valid_until_modified():
     assert not is_approval_valid(d, current_version=7, current_content_digest="new")
     # 实体绑定（换了对象）→ 失效
     assert not is_approval_valid(
-        d, current_version=7, current_content_digest="abc",
-        current_entity_id="var_OTHER")
+        d, current_version=7, current_content_digest="abc", current_entity_id="var_OTHER"
+    )
 
 
 # --- §7.2：发布前确认账号（真机前台账号红线）------------------------
 
+
 def test_wrong_foreground_account_blocks_publish():
-    good = DeviceState(device_id="d1", battery_pct=80, storage_free_mb=2000,
-                        network_online=True, unlocked=True, app_version="30.1",
-                        foreground_account_id="acct_9")
+    good = DeviceState(
+        device_id="d1",
+        battery_pct=80,
+        storage_free_mb=2000,
+        network_online=True,
+        unlocked=True,
+        app_version="30.1",
+        foreground_account_id="acct_9",
+    )
     assert check_device_readiness(good, expected_account_id="acct_9").ready
     # 前台是别的账号 → 绝不发布（防发错号）
-    bad = DeviceState(device_id="d1", battery_pct=80, storage_free_mb=2000,
-                       network_online=True, unlocked=True, app_version="30.1",
-                       foreground_account_id="acct_OTHER")
+    bad = DeviceState(
+        device_id="d1",
+        battery_pct=80,
+        storage_free_mb=2000,
+        network_online=True,
+        unlocked=True,
+        app_version="30.1",
+        foreground_account_id="acct_OTHER",
+    )
     r = check_device_readiness(bad, expected_account_id="acct_9")
     assert not r.ready
     assert DeviceCheck.WRONG_FOREGROUND_ACCOUNT in r.failed_checks

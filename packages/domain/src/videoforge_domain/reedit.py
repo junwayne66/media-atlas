@@ -97,8 +97,12 @@ def build_reedit_plan(
         if keep_any:
             ops.append(
                 EditOp(
-                    id=f"op-{i}", op=EditOpKind.KEEP, source_start_ms=start,
-                    source_end_ms=end, segment_ids=list(seg_ids), output_order=order,
+                    id=f"op-{i}",
+                    op=EditOpKind.KEEP,
+                    source_start_ms=start,
+                    source_end_ms=end,
+                    segment_ids=list(seg_ids),
+                    output_order=order,
                     reframe=reframe,
                 )
             )
@@ -110,8 +114,12 @@ def build_reedit_plan(
             drop = next((_drop_reason(j) for j in js if j is not None), "dropped")
             ops.append(
                 EditOp(
-                    id=f"op-{i}", op=EditOpKind.DELETE, source_start_ms=start,
-                    source_end_ms=end, segment_ids=list(seg_ids), reason=drop,
+                    id=f"op-{i}",
+                    op=EditOpKind.DELETE,
+                    source_start_ms=start,
+                    source_end_ms=end,
+                    segment_ids=list(seg_ids),
+                    reason=drop,
                 )
             )
 
@@ -122,7 +130,8 @@ def build_reedit_plan(
         if b_start > a_end:
             continuity.append(
                 ContinuityNote(
-                    kind=ContinuityRuleKind.JUMPCUT_SMOOTH, at_ms=a_end,
+                    kind=ContinuityRuleKind.JUMPCUT_SMOOTH,
+                    at_ms=a_end,
                     detail=f"[{a_end},{b_start}) 处输出不连续，用推拉/构图变化平滑",
                 )
             )
@@ -182,12 +191,16 @@ def validate_reedit_plan(
     for op in plan.ops:
         if op.source_start_ms < 0 or op.source_end_ms > duration:
             issues.append(
-                ReeditIssue(ReeditIssueKind.RANGE_OUT_OF_BOUNDS, op.id,
-                            f"[{op.source_start_ms},{op.source_end_ms}] 超出 [0,{duration}]")
+                ReeditIssue(
+                    ReeditIssueKind.RANGE_OUT_OF_BOUNDS,
+                    op.id,
+                    f"[{op.source_start_ms},{op.source_end_ms}] 超出 [0,{duration}]",
+                )
             )
         # 边界须落在句子边界；重叠片段下"落在某段边界"还不够，还须不切另一段的内部（§4.2）
         boundary_ok = (
-            op.source_start_ms in seg_starts and op.source_end_ms in seg_ends
+            op.source_start_ms in seg_starts
+            and op.source_end_ms in seg_ends
             and not _falls_inside_segment(op.source_start_ms)
             and not _falls_inside_segment(op.source_end_ms)
         )
@@ -197,8 +210,11 @@ def validate_reedit_plan(
             )
         if op.op == EditOpKind.SPEED and (op.speed is None or not (lo <= op.speed <= hi)):
             issues.append(
-                ReeditIssue(ReeditIssueKind.SPEED_OUT_OF_RANGE, op.id,
-                            f"倍率 {op.speed} 不在允许区间 [{lo},{hi}]")
+                ReeditIssue(
+                    ReeditIssueKind.SPEED_OUT_OF_RANGE,
+                    op.id,
+                    f"倍率 {op.speed} 不在允许区间 [{lo},{hi}]",
+                )
             )
 
     keeps = [op for op in plan.ops if op.op == EditOpKind.KEEP]
@@ -207,16 +223,18 @@ def validate_reedit_plan(
         range(len(keeps))
     ):
         issues.append(
-            ReeditIssue(ReeditIssueKind.INVALID_OUTPUT_ORDER, plan.id,
-                        f"KEEP 的 output_order 应为 0..{len(keeps) - 1} 的排列")
+            ReeditIssue(
+                ReeditIssueKind.INVALID_OUTPUT_ORDER,
+                plan.id,
+                f"KEEP 的 output_order 应为 0..{len(keeps) - 1} 的排列",
+            )
         )
 
     by_src = sorted(keeps, key=lambda o: o.source_start_ms)
     for a, b in zip(by_src, by_src[1:], strict=False):
         if b.source_start_ms < a.source_end_ms:
             issues.append(
-                ReeditIssue(ReeditIssueKind.KEEP_OVERLAP, b.id,
-                            f"KEEP 源区间与 {a.id} 重叠")
+                ReeditIssue(ReeditIssueKind.KEEP_OVERLAP, b.id, f"KEEP 源区间与 {a.id} 重叠")
             )
 
     # 每处 jump cut（保留段间有被删空隙）都须有连续性处理
@@ -224,8 +242,11 @@ def validate_reedit_plan(
     for a, b in zip(by_src, by_src[1:], strict=False):
         if b.source_start_ms > a.source_end_ms and a.source_end_ms not in handled:
             issues.append(
-                ReeditIssue(ReeditIssueKind.UNHANDLED_JUMPCUT, a.id,
-                            f"{a.source_end_ms}ms 处 jump cut 无连续性处理")
+                ReeditIssue(
+                    ReeditIssueKind.UNHANDLED_JUMPCUT,
+                    a.id,
+                    f"{a.source_end_ms}ms 处 jump cut 无连续性处理",
+                )
             )
     return issues
 

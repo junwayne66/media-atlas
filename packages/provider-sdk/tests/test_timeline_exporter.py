@@ -27,14 +27,25 @@ def _rt(v: int) -> RationalTime:
 
 
 def _timeline() -> CreativeTimeline:
-    v1 = Track(id="v1", kind=TrackKind.V1_PRIMARY_VIDEO, segments=[
-        Segment(id="v1-s0",
+    v1 = Track(
+        id="v1",
+        kind=TrackKind.V1_PRIMARY_VIDEO,
+        segments=[
+            Segment(
+                id="v1-s0",
                 time_range=RationalTimeRange(start=_rt(0), duration=_rt(150)),
-                source_ref="asset-a", semantic_role="HOOK"),
-    ])
-    a0 = Track(id="a0", kind=TrackKind.A0_ORIGINAL, segments=[
-        Segment(id="a0-s0", time_range=RationalTimeRange(start=_rt(0), duration=_rt(150))),
-    ])
+                source_ref="asset-a",
+                semantic_role="HOOK",
+            ),
+        ],
+    )
+    a0 = Track(
+        id="a0",
+        kind=TrackKind.A0_ORIGINAL,
+        segments=[
+            Segment(id="a0-s0", time_range=RationalTimeRange(start=_rt(0), duration=_rt(150))),
+        ],
+    )
     return CreativeTimeline(id="tl", rate=30, duration=_rt(150), tracks=[v1, a0], created_at=_T0)
 
 
@@ -69,9 +80,11 @@ def test_otio_dict_exporter_produces_valid_mapping() -> None:
 def test_exporter_uses_injected_mapper_only() -> None:
     # 注入的映射函数被调用一次 —— 证实端口不依赖内建 domain 引用
     calls: list[CreativeTimeline] = []
+
     def spy_mapper(tl: CreativeTimeline) -> dict:
         calls.append(tl)
         return {"OTIO_SCHEMA": "Timeline.1", "spy": True}
+
     exporter = OtioDictExporter(spy_mapper, name="spy")
     result = exporter.export(TimelineExportRequest(timeline=_timeline()))
     assert result.ok and result.payload == {"OTIO_SCHEMA": "Timeline.1", "spy": True}

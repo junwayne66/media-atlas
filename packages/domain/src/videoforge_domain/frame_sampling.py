@@ -89,9 +89,7 @@ def select_representative_frames(
 
     # 封顶：保高优先级（KEYFRAME 恒在），丢低优先级（周期性优先被丢）
     if len(groups) > max_frames:
-        groups = sorted(
-            groups, key=lambda g: (min(_PRIORITY[r] for r in g[1]), g[0])
-        )[:max_frames]
+        groups = sorted(groups, key=lambda g: (min(_PRIORITY[r] for r in g[1]), g[0]))[:max_frames]
 
     frames = [
         FrameAnalysis(

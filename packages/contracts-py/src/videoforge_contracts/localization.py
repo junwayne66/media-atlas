@@ -77,13 +77,16 @@ class CanonicalSentence(ContractModel):
     source_time_range_start_ms: int = Field(ge=0)
     source_time_range_end_ms: int = Field(ge=0)
     target_duration_ms: int = Field(ge=0)
-    must_keep_terms: list[str] = Field(default_factory=list,
-                                          description="必须保留的术语（引用 Glossary.source_term）")
+    must_keep_terms: list[str] = Field(
+        default_factory=list, description="必须保留的术语（引用 Glossary.source_term）"
+    )
     pronunciation_hints: list[str] = Field(default_factory=list)
-    visual_dependencies: list[str] = Field(default_factory=list,
-                                              description="引用同期镜头/文本轨 id")
-    edit_flexibility: float = Field(default=0.15, ge=0.0, le=1.0,
-                                       description="允许缩/扩比例（±%），供时长拟合")
+    visual_dependencies: list[str] = Field(
+        default_factory=list, description="引用同期镜头/文本轨 id"
+    )
+    edit_flexibility: float = Field(
+        default=0.15, ge=0.0, le=1.0, description="允许缩/扩比例（±%），供时长拟合"
+    )
 
     @model_validator(mode="after")
     def _check_span(self) -> "CanonicalSentence":
@@ -106,8 +109,9 @@ class CanonicalScript(ContractModel):
 class ClaimDelta(ContractModel):
     """一次 Claim 层面的变化。reason 供 QA/人工快速判断（漏译/添加事实/否定翻转 等）。"""
 
-    kind: str = Field(min_length=1,
-                        description="ADDED / REMOVED / MUTATED / NEGATION_FLIP / NUMBER_MISMATCH")
+    kind: str = Field(
+        min_length=1, description="ADDED / REMOVED / MUTATED / NEGATION_FLIP / NUMBER_MISMATCH"
+    )
     claim_id: str | None = None
     detail: str = Field(min_length=1)
 

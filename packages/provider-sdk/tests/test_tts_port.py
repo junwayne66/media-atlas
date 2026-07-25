@@ -26,7 +26,9 @@ _T0 = datetime(2026, 7, 24, tzinfo=UTC)
 
 def _profile(**k) -> VoiceProfile:
     defaults = dict(
-        id="v1", display_name="Anchor", language="zh-CN",
+        id="v1",
+        display_name="Anchor",
+        language="zh-CN",
         voice_kind=VoiceKind.PRESET,
         license_status=VoiceLicenseStatus.AUTHORIZED,
         created_at=_T0,
@@ -35,17 +37,27 @@ def _profile(**k) -> VoiceProfile:
     return VoiceProfile(**defaults)
 
 
-def _req(text: str = "你好 世界", language: str = "zh-CN",
-          voice: VoiceProfile | None = None, style: VoiceStyle | None = None,
-          target: int | None = None, seed: int | None = None) -> TTSRequest:
+def _req(
+    text: str = "你好 世界",
+    language: str = "zh-CN",
+    voice: VoiceProfile | None = None,
+    style: VoiceStyle | None = None,
+    target: int | None = None,
+    seed: int | None = None,
+) -> TTSRequest:
     return TTSRequest(
-        sentence_id="s0", text=text, language=language,
+        sentence_id="s0",
+        text=text,
+        language=language,
         voice_profile=voice or _profile(),
-        style=style, target_duration_ms=target, seed=seed,
+        style=style,
+        target_duration_ms=target,
+        seed=seed,
     )
 
 
 # —— Protocol conformance ——
+
 
 def test_fake_satisfies_protocol() -> None:
     assert isinstance(FakeTTSProvider(), TTSProvider)
@@ -57,6 +69,7 @@ def test_unconfigured_satisfies_protocol() -> None:
 
 # —— Unconfigured 诚实 ——
 
+
 def test_unconfigured_never_synthesizes() -> None:
     r = UnconfiguredTTSProvider().synthesize(_req())
     assert r.status is TTSStatus.UNCONFIGURED
@@ -66,12 +79,16 @@ def test_unconfigured_never_synthesizes() -> None:
 
 # —— VOICE_UNAUTHORIZED 硬红线（§7）——
 
-@pytest.mark.parametrize("bad_status", [
-    VoiceLicenseStatus.PENDING,
-    VoiceLicenseStatus.DENIED,
-    VoiceLicenseStatus.UNCONFIRMED,
-    VoiceLicenseStatus.EXPIRED,
-])
+
+@pytest.mark.parametrize(
+    "bad_status",
+    [
+        VoiceLicenseStatus.PENDING,
+        VoiceLicenseStatus.DENIED,
+        VoiceLicenseStatus.UNCONFIRMED,
+        VoiceLicenseStatus.EXPIRED,
+    ],
+)
 def test_fake_rejects_non_authorized_voice(bad_status: VoiceLicenseStatus) -> None:
     r = FakeTTSProvider().synthesize(_req(voice=_profile(license_status=bad_status)))
     assert r.status is TTSStatus.VOICE_UNAUTHORIZED
@@ -80,6 +97,7 @@ def test_fake_rejects_non_authorized_voice(bad_status: VoiceLicenseStatus) -> No
 
 
 # —— Fake 合成语音 ——
+
 
 def test_fake_synthesizes_zh_by_chars() -> None:
     r = FakeTTSProvider().synthesize(_req(text="你好世界", language="zh-CN"))
@@ -110,15 +128,19 @@ def test_fake_word_timings_monotonic_and_cover_full_duration() -> None:
 def test_fake_pace_speeds_up_duration() -> None:
     """pace=1.5 应产更短音频。"""
     r_normal = FakeTTSProvider().synthesize(_req(text="你好世界"))
-    r_fast = FakeTTSProvider().synthesize(_req(
-        text="你好世界", style=VoiceStyle(pace=2.0),
-    ))
+    r_fast = FakeTTSProvider().synthesize(
+        _req(
+            text="你好世界",
+            style=VoiceStyle(pace=2.0),
+        )
+    )
     assert r_normal.manifest.duration_ms > r_fast.manifest.duration_ms
 
 
 def test_fake_text_hash_matches_domain() -> None:
     """provider 内联 hash 与 domain.text_hash_of 应逐位一致。"""
     from videoforge_domain import text_hash_of
+
     req = _req(text="hi", language="en-US", seed=42)
     r = FakeTTSProvider().synthesize(req)
     assert r.manifest is not None
@@ -146,6 +168,7 @@ def test_fake_deep_copy_input() -> None:
 
 # —— TTSRouter ——
 
+
 def _router(providers: dict[TTSProviderTier, TTSProvider]) -> TTSRouter:
     return TTSRouter(providers=providers)
 
@@ -153,22 +176,25 @@ def _router(providers: dict[TTSProviderTier, TTSProvider]) -> TTSRouter:
 def test_router_uses_first_tier_when_available() -> None:
     hq = FakeTTSProvider(name="hq", tier=TTSProviderTier.CLOUD_HIGH_QUALITY)
     sh = FakeTTSProvider(name="sh", tier=TTSProviderTier.SELF_HOSTED)
-    r = _router({
-        TTSProviderTier.CLOUD_HIGH_QUALITY: hq,
-        TTSProviderTier.SELF_HOSTED: sh,
-    }).synthesize(_req())
+    r = _router(
+        {
+            TTSProviderTier.CLOUD_HIGH_QUALITY: hq,
+            TTSProviderTier.SELF_HOSTED: sh,
+        }
+    ).synthesize(_req())
     assert r.status is TTSStatus.OK
     assert r.manifest.provider == "hq"
 
 
 def test_router_fallback_on_unconfigured() -> None:
-    hq = UnconfiguredTTSProvider(name="hq-unconf",
-                                    tier=TTSProviderTier.CLOUD_HIGH_QUALITY)
+    hq = UnconfiguredTTSProvider(name="hq-unconf", tier=TTSProviderTier.CLOUD_HIGH_QUALITY)
     sh = FakeTTSProvider(name="sh", tier=TTSProviderTier.SELF_HOSTED)
-    r = _router({
-        TTSProviderTier.CLOUD_HIGH_QUALITY: hq,
-        TTSProviderTier.SELF_HOSTED: sh,
-    }).synthesize(_req())
+    r = _router(
+        {
+            TTSProviderTier.CLOUD_HIGH_QUALITY: hq,
+            TTSProviderTier.SELF_HOSTED: sh,
+        }
+    ).synthesize(_req())
     assert r.status is TTSStatus.OK
     assert r.manifest.provider == "sh"
     assert any("router attempts" in w for w in r.warnings)
@@ -179,10 +205,12 @@ def test_router_voice_unauthorized_is_terminal_no_fallback() -> None:
     hq = FakeTTSProvider(name="hq", tier=TTSProviderTier.CLOUD_HIGH_QUALITY)
     sh = FakeTTSProvider(name="sh", tier=TTSProviderTier.SELF_HOSTED)
     bad_voice = _profile(license_status=VoiceLicenseStatus.DENIED)
-    r = _router({
-        TTSProviderTier.CLOUD_HIGH_QUALITY: hq,
-        TTSProviderTier.SELF_HOSTED: sh,
-    }).synthesize(_req(voice=bad_voice))
+    r = _router(
+        {
+            TTSProviderTier.CLOUD_HIGH_QUALITY: hq,
+            TTSProviderTier.SELF_HOSTED: sh,
+        }
+    ).synthesize(_req(voice=bad_voice))
     assert r.status is TTSStatus.VOICE_UNAUTHORIZED
     assert r.manifest is None
 
@@ -192,20 +220,22 @@ def test_router_unsupported_language_is_terminal_no_fallback() -> None:
     真正的 fallback 是给上层报错让人换配置。"""
     hq = FakeTTSProvider(name="hq", supported_languages=("zh-CN",))
     sh = FakeTTSProvider(name="sh", supported_languages=("en-US",))
-    r = _router({
-        TTSProviderTier.CLOUD_HIGH_QUALITY: hq,
-        TTSProviderTier.SELF_HOSTED: sh,
-    }).synthesize(_req(language="en-US"))
+    r = _router(
+        {
+            TTSProviderTier.CLOUD_HIGH_QUALITY: hq,
+            TTSProviderTier.SELF_HOSTED: sh,
+        }
+    ).synthesize(_req(language="en-US"))
     assert r.status is TTSStatus.UNSUPPORTED_LANGUAGE
 
 
 def test_router_all_failed_returns_failed() -> None:
-    hq = UnconfiguredTTSProvider(name="hq-unc",
-                                    tier=TTSProviderTier.CLOUD_HIGH_QUALITY)
-    sh = UnconfiguredTTSProvider(name="sh-unc",
-                                    tier=TTSProviderTier.SELF_HOSTED)
-    r = _router({
-        TTSProviderTier.CLOUD_HIGH_QUALITY: hq,
-        TTSProviderTier.SELF_HOSTED: sh,
-    }).synthesize(_req())
+    hq = UnconfiguredTTSProvider(name="hq-unc", tier=TTSProviderTier.CLOUD_HIGH_QUALITY)
+    sh = UnconfiguredTTSProvider(name="sh-unc", tier=TTSProviderTier.SELF_HOSTED)
+    r = _router(
+        {
+            TTSProviderTier.CLOUD_HIGH_QUALITY: hq,
+            TTSProviderTier.SELF_HOSTED: sh,
+        }
+    ).synthesize(_req())
     assert r.status is TTSStatus.FAILED

@@ -86,14 +86,18 @@ class UnconfiguredLipSyncProvider:
 
     def health_check(self) -> LipSyncResult:
         return LipSyncResult(
-            status=LipSyncStatus.UNCONFIGURED, segment_id="",
+            status=LipSyncStatus.UNCONFIGURED,
+            segment_id="",
             error_code=LipSyncErrorCode.MODEL_UNAVAILABLE,
         )
 
 
 _DEFAULT_QA = LipSyncQAReport(
-    boundary_score=0.92, skin_tone_score=0.9,
-    motion_score=0.88, identity_score=0.95, passed=True,
+    boundary_score=0.92,
+    skin_tone_score=0.9,
+    motion_score=0.88,
+    identity_score=0.95,
+    passed=True,
 )
 
 
@@ -107,9 +111,9 @@ class FakeLipSyncProvider:
     - deep-copy 输入；warnings 明示非真实口型。
     """
 
-    def __init__(self, *, name: str = "lipsync.fake",
-                  qa: LipSyncQAReport | None = None,
-                  fail: bool = False) -> None:
+    def __init__(
+        self, *, name: str = "lipsync.fake", qa: LipSyncQAReport | None = None, fail: bool = False
+    ) -> None:
         self.name = name
         self.qa = qa if qa is not None else _DEFAULT_QA
         self.fail = fail
@@ -118,13 +122,15 @@ class FakeLipSyncProvider:
         req = deepcopy(request)
         if self.fail:
             return LipSyncResult(
-                status=LipSyncStatus.FAILED, segment_id=req.segment_id,
+                status=LipSyncStatus.FAILED,
+                segment_id=req.segment_id,
                 error_code=LipSyncErrorCode.SYNTHESIS_FAILED,
                 error_detail="Fake 模拟合成失败",
                 warnings=["Fake LipSync：模拟失败路径"],
             )
         return LipSyncResult(
-            status=LipSyncStatus.OK, segment_id=req.segment_id,
+            status=LipSyncStatus.OK,
+            segment_id=req.segment_id,
             synthesized_artifact_id=f"fake-lipsync-{req.segment_id}",
             qa=self.qa,
             warnings=["Fake LipSync：非真实口型合成，仅供 pipeline 开发"],

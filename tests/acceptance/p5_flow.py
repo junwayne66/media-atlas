@@ -19,15 +19,24 @@ T0 = datetime(2026, 7, 25, tzinfo=UTC)
 
 
 def make_uploading_job(
-    *, job_id: str = "j1", account_id: str = "acct_9",
+    *,
+    job_id: str = "j1",
+    account_id: str = "acct_9",
     platform: PublishPlatform = PublishPlatform.TIKTOK,
     method: PublishMethod = PublishMethod.OFFICIAL_API,
-    render: str = "r", metadata: str = "m", window: str = "immediate",
+    render: str = "r",
+    metadata: str = "m",
+    window: str = "immediate",
 ):
     """建一个已到 UPLOADING、待提交的 Job。"""
     j = new_publish_job(
-        id=job_id, account_id=account_id, platform=platform, method=method,
-        render_digest=render, metadata_digest=metadata, scheduled_window=window,
+        id=job_id,
+        account_id=account_id,
+        platform=platform,
+        method=method,
+        render_digest=render,
+        metadata_digest=metadata,
+        scheduled_window=window,
         created_at=T0,
     )
     return j.model_copy(update={"state": PublishState.UPLOADING})
@@ -44,11 +53,16 @@ def run_publish(executor, *, job=None, now=T0):
     if sub.status is not PublishExecStatus.OK:
         return job, sub
     job = record_submission(
-        job, external_post_token=sub.external_post_token, request_digest="rq", now=now,
+        job,
+        external_post_token=sub.external_post_token,
+        request_digest="rq",
+        now=now,
     )
     st = executor.query_status(job)
     job = confirm_success(
-        job, external_id=sub.external_post_id,
-        external_url=st.external_url if st.found_post else None, now=now,
+        job,
+        external_id=sub.external_post_id,
+        external_url=st.external_url if st.found_post else None,
+        now=now,
     )
     return job, sub

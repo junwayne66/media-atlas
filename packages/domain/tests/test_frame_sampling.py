@@ -25,25 +25,44 @@ def _select(**over):
 
 def _track(start, low=False) -> TextTrack:
     return TextTrack(
-        id=f"t{start}", kind=TextTrackKind.CAPTION, text="字", start_ms=start, end_ms=start + 500,
-        confidence=0.4 if low else 0.9, low_confidence=low,
-        observations=[TextObservation(
-            frame_time_ms=start, bbox=BBox(x=0.2, y=0.82, w=0.6, h=0.08), text="字", confidence=0.9
-        )],
+        id=f"t{start}",
+        kind=TextTrackKind.CAPTION,
+        text="字",
+        start_ms=start,
+        end_ms=start + 500,
+        confidence=0.4 if low else 0.9,
+        low_confidence=low,
+        observations=[
+            TextObservation(
+                frame_time_ms=start,
+                bbox=BBox(x=0.2, y=0.82, w=0.6, h=0.08),
+                text="字",
+                confidence=0.9,
+            )
+        ],
     )
 
 
 def _transcript(segments) -> Transcript:
     return Transcript(
-        id="tr", language="zh-CN", segments=segments,
-        models=TranscriptModels(asr_provider="asr.x"), created_at=_T0,
+        id="tr",
+        language="zh-CN",
+        segments=segments,
+        models=TranscriptModels(asr_provider="asr.x"),
+        created_at=_T0,
     )
 
 
 def _seg(sid, start, speaker, low=False) -> TranscriptSegment:
     return TranscriptSegment(
-        id=sid, start_ms=start, end_ms=start + 1000, speaker_id=speaker,
-        language="zh-CN", text="…", confidence=0.4 if low else 0.9, low_confidence=low,
+        id=sid,
+        start_ms=start,
+        end_ms=start + 1000,
+        speaker_id=speaker,
+        language="zh-CN",
+        text="…",
+        confidence=0.4 if low else 0.9,
+        low_confidence=low,
     )
 
 
@@ -82,8 +101,12 @@ def test_speaker_change() -> None:
 
 def test_near_frames_merge_reasons() -> None:
     # 场景切点与文本轨在 300ms 内 → 合并为一帧带两个 reason
-    va = _select(scene_cuts=(3.0,), text_tracks=(_track(3200),), periodic_interval_ms=999999,
-                 merge_window_ms=500)
+    va = _select(
+        scene_cuts=(3.0,),
+        text_tracks=(_track(3200),),
+        periodic_interval_ms=999999,
+        merge_window_ms=500,
+    )
     near = [f for f in va.frames if 2900 <= f.frame_time_ms <= 3300]
     assert len(near) == 1
     assert FrameSampleReason.SCENE_CUT in near[0].reasons
@@ -102,8 +125,13 @@ def test_cap_keeps_high_priority_over_periodic() -> None:
     # 超额时优先丢周期性，保低置信
     cuts = tuple(i * 0.1 for i in range(1, 100))
     lo_tracks = tuple(_track(1000 * i, low=True) for i in range(1, 20))
-    va = _select(duration_ms=60000, scene_cuts=cuts, text_tracks=lo_tracks,
-                 periodic_interval_ms=1000, max_frames=30)
+    va = _select(
+        duration_ms=60000,
+        scene_cuts=cuts,
+        text_tracks=lo_tracks,
+        periodic_interval_ms=1000,
+        max_frames=30,
+    )
     reasons = {r for f in va.frames for r in f.reasons}
     assert FrameSampleReason.LOW_CONFIDENCE in reasons  # 低置信被保留
     assert len(va.frames) <= 30

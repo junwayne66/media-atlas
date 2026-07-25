@@ -19,8 +19,7 @@ _VIDEO = Path("/tmp/v.mp4")
 
 def _recorded() -> list[TextObservation]:
     return [
-        TextObservation.model_validate(o)
-        for o in json.loads(_FIXTURE.read_text(encoding="utf-8"))
+        TextObservation.model_validate(o) for o in json.loads(_FIXTURE.read_text(encoding="utf-8"))
     ]
 
 

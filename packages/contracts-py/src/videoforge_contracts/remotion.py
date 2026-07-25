@@ -30,9 +30,7 @@ _PropAtom = str | int | float | bool | None
 def _reject_shell_metachars(value: str, field: str) -> str:
     if any(c in _SHELL_META_CHARS for c in value):
         offenders = sorted({c for c in value if c in _SHELL_META_CHARS})
-        raise ValueError(
-            f"{field} 含不允许的 shell 元字符 {offenders!r}；纵深防御"
-        )
+        raise ValueError(f"{field} 含不允许的 shell 元字符 {offenders!r}；纵深防御")
     return value
 
 
@@ -60,8 +58,11 @@ def _validate_prop_value(value: Any, path: str, depth: int) -> Any:
 class RemotionProp(ContractModel):
     """单个类型化 Prop——Remotion React 组件将以此消费。value 层层校验，禁 shell 元字符渗入。"""
 
-    key: str = Field(min_length=1, pattern=r"^[a-zA-Z_][a-zA-Z0-9_]*$",
-                     description="组件 Prop 键；限 JS 标识符规则")
+    key: str = Field(
+        min_length=1,
+        pattern=r"^[a-zA-Z_][a-zA-Z0-9_]*$",
+        description="组件 Prop 键；限 JS 标识符规则",
+    )
     value: Any = Field(description="JSON 兼容值；str/int/float/bool/None/list/dict 递归校验")
 
     @field_validator("value")
@@ -109,7 +110,9 @@ class RemotionRenderManifest(ContractModel):
         default_factory=dict, description="{asset_id: sha256} 供缓存与重放"
     )
     output_digest: str | None = Field(
-        default=None, min_length=64, max_length=64,
+        default=None,
+        min_length=64,
+        max_length=64,
         description="产出内容 sha256；未渲染前为 null",
     )
     tool_version: str = Field(min_length=1)
@@ -119,6 +122,7 @@ class RemotionRenderManifest(ContractModel):
     @classmethod
     def _digests_hex(cls, v: dict[str, str]) -> dict[str, str]:
         import re
+
         pat = re.compile(r"^[0-9a-f]{64}$")
         for aid, digest in v.items():
             if not pat.match(digest):
@@ -130,6 +134,7 @@ class RemotionRenderManifest(ContractModel):
     def _output_digest_hex(cls, v: str | None) -> str | None:
         if v is not None:
             import re
+
             if not re.fullmatch(r"^[0-9a-f]{64}$", v):
                 raise ValueError("output_digest 必须是 64 位小写十六进制")
         return v

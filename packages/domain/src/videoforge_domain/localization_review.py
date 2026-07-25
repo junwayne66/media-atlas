@@ -90,7 +90,9 @@ def _numbers(text: str) -> list[str]:
 
 
 def check_number_consistency(
-    sentence_id: str, source: str, target: str,
+    sentence_id: str,
+    source: str,
+    target: str,
 ) -> LocalizationQAFinding | None:
     """源/目标数字多重集必须一致（VF-401 术语表锁定数值/单位；§13 数字一致率 100%）。
 
@@ -124,8 +126,12 @@ def _count_negations(text: str, lang: str) -> int:
 
 
 def check_negation_consistency(
-    sentence_id: str, source: str, target: str,
-    *, source_lang: str, target_lang: str,
+    sentence_id: str,
+    source: str,
+    target: str,
+    *,
+    source_lang: str,
+    target_lang: str,
 ) -> LocalizationQAFinding | None:
     """否定标记数对齐（启发式）。数目不等 → MAJOR（可能漏译/加了否定 → 事实翻转风险）。
 
@@ -165,8 +171,11 @@ def run_consistency_checks(
         if nf is not None:
             findings.append(nf)
         gf = check_negation_consistency(
-            p.sentence_id, p.source, p.target,
-            source_lang=p.source_lang, target_lang=p.target_lang,
+            p.sentence_id,
+            p.source,
+            p.target,
+            source_lang=p.source_lang,
+            target_lang=p.target_lang,
         )
         if gf is not None:
             findings.append(gf)
@@ -175,7 +184,8 @@ def run_consistency_checks(
 
 def validate_localization_publish_gate(
     findings: list[LocalizationQAFinding],
-    *, max_major_before_block: int = DEFAULT_MAX_MAJOR_BEFORE_BLOCK,
+    *,
+    max_major_before_block: int = DEFAULT_MAX_MAJOR_BEFORE_BLOCK,
 ) -> bool:
     """发布门：返回 pass_or_block（True=可发布）。
 
@@ -203,7 +213,8 @@ def aggregate_localization_qa(
     发现由调用方从各层护栏映射后传入（保持本函数纯装配 + 门计算）。
     """
     pass_or_block = validate_localization_publish_gate(
-        findings, max_major_before_block=max_major_before_block,
+        findings,
+        max_major_before_block=max_major_before_block,
     )
     return LocalizationQAReport(
         id=id,
@@ -275,19 +286,21 @@ def validate_localization_review(
 ) -> list[LocalizationReviewIssue]:
     """句级批准护栏：不能批准仍带 BLOCKER 的句。"""
     issues: list[LocalizationReviewIssue] = []
-    blocker_sentences = {
-        f.sentence_id for f in findings if f.severity is QASeverity.BLOCKER
-    }
+    blocker_sentences = {f.sentence_id for f in findings if f.severity is QASeverity.BLOCKER}
     for d in review.decisions:
         if d.state is ReviewState.APPROVED and d.sentence_id in blocker_sentences:
-            issues.append(LocalizationReviewIssue(
-                LocalizationReviewIssueKind.APPROVED_OVER_BLOCKER, d.sentence_id,
-                "不能批准仍带 BLOCKER 发现的句——须先修复或改译（EDITED）",
-            ))
+            issues.append(
+                LocalizationReviewIssue(
+                    LocalizationReviewIssueKind.APPROVED_OVER_BLOCKER,
+                    d.sentence_id,
+                    "不能批准仍带 BLOCKER 发现的句——须先修复或改译（EDITED）",
+                )
+            )
     return issues
 
 
 def is_valid_localization_review(
-    review: LocalizationReview, findings: list[LocalizationQAFinding],
+    review: LocalizationReview,
+    findings: list[LocalizationQAFinding],
 ) -> bool:
     return not validate_localization_review(review, findings)

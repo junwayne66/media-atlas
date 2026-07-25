@@ -26,14 +26,22 @@ _T0 = datetime(2026, 7, 23, tzinfo=UTC)
 
 def _transcript(spans: list[tuple[int, int]], *, duration: int | None = None) -> Transcript:
     return Transcript(
-        id="tr", language="zh-CN",
+        id="tr",
+        language="zh-CN",
         duration_ms=duration,
         segments=[
-            TranscriptSegment(id=f"seg-{i}", start_ms=a, end_ms=b, language="zh-CN",
-                              text=f"第{i}句", confidence=0.9)
+            TranscriptSegment(
+                id=f"seg-{i}",
+                start_ms=a,
+                end_ms=b,
+                language="zh-CN",
+                text=f"第{i}句",
+                confidence=0.9,
+            )
             for i, (a, b) in enumerate(spans)
         ],
-        models=TranscriptModels(asr_provider="asr.x"), created_at=_T0,
+        models=TranscriptModels(asr_provider="asr.x"),
+        created_at=_T0,
     )
 
 
@@ -43,14 +51,20 @@ def _judge(sid: str, *, keep: bool = True, **flags: bool) -> SegmentJudgment:
 
 # —— 规划器 ——
 
+
 def test_build_plan_keep_delete_reorder_and_continuity() -> None:
     tr = _transcript([(0, 5000), (5000, 6000), (6000, 11000), (11000, 16000)], duration=16000)
     judgments = [
-        _judge("seg-0"), _judge("seg-1", keep=False, is_filler=True),
-        _judge("seg-2"), _judge("seg-3"),
+        _judge("seg-0"),
+        _judge("seg-1", keep=False, is_filler=True),
+        _judge("seg-2"),
+        _judge("seg-3"),
     ]
     plan = build_reedit_plan(
-        tr, judgments, plan_id="plan-0", created_at=_T0,
+        tr,
+        judgments,
+        plan_id="plan-0",
+        created_at=_T0,
         reframe=ReframeHint(target_aspect_ratio="9:16", follow=ReframeFollow.SPEAKER),
     )
     kinds = [op.op for op in plan.ops]
@@ -69,8 +83,10 @@ def test_build_plan_keep_delete_reorder_and_continuity() -> None:
 def test_delete_reason_from_flags() -> None:
     tr = _transcript([(0, 5000), (5000, 5500), (5500, 10000)], duration=10000)
     plan = build_reedit_plan(
-        tr, [_judge("seg-0"), _judge("seg-1", keep=False, is_silence=True), _judge("seg-2")],
-        plan_id="p", created_at=_T0,
+        tr,
+        [_judge("seg-0"), _judge("seg-1", keep=False, is_silence=True), _judge("seg-2")],
+        plan_id="p",
+        created_at=_T0,
     )
     delete = next(op for op in plan.ops if op.op == EditOpKind.DELETE)
     assert delete.reason == "silence"
@@ -113,14 +129,22 @@ def test_no_judgment_defaults_keep() -> None:
 
 # —— 护栏 ——
 
+
 def _keep(oid: str, a: int, b: int, order: int) -> EditOp:
-    return EditOp(id=oid, op=EditOpKind.KEEP, source_start_ms=a, source_end_ms=b,
-                  segment_ids=[], output_order=order)
+    return EditOp(
+        id=oid,
+        op=EditOpKind.KEEP,
+        source_start_ms=a,
+        source_end_ms=b,
+        segment_ids=[],
+        output_order=order,
+    )
 
 
 def _plan(ops: list[EditOp], continuity=()) -> ReeditPlan:
-    return ReeditPlan(id="pl", ops=ops, continuity=list(continuity),
-                      kept_duration_ms=0, created_at=_T0)
+    return ReeditPlan(
+        id="pl", ops=ops, continuity=list(continuity), kept_duration_ms=0, created_at=_T0
+    )
 
 
 def test_empty_plan_flagged() -> None:
@@ -139,17 +163,27 @@ def test_mid_sentence_cut_flagged() -> None:
 
 def test_range_out_of_bounds_flagged() -> None:
     tr = _transcript([(0, 5000)], duration=5000)
-    bad = _plan([_keep("op-0", 0, 5000, 0),
-                 EditOp(id="op-1", op=EditOpKind.KEEP, source_start_ms=5000, source_end_ms=9000,
-                        output_order=1)])
+    bad = _plan(
+        [
+            _keep("op-0", 0, 5000, 0),
+            EditOp(
+                id="op-1",
+                op=EditOpKind.KEEP,
+                source_start_ms=5000,
+                source_end_ms=9000,
+                output_order=1,
+            ),
+        ]
+    )
     kinds = {i.kind for i in validate_reedit_plan(bad, transcript=tr)}
     assert ReeditIssueKind.RANGE_OUT_OF_BOUNDS in kinds
 
 
 def test_speed_out_of_range_flagged() -> None:
     tr = _transcript([(0, 5000), (5000, 10000)], duration=10000)
-    bad = _plan([EditOp(id="op-0", op=EditOpKind.SPEED, source_start_ms=0, source_end_ms=5000,
-                        speed=5.0)])
+    bad = _plan(
+        [EditOp(id="op-0", op=EditOpKind.SPEED, source_start_ms=0, source_end_ms=5000, speed=5.0)]
+    )
     kinds = {i.kind for i in validate_reedit_plan(bad, transcript=tr)}
     assert ReeditIssueKind.SPEED_OUT_OF_RANGE in kinds
 

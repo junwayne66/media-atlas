@@ -86,23 +86,30 @@ def build_canonical_script(
             start_ms = cursor
             end_ms = cursor + s.target_duration_ms
             cursor = end_ms
-        sentences.append(CanonicalSentence(
-            id=s.id, beat_slot_id=s.beat_slot_id, role=s.role,
-            speaker_id=speakers.get(s.id),
-            source_language=script.language,
-            source_text=s.text,
-            semantic_intent=f"role={s.role.value}",
-            claim_ids=list(s.claim_ids),
-            source_time_range_start_ms=start_ms,
-            source_time_range_end_ms=end_ms,
-            target_duration_ms=s.target_duration_ms,
-            must_keep_terms=list(must_keep.get(s.id, [])),
-        ))
+        sentences.append(
+            CanonicalSentence(
+                id=s.id,
+                beat_slot_id=s.beat_slot_id,
+                role=s.role,
+                speaker_id=speakers.get(s.id),
+                source_language=script.language,
+                source_text=s.text,
+                semantic_intent=f"role={s.role.value}",
+                claim_ids=list(s.claim_ids),
+                source_time_range_start_ms=start_ms,
+                source_time_range_end_ms=end_ms,
+                target_duration_ms=s.target_duration_ms,
+                must_keep_terms=list(must_keep.get(s.id, [])),
+            )
+        )
     total = script.total_duration_ms or sum(s.target_duration_ms for s in sentences)
     return CanonicalScript(
-        id=canonical_id, script_version_id=script.id,
-        source_language=script.language, sentences=sentences,
-        total_duration_ms=total, created_at=created_at,
+        id=canonical_id,
+        script_version_id=script.id,
+        source_language=script.language,
+        sentences=sentences,
+        total_duration_ms=total,
+        created_at=created_at,
     )
 
 
@@ -128,16 +135,22 @@ def compute_claim_diff(
     deltas: list[ClaimDelta] = []
     for cid in loc:
         if cid not in src_set:
-            deltas.append(ClaimDelta(
-                kind="ADDED", claim_id=cid,
-                detail=f"本地化新增 Claim 引用 {cid!r}——需人工核对是否有证据",
-            ))
+            deltas.append(
+                ClaimDelta(
+                    kind="ADDED",
+                    claim_id=cid,
+                    detail=f"本地化新增 Claim 引用 {cid!r}——需人工核对是否有证据",
+                )
+            )
     for cid in src:
         if cid not in loc_set:
-            deltas.append(ClaimDelta(
-                kind="REMOVED", claim_id=cid,
-                detail=f"本地化漏引 Claim {cid!r}——事实可能丢失",
-            ))
+            deltas.append(
+                ClaimDelta(
+                    kind="REMOVED",
+                    claim_id=cid,
+                    detail=f"本地化漏引 Claim {cid!r}——事实可能丢失",
+                )
+            )
     return ClaimDiff(source_claim_ids=src, localized_claim_ids=loc, deltas=deltas)
 
 
@@ -215,8 +228,9 @@ def validate_localization(
     """本地化护栏；返回全部违规（空 = 通过）。"""
     issues: list[LocalizationIssue] = []
     if not variant.sentences:
-        issues.append(LocalizationIssue(
-            LocalizationIssueKind.EMPTY_VARIANT, variant.id, "本地化产物无句子"))
+        issues.append(
+            LocalizationIssue(LocalizationIssueKind.EMPTY_VARIANT, variant.id, "本地化产物无句子")
+        )
         return issues
     canon_by_id = {c.id: c for c in canonical.sentences}
     # SENTENCE_MISMATCH：canonical 每句必须被 variant 覆盖一次且仅一次（§4.3 漏译必审）。
@@ -227,37 +241,52 @@ def validate_localization(
     for canon in canonical.sentences:
         count = covered.get(canon.id, 0)
         if count == 0:
-            issues.append(LocalizationIssue(
-                LocalizationIssueKind.SENTENCE_MISMATCH, canon.id,
-                f"canonical 句 {canon.id!r} 未在 variant 中出现（漏译）",
-            ))
+            issues.append(
+                LocalizationIssue(
+                    LocalizationIssueKind.SENTENCE_MISMATCH,
+                    canon.id,
+                    f"canonical 句 {canon.id!r} 未在 variant 中出现（漏译）",
+                )
+            )
         elif count > 1:
-            issues.append(LocalizationIssue(
-                LocalizationIssueKind.SENTENCE_MISMATCH, canon.id,
-                f"canonical 句 {canon.id!r} 被 variant 引用 {count} 次（重复）",
-            ))
+            issues.append(
+                LocalizationIssue(
+                    LocalizationIssueKind.SENTENCE_MISMATCH,
+                    canon.id,
+                    f"canonical 句 {canon.id!r} 被 variant 引用 {count} 次（重复）",
+                )
+            )
     # 逐句校验
     for ls in variant.sentences:
         if ls.canonical_sentence_id not in canon_by_id:
-            issues.append(LocalizationIssue(
-                LocalizationIssueKind.UNKNOWN_CANONICAL_SENTENCE, ls.id,
-                f"canonical_sentence_id {ls.canonical_sentence_id!r} 不在 canonical",
-            ))
+            issues.append(
+                LocalizationIssue(
+                    LocalizationIssueKind.UNKNOWN_CANONICAL_SENTENCE,
+                    ls.id,
+                    f"canonical_sentence_id {ls.canonical_sentence_id!r} 不在 canonical",
+                )
+            )
             continue
         canon = canon_by_id[ls.canonical_sentence_id]
         if ls.target_language != variant.target_language:
-            issues.append(LocalizationIssue(
-                LocalizationIssueKind.LANGUAGE_MISMATCH, ls.id,
-                f"sentence.target_language={ls.target_language} ≠ "
-                f"variant.target_language={variant.target_language}",
-            ))
+            issues.append(
+                LocalizationIssue(
+                    LocalizationIssueKind.LANGUAGE_MISMATCH,
+                    ls.id,
+                    f"sentence.target_language={ls.target_language} ≠ "
+                    f"variant.target_language={variant.target_language}",
+                )
+            )
         # must_keep_terms：术语必须原样保留（大小写不敏感）
         for term in canon.must_keep_terms:
             if not _text_contains_term(ls.text, term):
-                issues.append(LocalizationIssue(
-                    LocalizationIssueKind.MUST_KEEP_TERM_LOST, ls.id,
-                    f"must_keep 术语 {term!r} 未在译文出现",
-                ))
+                issues.append(
+                    LocalizationIssue(
+                        LocalizationIssueKind.MUST_KEEP_TERM_LOST,
+                        ls.id,
+                        f"must_keep 术语 {term!r} 未在译文出现",
+                    )
+                )
         # 术语表 preserve_source 条目：译文里不该出现 target 但缺失 source
         if glossary is not None:
             for e in glossary.entries:
@@ -265,34 +294,47 @@ def validate_localization(
                     continue
                 # preserve_source 即目标必须原样保留 source_term
                 # 只在源含此术语时才要求译文保留（否则会把无关句判违规）
-                if _text_contains_term(canon.source_text, e.source_term) and \
-                   not _text_contains_term(ls.text, e.source_term):
-                    issues.append(LocalizationIssue(
-                        LocalizationIssueKind.GLOSSARY_VIOLATION, ls.id,
-                        f"术语表要求原样保留 {e.source_term!r}，译文未含",
-                    ))
+                if _text_contains_term(
+                    canon.source_text, e.source_term
+                ) and not _text_contains_term(ls.text, e.source_term):
+                    issues.append(
+                        LocalizationIssue(
+                            LocalizationIssueKind.GLOSSARY_VIOLATION,
+                            ls.id,
+                            f"术语表要求原样保留 {e.source_term!r}，译文未含",
+                        )
+                    )
         # Claim diff
         cd = compute_claim_diff(canon.claim_ids, ls.claim_ids, claim_table=claim_table)
         if cd.deltas:
-            issues.append(LocalizationIssue(
-                LocalizationIssueKind.CLAIM_DIFF_REQUIRES_REVIEW, ls.id,
-                f"{len(cd.deltas)} 条 Claim 差异需人工审核",
-            ))
+            issues.append(
+                LocalizationIssue(
+                    LocalizationIssueKind.CLAIM_DIFF_REQUIRES_REVIEW,
+                    ls.id,
+                    f"{len(cd.deltas)} 条 Claim 差异需人工审核",
+                )
+            )
         # DISPUTED 单独强调
         entries_by_id = {e.claim_id: e for e in claim_table.entries}
         for cid in ls.claim_ids:
             entry = entries_by_id.get(cid)
             if entry is not None and entry.fact_status is ClaimSourceStatus.DISPUTED:
-                issues.append(LocalizationIssue(
-                    LocalizationIssueKind.DISPUTED_CLAIM_CITED, ls.id,
-                    f"引用 DISPUTED Claim {cid!r}——发布前必须人工确认",
-                ))
+                issues.append(
+                    LocalizationIssue(
+                        LocalizationIssueKind.DISPUTED_CLAIM_CITED,
+                        ls.id,
+                        f"引用 DISPUTED Claim {cid!r}——发布前必须人工确认",
+                    )
+                )
         # 语义相似度
         if ls.semantic_similarity < similarity_floor:
-            issues.append(LocalizationIssue(
-                LocalizationIssueKind.LOW_SEMANTIC_SIMILARITY, ls.id,
-                f"semantic_similarity={ls.semantic_similarity:.2f} < {similarity_floor:.2f}",
-            ))
+            issues.append(
+                LocalizationIssue(
+                    LocalizationIssueKind.LOW_SEMANTIC_SIMILARITY,
+                    ls.id,
+                    f"semantic_similarity={ls.semantic_similarity:.2f} < {similarity_floor:.2f}",
+                )
+            )
         # 时长预算：允许 canon 目标时长 ± tolerance
         target = canon.target_duration_ms
         if target > 0:
@@ -300,11 +342,14 @@ def validate_localization(
             low = 1 - duration_tolerance
             high = 1 + duration_tolerance
             if ratio < low or ratio > high:
-                issues.append(LocalizationIssue(
-                    LocalizationIssueKind.DURATION_OUT_OF_TOLERANCE, ls.id,
-                    f"duration_estimate {ls.duration_estimate_ms}ms 相对目标 {target}ms "
-                    f"偏差 {(ratio - 1):+.0%} 超容差 ±{int(duration_tolerance * 100)}%",
-                ))
+                issues.append(
+                    LocalizationIssue(
+                        LocalizationIssueKind.DURATION_OUT_OF_TOLERANCE,
+                        ls.id,
+                        f"duration_estimate {ls.duration_estimate_ms}ms 相对目标 {target}ms "
+                        f"偏差 {(ratio - 1):+.0%} 超容差 ±{int(duration_tolerance * 100)}%",
+                    )
+                )
     return issues
 
 
@@ -316,7 +361,10 @@ def is_valid_localization(
     glossary: Glossary | None = None,
 ) -> bool:
     return not validate_localization(
-        variant, canonical, claim_table=claim_table, glossary=glossary,
+        variant,
+        canonical,
+        claim_table=claim_table,
+        glossary=glossary,
     )
 
 
@@ -330,7 +378,10 @@ def derive_review_flags(
     """按句聚合 review_reasons（issue.kind 值），供上层置 LocalizedSentence.needs_review。"""
     result: dict[str, list[str]] = {}
     for issue in validate_localization(
-        variant, canonical, claim_table=claim_table, glossary=glossary,
+        variant,
+        canonical,
+        claim_table=claim_table,
+        glossary=glossary,
     ):
         result.setdefault(issue.ref, []).append(issue.kind.value)
     return result

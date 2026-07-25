@@ -26,6 +26,7 @@ DEFAULT_SNAPSHOT_AGES_HOURS: tuple[float, ...] = (1.0, 3.0, 6.0, 24.0, 72.0, 168
 
 # --- 快照计划 ---------------------------------------------------------------
 
+
 def elapsed_hours(published_at: datetime, now: datetime) -> float:
     """发布至 now 经过的小时数（可为负，若 now 早于发布）。"""
     return (now - published_at).total_seconds() / 3600.0
@@ -77,6 +78,7 @@ def is_schedule_complete(schedule: SnapshotSchedule) -> bool:
 
 # --- 限流 -------------------------------------------------------------------
 
+
 def can_fetch_now(
     last_fetch_at: datetime | None, now: datetime, min_seconds_between_calls: int
 ) -> bool:
@@ -97,6 +99,7 @@ def next_allowed_fetch_time(
 
 # --- null 语义：派生指标（§11 账号内相对指标原语）---------------------------
 
+
 def relative_to_baseline(value: float | None, baseline: float | None) -> float | None:
     """账号内相对指标 value/baseline（§11）。**null 绝不当 0**：任一端 None 或基线为 0 → None。"""
     if value is None or baseline is None or baseline == 0:
@@ -105,6 +108,7 @@ def relative_to_baseline(value: float | None, baseline: float | None) -> float |
 
 
 # --- 快照完整性护栏（全部 null-aware：None=未知，跳过，绝不当 0）-------------
+
 
 class PerformanceIssueKind(StrEnum):
     AGE_NEGATIVE = "AGE_NEGATIVE"  # age_hours < 0（合同已拦，纵深防御）
@@ -123,8 +127,15 @@ class PerformanceIssue:
 
 
 _COUNT_FIELDS = (
-    "views", "watch_time_ms", "avg_watch_time_ms", "likes", "comments",
-    "shares", "saves", "follows", "impressions",
+    "views",
+    "watch_time_ms",
+    "avg_watch_time_ms",
+    "likes",
+    "comments",
+    "shares",
+    "saves",
+    "follows",
+    "impressions",
 )
 _ENGAGEMENT_FIELDS = ("likes", "comments", "shares", "saves")
 
@@ -136,41 +147,63 @@ def validate_performance_snapshot(snapshot: PerformanceSnapshot) -> list[Perform
     ref = snapshot.platform_post_id
 
     if snapshot.age_hours < 0:
-        issues.append(PerformanceIssue(PerformanceIssueKind.AGE_NEGATIVE, ref,
-                                        f"age_hours={snapshot.age_hours} < 0"))
+        issues.append(
+            PerformanceIssue(
+                PerformanceIssueKind.AGE_NEGATIVE, ref, f"age_hours={snapshot.age_hours} < 0"
+            )
+        )
 
     for field in _COUNT_FIELDS:
         v = getattr(snapshot, field)
         if v is not None and v < 0:
-            issues.append(PerformanceIssue(PerformanceIssueKind.NEGATIVE_METRIC, ref,
-                                            f"{field}={v} < 0"))
+            issues.append(
+                PerformanceIssue(PerformanceIssueKind.NEGATIVE_METRIC, ref, f"{field}={v} < 0")
+            )
     for field in ("completion_rate", "click_through_rate"):
         v = getattr(snapshot, field)
         if v is not None and not (0.0 <= v <= 1.0):
-            issues.append(PerformanceIssue(PerformanceIssueKind.RATE_OUT_OF_RANGE, ref,
-                                            f"{field}={v} ∉ [0,1]"))
+            issues.append(
+                PerformanceIssue(
+                    PerformanceIssueKind.RATE_OUT_OF_RANGE, ref, f"{field}={v} ∉ [0,1]"
+                )
+            )
 
     # 互动 > 播放：仅在该互动字段与 views 都非空时比较（views=None → 未知 → 跳过，不当 0）。
     if snapshot.views is not None:
         for field in _ENGAGEMENT_FIELDS:
             v = getattr(snapshot, field)
             if v is not None and v > snapshot.views:
-                issues.append(PerformanceIssue(
-                    PerformanceIssueKind.ENGAGEMENT_EXCEEDS_VIEWS, ref,
-                    f"{field}={v} > views={snapshot.views}"))
+                issues.append(
+                    PerformanceIssue(
+                        PerformanceIssueKind.ENGAGEMENT_EXCEEDS_VIEWS,
+                        ref,
+                        f"{field}={v} > views={snapshot.views}",
+                    )
+                )
 
     # 播放 > 曝光：两端非空才比较。
-    if (snapshot.views is not None and snapshot.impressions is not None
-            and snapshot.views > snapshot.impressions):
-        issues.append(PerformanceIssue(
-            PerformanceIssueKind.VIEWS_EXCEED_IMPRESSIONS, ref,
-            f"views={snapshot.views} > impressions={snapshot.impressions}"))
+    if (
+        snapshot.views is not None
+        and snapshot.impressions is not None
+        and snapshot.views > snapshot.impressions
+    ):
+        issues.append(
+            PerformanceIssue(
+                PerformanceIssueKind.VIEWS_EXCEED_IMPRESSIONS,
+                ref,
+                f"views={snapshot.views} > impressions={snapshot.impressions}",
+            )
+        )
 
     # 有完成率却 views 明确为 0（矛盾）。views=None（未知）→ 不触发（这正是 null≠0）。
     if snapshot.completion_rate is not None and snapshot.views == 0:
-        issues.append(PerformanceIssue(
-            PerformanceIssueKind.COMPLETION_RATE_WITHOUT_VIEWS, ref,
-            f"completion_rate={snapshot.completion_rate} 但 views=0"))
+        issues.append(
+            PerformanceIssue(
+                PerformanceIssueKind.COMPLETION_RATE_WITHOUT_VIEWS,
+                ref,
+                f"completion_rate={snapshot.completion_rate} 但 views=0",
+            )
+        )
 
     return issues
 

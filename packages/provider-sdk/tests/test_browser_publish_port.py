@@ -17,9 +17,14 @@ _T0 = datetime(2026, 7, 25, tzinfo=UTC)
 
 def _job():
     return new_publish_job(
-        id="j", account_id="a", platform=PublishPlatform.TIKTOK,
-        method=PublishMethod.BROWSER_AUTOMATION, render_digest="r",
-        metadata_digest="m", scheduled_window="immediate", created_at=_T0,
+        id="j",
+        account_id="a",
+        platform=PublishPlatform.TIKTOK,
+        method=PublishMethod.BROWSER_AUTOMATION,
+        render_digest="r",
+        metadata_digest="m",
+        scheduled_window="immediate",
+        created_at=_T0,
     ).model_copy(update={"state": PublishState.UPLOADING})
 
 

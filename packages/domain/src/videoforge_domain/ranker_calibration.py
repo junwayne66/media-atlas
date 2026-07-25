@@ -39,10 +39,10 @@ DEFAULT_MAX_REL_CHANGE = 0.25  # 每系数单次相对变化上限（有界）
 
 # --- 打分 -------------------------------------------------------------------
 
+
 def score_item(weights: RankerWeights, features: dict[str, float]) -> float:
     """线性打分 Σ 系数·特征。缺失特征按 0（中性）计入——可解释线性排序。"""
-    return sum(coef * features.get(name, 0.0)
-               for name, coef in weights.coefficients.items())
+    return sum(coef * features.get(name, 0.0) for name, coef in weights.coefficients.items())
 
 
 def _top_k_ids(scored: list[tuple[str, float]], k: int) -> list[str]:
@@ -52,6 +52,7 @@ def _top_k_ids(scored: list[tuple[str, float]], k: int) -> list[str]:
 
 
 # --- 离线评估 ---------------------------------------------------------------
+
 
 def evaluate_ranking(
     samples: list[RankingSample],
@@ -70,19 +71,25 @@ def evaluate_ranking(
     hit_rate: float | None = None
     if n > 0:
         k = min(top_k, n)
-        pred_top = set(_top_k_ids([(s.item_id, score_item(weights, s.features))
-                                    for s in usable], k))
+        pred_top = set(
+            _top_k_ids([(s.item_id, score_item(weights, s.features)) for s in usable], k)
+        )
         true_top = set(_top_k_ids([(s.item_id, s.relative_outcome) for s in usable], k))
         hit_rate = len(pred_top & true_top) / k
 
     return RankingEvalResult(
-        ranker_kind=weights.ranker_kind, template_version=weights.template_version,
-        rank_correlation=corr, top_k=top_k, top_k_hit_rate=hit_rate,
-        sample_count=n, enough_samples=n >= min_samples,
+        ranker_kind=weights.ranker_kind,
+        template_version=weights.template_version,
+        rank_correlation=corr,
+        top_k=top_k,
+        top_k_hit_rate=hit_rate,
+        sample_count=n,
+        enough_samples=n >= min_samples,
     )
 
 
 # --- 有界校准（可解释微调）--------------------------------------------------
+
 
 def propose_calibration(
     current: RankerWeights,
@@ -97,10 +104,7 @@ def propose_calibration(
     usable = [s for s in samples if s.relative_outcome is not None]
     new_coeffs: dict[str, float] = {}
     for name, coef in current.coefficients.items():
-        pairs = [
-            (s.features[name], s.relative_outcome)
-            for s in usable if name in s.features
-        ]
+        pairs = [(s.features[name], s.relative_outcome) for s in usable if name in s.features]
         corr = spearman_correlation(pairs) or 0.0
         factor = 1.0 + step * corr
         lo = coef * (1.0 - max_rel_change)
@@ -114,6 +118,7 @@ def propose_calibration(
 
 
 # --- 决策：离线评估门 + 少量探索 -------------------------------------------
+
 
 def decide_calibration(
     current: RankerWeights,
@@ -135,13 +140,14 @@ def decide_calibration(
     cur_metric = cur_eval.rank_correlation
     cand_metric = cand_eval.rank_correlation
     improvement = (
-        (cand_metric - cur_metric)
-        if cur_metric is not None and cand_metric is not None else 0.0
+        (cand_metric - cur_metric) if cur_metric is not None and cand_metric is not None else 0.0
     )
 
     enough = cur_eval.enough_samples and cand_eval.enough_samples
     promotable = (
-        enough and cand_metric is not None and cur_metric is not None
+        enough
+        and cand_metric is not None
+        and cur_metric is not None
         and improvement >= min_improvement
     )
 
@@ -159,10 +165,17 @@ def decide_calibration(
         frac = 0.0
 
     return CalibrationProposal(
-        ranker_kind=current.ranker_kind, current=current, candidate=candidate,
-        current_eval=cur_eval, candidate_eval=cand_eval, improvement=improvement,
-        promotable=promotable, decision=decision, exploration_fraction=frac,
-        max_exploration_fraction=effective_max, generated_at=generated_at,
+        ranker_kind=current.ranker_kind,
+        current=current,
+        candidate=candidate,
+        current_eval=cur_eval,
+        candidate_eval=cand_eval,
+        improvement=improvement,
+        promotable=promotable,
+        decision=decision,
+        exploration_fraction=frac,
+        max_exploration_fraction=effective_max,
+        generated_at=generated_at,
         note=_explain(decision, improvement, cur_eval.sample_count),
     )
 
@@ -176,6 +189,7 @@ def _explain(decision: CalibrationDecision, improvement: float, n: int) -> str:
 
 
 # --- 护栏 -------------------------------------------------------------------
+
 
 class CalibrationIssueKind(StrEnum):
     EXPLORE_WITHOUT_PROMOTABLE = "EXPLORE_WITHOUT_PROMOTABLE"  # EXPLORE 却不 promotable
@@ -198,33 +212,52 @@ def validate_calibration_proposal(proposal: CalibrationProposal) -> list[Calibra
     ref = proposal.ranker_kind.value
 
     if proposal.decision is CalibrationDecision.EXPLORE and not proposal.promotable:
-        issues.append(CalibrationIssue(
-            CalibrationIssueKind.EXPLORE_WITHOUT_PROMOTABLE, ref,
-            "EXPLORE 却 promotable=False（未过离线评估门）"))
+        issues.append(
+            CalibrationIssue(
+                CalibrationIssueKind.EXPLORE_WITHOUT_PROMOTABLE,
+                ref,
+                "EXPLORE 却 promotable=False（未过离线评估门）",
+            )
+        )
     # 硬上限（常量）+ 自声明上限，两道都查——防篡改绕过（verifier REFUTED 的漏洞）。
-    if (proposal.exploration_fraction > proposal.max_exploration_fraction
-            or proposal.exploration_fraction > MAX_EXPLORATION_FRACTION
-            or proposal.max_exploration_fraction > MAX_EXPLORATION_FRACTION):
-        issues.append(CalibrationIssue(
-            CalibrationIssueKind.EXPLORATION_EXCEEDS_MAX, ref,
-            f"探索比例 {proposal.exploration_fraction} / 上限 "
-            f"{proposal.max_exploration_fraction} 超过硬上限 {MAX_EXPLORATION_FRACTION}"))
+    if (
+        proposal.exploration_fraction > proposal.max_exploration_fraction
+        or proposal.exploration_fraction > MAX_EXPLORATION_FRACTION
+        or proposal.max_exploration_fraction > MAX_EXPLORATION_FRACTION
+    ):
+        issues.append(
+            CalibrationIssue(
+                CalibrationIssueKind.EXPLORATION_EXCEEDS_MAX,
+                ref,
+                f"探索比例 {proposal.exploration_fraction} / 上限 "
+                f"{proposal.max_exploration_fraction} 超过硬上限 {MAX_EXPLORATION_FRACTION}",
+            )
+        )
     if proposal.promotable and not (
         proposal.current_eval.enough_samples and proposal.candidate_eval.enough_samples
     ):
-        issues.append(CalibrationIssue(
-            CalibrationIssueKind.PROMOTABLE_WITHOUT_SAMPLES, ref,
-            "promotable=True 却样本不足"))
+        issues.append(
+            CalibrationIssue(
+                CalibrationIssueKind.PROMOTABLE_WITHOUT_SAMPLES, ref, "promotable=True 却样本不足"
+            )
+        )
     for label, w in (("current", proposal.current), ("candidate", proposal.candidate)):
         for name, value in w.coefficients.items():
             if value < 0:
-                issues.append(CalibrationIssue(
-                    CalibrationIssueKind.NEGATIVE_WEIGHT, f"{ref}:{label}:{name}",
-                    f"系数 {value} < 0"))
-    if len({proposal.current.ranker_kind, proposal.candidate.ranker_kind,
-            proposal.ranker_kind}) != 1:
-        issues.append(CalibrationIssue(
-            CalibrationIssueKind.RANKER_KIND_MISMATCH, ref, "ranker_kind 不一致"))
+                issues.append(
+                    CalibrationIssue(
+                        CalibrationIssueKind.NEGATIVE_WEIGHT,
+                        f"{ref}:{label}:{name}",
+                        f"系数 {value} < 0",
+                    )
+                )
+    if (
+        len({proposal.current.ranker_kind, proposal.candidate.ranker_kind, proposal.ranker_kind})
+        != 1
+    ):
+        issues.append(
+            CalibrationIssue(CalibrationIssueKind.RANKER_KIND_MISMATCH, ref, "ranker_kind 不一致")
+        )
     return issues
 
 

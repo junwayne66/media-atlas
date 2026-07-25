@@ -31,7 +31,9 @@ _T0 = datetime(2026, 7, 24, tzinfo=UTC)
 
 def _profile(**k) -> VoiceProfile:
     defaults = dict(
-        id="v1", display_name="Anchor", language="zh-CN",
+        id="v1",
+        display_name="Anchor",
+        language="zh-CN",
         voice_kind=VoiceKind.PRESET,
         license_status=VoiceLicenseStatus.AUTHORIZED,
         created_at=_T0,
@@ -42,7 +44,9 @@ def _profile(**k) -> VoiceProfile:
 
 def _cloned(**k) -> VoiceProfile:
     defaults = dict(
-        id="v2", display_name="Cloned", language="zh-CN",
+        id="v2",
+        display_name="Cloned",
+        language="zh-CN",
         voice_kind=VoiceKind.CLONED,
         license_status=VoiceLicenseStatus.AUTHORIZED,
         sample_source_ref="artifact://sample.wav",
@@ -55,28 +59,30 @@ def _cloned(**k) -> VoiceProfile:
 
 # —— validate_voice_profile: 授权硬红线 ——
 
+
 def test_authorized_profile_passes() -> None:
     assert is_valid_voice_profile(_profile())
 
 
 def test_unconfirmed_status_flagged() -> None:
-    kinds = [i.kind for i in validate_voice_profile(
-        _profile(license_status=VoiceLicenseStatus.UNCONFIRMED)
-    )]
+    kinds = [
+        i.kind
+        for i in validate_voice_profile(_profile(license_status=VoiceLicenseStatus.UNCONFIRMED))
+    ]
     assert VoiceProfileIssueKind.LICENSE_NOT_AUTHORIZED in kinds
 
 
 def test_pending_status_flagged() -> None:
-    kinds = [i.kind for i in validate_voice_profile(
-        _profile(license_status=VoiceLicenseStatus.PENDING)
-    )]
+    kinds = [
+        i.kind for i in validate_voice_profile(_profile(license_status=VoiceLicenseStatus.PENDING))
+    ]
     assert VoiceProfileIssueKind.LICENSE_NOT_AUTHORIZED in kinds
 
 
 def test_denied_status_flagged() -> None:
-    kinds = [i.kind for i in validate_voice_profile(
-        _profile(license_status=VoiceLicenseStatus.DENIED)
-    )]
+    kinds = [
+        i.kind for i in validate_voice_profile(_profile(license_status=VoiceLicenseStatus.DENIED))
+    ]
     assert VoiceProfileIssueKind.LICENSE_NOT_AUTHORIZED in kinds
 
 
@@ -100,9 +106,13 @@ def test_expired_license_not_flagged_when_now_none() -> None:
 
 
 def test_language_mismatch_flagged() -> None:
-    kinds = [i.kind for i in validate_voice_profile(
-        _profile(language="zh-CN"), request_language="ja-JP",
-    )]
+    kinds = [
+        i.kind
+        for i in validate_voice_profile(
+            _profile(language="zh-CN"),
+            request_language="ja-JP",
+        )
+    ]
     assert VoiceProfileIssueKind.LANGUAGE_MISMATCH in kinds
 
 
@@ -120,6 +130,7 @@ def test_cloned_missing_sample_flagged_domain() -> None:
 
 # —— is_authorized_for_synthesis: 便捷入口 ——
 
+
 def test_is_authorized_true_on_authorized_and_no_expiry() -> None:
     assert is_authorized_for_synthesis(_profile())
 
@@ -130,6 +141,7 @@ def test_is_authorized_false_on_expired_with_now() -> None:
 
 
 # —— text_hash_of: 缓存键性质 ——
+
 
 def test_text_hash_stable_and_deterministic() -> None:
     h1 = text_hash_of("hi", language="en-US", voice_profile_id="v1")
@@ -152,12 +164,12 @@ def test_text_hash_changes_with_seed() -> None:
 
 def test_text_hash_changes_with_style() -> None:
     a = text_hash_of("hi", language="en-US", voice_profile_id="v1")
-    b = text_hash_of("hi", language="en-US", voice_profile_id="v1",
-                       style=VoiceStyle(pace=1.05))
+    b = text_hash_of("hi", language="en-US", voice_profile_id="v1", style=VoiceStyle(pace=1.05))
     assert a != b
 
 
 # —— suggest_speed: §8 时长拟合 ——
+
 
 def test_suggest_speed_basic() -> None:
     # 估算 3000ms 要塞进 2000ms 目标 → 1.5x
@@ -175,6 +187,7 @@ def test_suggest_speed_no_target_returns_one() -> None:
 
 
 # —— plan_tts_synthesis ——
+
 
 def test_plan_tts_skips_unauthorized_voices() -> None:
     """未授权 profile 直接跳过——不生成 job（UI 侧看到句子缺 job = 需人工）。"""
@@ -210,18 +223,19 @@ def test_plan_tts_flags_speed_out_of_natural_bounds() -> None:
         target_duration_by_sentence={"s0": 1000},
         estimated_duration_by_sentence={"s0": 5000},
     )
-    assert TTSManifestIssueKind.SPEED_OUT_OF_NATURAL_BOUNDS.value \
-        in jobs[0].review_reasons
+    assert TTSManifestIssueKind.SPEED_OUT_OF_NATURAL_BOUNDS.value in jobs[0].review_reasons
 
 
 def test_plan_tts_text_hash_deterministic_across_calls() -> None:
     default = _profile()
     jobs1 = plan_tts_synthesis(
-        sentences=[("s0", "hi", "en-US")], voice_by_speaker={},
+        sentences=[("s0", "hi", "en-US")],
+        voice_by_speaker={},
         default_voice=default,
     )
     jobs2 = plan_tts_synthesis(
-        sentences=[("s0", "hi", "en-US")], voice_by_speaker={},
+        sentences=[("s0", "hi", "en-US")],
+        voice_by_speaker={},
         default_voice=default,
     )
     assert jobs1[0].text_hash == jobs2[0].text_hash
@@ -229,18 +243,25 @@ def test_plan_tts_text_hash_deterministic_across_calls() -> None:
 
 # —— validate_tts_manifest ——
 
+
 def _manifest(**k) -> TTSManifest:
     defaults = dict(
-        id="m0", sentence_id="s0", voice_profile_id="v1",
-        language="zh-CN", text_hash="a" * 64,
-        provider="tts.fake", provider_tier=TTSProviderTier.CLOUD_HIGH_QUALITY,
+        id="m0",
+        sentence_id="s0",
+        voice_profile_id="v1",
+        language="zh-CN",
+        text_hash="a" * 64,
+        provider="tts.fake",
+        provider_tier=TTSProviderTier.CLOUD_HIGH_QUALITY,
         audio_artifact_id="fake://a.wav",
         duration_ms=1000,
         word_timings=[
             TTSWordTiming(text="hi", start_ms=0, end_ms=500, confidence=0.5),
             TTSWordTiming(text="you", start_ms=500, end_ms=1000, confidence=0.5),
         ],
-        speed_used=1.0, seed=None, created_at=_T0,
+        speed_used=1.0,
+        seed=None,
+        created_at=_T0,
     )
     defaults.update(k)
     return TTSManifest(**defaults)
@@ -251,17 +272,22 @@ def test_validate_manifest_clean_passes() -> None:
 
 
 def test_validate_manifest_word_timings_empty() -> None:
-    kinds = [i.kind for i in validate_tts_manifest(
-        _manifest(word_timings=[]),
-    )]
+    kinds = [
+        i.kind
+        for i in validate_tts_manifest(
+            _manifest(word_timings=[]),
+        )
+    ]
     assert TTSManifestIssueKind.WORD_TIMINGS_EMPTY in kinds
 
 
 def test_validate_manifest_word_timings_not_monotonic() -> None:
-    m = _manifest(word_timings=[
-        TTSWordTiming(text="a", start_ms=0, end_ms=500),
-        TTSWordTiming(text="b", start_ms=400, end_ms=800),  # 早于前 end
-    ])
+    m = _manifest(
+        word_timings=[
+            TTSWordTiming(text="a", start_ms=0, end_ms=500),
+            TTSWordTiming(text="b", start_ms=400, end_ms=800),  # 早于前 end
+        ]
+    )
     kinds = [i.kind for i in validate_tts_manifest(m)]
     assert TTSManifestIssueKind.WORD_TIMINGS_NOT_MONOTONIC in kinds
 
@@ -280,9 +306,13 @@ def test_validate_manifest_word_timing_out_of_total() -> None:
 
 def test_validate_manifest_text_hash_mismatch() -> None:
     m = _manifest(text_hash="0" * 64)
-    kinds = [i.kind for i in validate_tts_manifest(
-        m, request_text="hi",  # 与 manifest 不匹配
-    )]
+    kinds = [
+        i.kind
+        for i in validate_tts_manifest(
+            m,
+            request_text="hi",  # 与 manifest 不匹配
+        )
+    ]
     assert TTSManifestIssueKind.TEXT_HASH_MISMATCH in kinds
 
 
@@ -295,17 +325,25 @@ def test_validate_manifest_text_hash_match() -> None:
 
 
 def test_validate_manifest_duration_out_of_tolerance() -> None:
-    kinds = [i.kind for i in validate_tts_manifest(
-        _manifest(duration_ms=2000), target_duration_ms=1000,  # 100% 超 ±10%
-    )]
+    kinds = [
+        i.kind
+        for i in validate_tts_manifest(
+            _manifest(duration_ms=2000),
+            target_duration_ms=1000,  # 100% 超 ±10%
+        )
+    ]
     assert TTSManifestIssueKind.DURATION_OUT_OF_TOLERANCE in kinds
 
 
 def test_validate_manifest_duration_within_tolerance() -> None:
     """1050/1000 = 1.05 属于 ±10%，通过。"""
-    kinds = [i.kind for i in validate_tts_manifest(
-        _manifest(duration_ms=1050), target_duration_ms=1000,
-    )]
+    kinds = [
+        i.kind
+        for i in validate_tts_manifest(
+            _manifest(duration_ms=1050),
+            target_duration_ms=1000,
+        )
+    ]
     assert TTSManifestIssueKind.DURATION_OUT_OF_TOLERANCE not in kinds
 
 
@@ -320,7 +358,10 @@ def test_validate_manifest_speed_within_natural_bounds() -> None:
 
 
 def test_validate_manifest_audio_missing_but_duration_set() -> None:
-    kinds = [i.kind for i in validate_tts_manifest(
-        _manifest(audio_artifact_id=None, duration_ms=1000, word_timings=[]),
-    )]
+    kinds = [
+        i.kind
+        for i in validate_tts_manifest(
+            _manifest(audio_artifact_id=None, duration_ms=1000, word_timings=[]),
+        )
+    ]
     assert TTSManifestIssueKind.AUDIO_MISSING in kinds

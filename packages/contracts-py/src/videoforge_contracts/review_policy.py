@@ -65,13 +65,15 @@ class ReviewDecision(ContractModel):
     entity_id: str = Field(min_length=1)
     entity_version: int = Field(ge=1)
     content_digest: str = Field(
-        min_length=1, description="被审内容的摘要；内容一改即变 → 旧审批失效",
+        min_length=1,
+        description="被审内容的摘要；内容一改即变 → 旧审批失效",
     )
     reviewer_id: str = Field(min_length=1)
     policy_snapshot_id: str = Field(min_length=1)
     qc_report_ids: list[str] = Field(default_factory=list)
     signature: str = Field(
-        min_length=1, description="无密钥内容绑定摘要（见模块 docstring 安全说明）",
+        min_length=1,
+        description="无密钥内容绑定摘要（见模块 docstring 安全说明）",
     )
     note: str | None = None
     created_at: datetime
@@ -83,7 +85,8 @@ class ReviewPolicy(ContractModel):
     id: str = Field(min_length=1)
     mode: ReviewPolicyMode
     warning_blocks: bool = Field(
-        default=False, description="WARNING 是否阻塞（模板/账号策略，§2）",
+        default=False,
+        description="WARNING 是否阻塞（模板/账号策略，§2）",
     )
     version: int = Field(default=1, ge=1)
     created_at: datetime

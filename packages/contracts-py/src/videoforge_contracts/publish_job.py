@@ -59,7 +59,8 @@ class PublishJob(ContractModel):
     render_digest: str = Field(min_length=1)
     metadata_digest: str = Field(min_length=1)
     scheduled_window: str = Field(
-        min_length=1, description="计划窗口标识（如 ISO 时间或 'immediate'）",
+        min_length=1,
+        description="计划窗口标识（如 ISO 时间或 'immediate'）",
     )
     state: PublishState
     external_post_id: str | None = None
@@ -74,7 +75,6 @@ class PublishJob(ContractModel):
         if self.state in (PublishState.SUCCEEDED, PublishState.SUCCEEDED_RECONCILED):
             if not self.external_post_id:
                 raise ValueError(
-                    f"{self.state.value} 必须携带 external_post_id"
-                    "（成功即已保存外部帖子 ID）"
+                    f"{self.state.value} 必须携带 external_post_id（成功即已保存外部帖子 ID）"
                 )
         return self

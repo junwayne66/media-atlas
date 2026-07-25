@@ -24,8 +24,11 @@ def _captions() -> dict[int, tuple[str, list[str], float]]:
 
 def _analysis(**over):
     kwargs = dict(
-        analysis_id="va-1", created_at=_T0, duration_ms=30000,
-        scene_cuts=(3.0, 10.0), periodic_interval_ms=999999,
+        analysis_id="va-1",
+        created_at=_T0,
+        duration_ms=30000,
+        scene_cuts=(3.0, 10.0),
+        periodic_interval_ms=999999,
     )
     kwargs.update(over)
     return select_representative_frames(**kwargs)

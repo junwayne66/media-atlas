@@ -96,16 +96,39 @@ def _codec_flags(target: RenderTargetKind, stage: RenderStage) -> list[str]:
         crf = "28" if stage is RenderStage.PROXY else "20"
         preset = "veryfast" if stage is RenderStage.PROXY else "medium"
         return [
-            "-c:v", "libx264", "-preset", preset, "-crf", crf,
-            "-pix_fmt", "yuv420p",
-            "-c:a", "aac", "-b:a", "192k",
-            "-movflags", "+faststart",
+            "-c:v",
+            "libx264",
+            "-preset",
+            preset,
+            "-crf",
+            crf,
+            "-pix_fmt",
+            "yuv420p",
+            "-c:a",
+            "aac",
+            "-b:a",
+            "192k",
+            "-movflags",
+            "+faststart",
         ]
     if target is RenderTargetKind.MP4_H265:
         return [
-            "-c:v", "libx265", "-preset", "medium", "-crf", "24",
-            "-pix_fmt", "yuv420p", "-c:a", "aac", "-b:a", "192k",
-            "-tag:v", "hvc1", "-movflags", "+faststart",
+            "-c:v",
+            "libx265",
+            "-preset",
+            "medium",
+            "-crf",
+            "24",
+            "-pix_fmt",
+            "yuv420p",
+            "-c:a",
+            "aac",
+            "-b:a",
+            "192k",
+            "-tag:v",
+            "hvc1",
+            "-movflags",
+            "+faststart",
         ]
     if target is RenderTargetKind.MOV_PRORES:
         return ["-c:v", "prores_ks", "-profile:v", "3", "-c:a", "pcm_s16le"]
@@ -114,8 +137,9 @@ def _codec_flags(target: RenderTargetKind, stage: RenderStage) -> list[str]:
     raise ValueError(f"未覆盖的 RenderTargetKind: {target}")
 
 
-def _segment_video_nodes(seg: Segment, source_index: int, node_prefix: str,
-                          width: int, height: int) -> tuple[list[FilterNode], str]:
+def _segment_video_nodes(
+    seg: Segment, source_index: int, node_prefix: str, width: int, height: int
+) -> tuple[list[FilterNode], str]:
     """一段视频片段的滤镜子图：trim+setpts+scale+setsar → 返回节点列表 + 最终输出标签。"""
     start_s = f"{seg.time_range.start.value / seg.time_range.start.rate:.6f}"
     end_v = seg.time_range.start.value + seg.time_range.duration.value
@@ -125,24 +149,41 @@ def _segment_video_nodes(seg: Segment, source_index: int, node_prefix: str,
     scale_out = f"{node_prefix}_scaled"
     final_out = f"{node_prefix}_v"
     nodes = [
-        FilterNode(id=f"{node_prefix}_trim", filter="trim",
-                    params={"start": start_s, "end": end_s},
-                    inputs=[f"{source_index}:v"], outputs=[trim_out]),
-        FilterNode(id=f"{node_prefix}_setpts", filter="setpts",
-                    params={"expr": "PTS-STARTPTS"},
-                    inputs=[trim_out], outputs=[setpts_out]),
-        FilterNode(id=f"{node_prefix}_scale", filter="scale",
-                    params={"w": str(width), "h": str(height)},
-                    inputs=[setpts_out], outputs=[scale_out]),
-        FilterNode(id=f"{node_prefix}_setsar", filter="setsar",
-                    params={"sar": "1"},
-                    inputs=[scale_out], outputs=[final_out]),
+        FilterNode(
+            id=f"{node_prefix}_trim",
+            filter="trim",
+            params={"start": start_s, "end": end_s},
+            inputs=[f"{source_index}:v"],
+            outputs=[trim_out],
+        ),
+        FilterNode(
+            id=f"{node_prefix}_setpts",
+            filter="setpts",
+            params={"expr": "PTS-STARTPTS"},
+            inputs=[trim_out],
+            outputs=[setpts_out],
+        ),
+        FilterNode(
+            id=f"{node_prefix}_scale",
+            filter="scale",
+            params={"w": str(width), "h": str(height)},
+            inputs=[setpts_out],
+            outputs=[scale_out],
+        ),
+        FilterNode(
+            id=f"{node_prefix}_setsar",
+            filter="setsar",
+            params={"sar": "1"},
+            inputs=[scale_out],
+            outputs=[final_out],
+        ),
     ]
     return nodes, final_out
 
 
-def _segment_audio_nodes(seg: Segment, source_index: int, node_prefix: str
-                          ) -> tuple[list[FilterNode], str]:
+def _segment_audio_nodes(
+    seg: Segment, source_index: int, node_prefix: str
+) -> tuple[list[FilterNode], str]:
     """一段音频片段的滤镜子图：atrim+asetpts+aformat 统一采样。"""
     start_s = f"{seg.time_range.start.value / seg.time_range.start.rate:.6f}"
     end_v = seg.time_range.start.value + seg.time_range.duration.value
@@ -151,16 +192,27 @@ def _segment_audio_nodes(seg: Segment, source_index: int, node_prefix: str
     asetpts_out = f"{node_prefix}_asetpts"
     final_out = f"{node_prefix}_a"
     nodes = [
-        FilterNode(id=f"{node_prefix}_atrim", filter="atrim",
-                    params={"start": start_s, "end": end_s},
-                    inputs=[f"{source_index}:a"], outputs=[atrim_out]),
-        FilterNode(id=f"{node_prefix}_asetpts", filter="asetpts",
-                    params={"expr": "PTS-STARTPTS"},
-                    inputs=[atrim_out], outputs=[asetpts_out]),
-        FilterNode(id=f"{node_prefix}_aformat", filter="aformat",
-                    params={"sample_fmts": "fltp", "sample_rates": "48000",
-                            "channel_layouts": "stereo"},
-                    inputs=[asetpts_out], outputs=[final_out]),
+        FilterNode(
+            id=f"{node_prefix}_atrim",
+            filter="atrim",
+            params={"start": start_s, "end": end_s},
+            inputs=[f"{source_index}:a"],
+            outputs=[atrim_out],
+        ),
+        FilterNode(
+            id=f"{node_prefix}_asetpts",
+            filter="asetpts",
+            params={"expr": "PTS-STARTPTS"},
+            inputs=[atrim_out],
+            outputs=[asetpts_out],
+        ),
+        FilterNode(
+            id=f"{node_prefix}_aformat",
+            filter="aformat",
+            params={"sample_fmts": "fltp", "sample_rates": "48000", "channel_layouts": "stereo"},
+            inputs=[asetpts_out],
+            outputs=[final_out],
+        ),
     ]
     return nodes, final_out
 
@@ -185,8 +237,12 @@ def compile_timeline(
     # 1) 汇总所有实际用到的 source_ref → RenderInput（去重按 source_ref）
     used_refs: list[str] = []
     for track in timeline.tracks:
-        if track.kind not in {TrackKind.V1_PRIMARY_VIDEO, TrackKind.A0_ORIGINAL,
-                                 TrackKind.A1_DUB, TrackKind.V2_BROLL_SCREEN}:
+        if track.kind not in {
+            TrackKind.V1_PRIMARY_VIDEO,
+            TrackKind.A0_ORIGINAL,
+            TrackKind.A1_DUB,
+            TrackKind.V2_BROLL_SCREEN,
+        }:
             continue
         for seg in track.segments:
             if seg.source_ref and seg.source_ref not in used_refs:
@@ -199,9 +255,7 @@ def compile_timeline(
             raise UnsafeInputPath(f"source_ref {ref!r} 未在 resolved_inputs 中解析")
         path, sha256 = resolved_inputs[ref]
         if not _path_within(path, config.allowed_input_roots):
-            raise UnsafeInputPath(
-                f"输入路径越出白名单：{path} ∉ {config.allowed_input_roots}"
-            )
+            raise UnsafeInputPath(f"输入路径越出白名单：{path} ∉ {config.allowed_input_roots}")
         inputs.append(RenderInput(asset_id=ref, sha256=sha256, resolved_path=path))
         ref_to_index[ref] = idx
 
@@ -222,7 +276,11 @@ def compile_timeline(
                 if not seg.source_ref:
                     continue
                 nodes, out = _segment_video_nodes(
-                    seg, ref_to_index[seg.source_ref], f"v1_{seg_i}", width, height,
+                    seg,
+                    ref_to_index[seg.source_ref],
+                    f"v1_{seg_i}",
+                    width,
+                    height,
                 )
                 all_nodes.extend(nodes)
                 v_labels.append(out)
@@ -232,7 +290,9 @@ def compile_timeline(
                 if not seg.source_ref:
                     continue
                 nodes, out = _segment_audio_nodes(
-                    seg, ref_to_index[seg.source_ref], f"{prefix}_{seg_i}",
+                    seg,
+                    ref_to_index[seg.source_ref],
+                    f"{prefix}_{seg_i}",
                 )
                 all_nodes.extend(nodes)
                 a_labels.append(out)
@@ -241,11 +301,15 @@ def compile_timeline(
     sinks: list[str] = []
     if len(v_labels) >= 2:
         concat_out = "v_out"
-        all_nodes.append(FilterNode(
-            id="v_concat", filter="concat",
-            params={"n": str(len(v_labels)), "v": "1", "a": "0"},
-            inputs=list(v_labels), outputs=[concat_out],
-        ))
+        all_nodes.append(
+            FilterNode(
+                id="v_concat",
+                filter="concat",
+                params={"n": str(len(v_labels)), "v": "1", "a": "0"},
+                inputs=list(v_labels),
+                outputs=[concat_out],
+            )
+        )
         sinks.append(concat_out)
         args.extend(["-map", f"[{concat_out}]"])
     elif len(v_labels) == 1:
@@ -254,11 +318,15 @@ def compile_timeline(
 
     if len(a_labels) >= 2:
         aout = "a_out"
-        all_nodes.append(FilterNode(
-            id="a_concat", filter="concat",
-            params={"n": str(len(a_labels)), "v": "0", "a": "1"},
-            inputs=list(a_labels), outputs=[aout],
-        ))
+        all_nodes.append(
+            FilterNode(
+                id="a_concat",
+                filter="concat",
+                params={"n": str(len(a_labels)), "v": "0", "a": "1"},
+                inputs=list(a_labels),
+                outputs=[aout],
+            )
+        )
         sinks.append(aout)
         args.extend(["-map", f"[{aout}]"])
     elif len(a_labels) == 1:
@@ -270,8 +338,12 @@ def compile_timeline(
 
     filter_graph = FilterGraph(nodes=all_nodes, sinks=sinks) if all_nodes else None
     return FfmpegRenderGraph(
-        args=args, filter_complex=filter_graph, inputs=inputs,
-        output_path=config.output_path, target=config.target, tool_version=tool_version,
+        args=args,
+        filter_complex=filter_graph,
+        inputs=inputs,
+        output_path=config.output_path,
+        target=config.target,
+        tool_version=tool_version,
     )
 
 
@@ -288,12 +360,17 @@ def build_render_manifest(
     """RenderManifest = 时间线 id + 渲染指令 + 输入哈希表 + 工具版本，供缓存与重放。"""
     input_digests = {inp.asset_id: inp.sha256 for inp in render_graph.inputs}
     return RenderManifest(
-        id=manifest_id, timeline_id=timeline.id, stage=stage,
-        render_graph=render_graph, input_digests=input_digests,
+        id=manifest_id,
+        timeline_id=timeline.id,
+        stage=stage,
+        render_graph=render_graph,
+        input_digests=input_digests,
         output_digest=output_digest,
         duration_ms=int(timeline.duration.value / timeline.duration.rate * 1000)
-                     if timeline.duration.rate else 0,
-        tool_version=tool_version, created_at=created_at,
+        if timeline.duration.rate
+        else 0,
+        tool_version=tool_version,
+        created_at=created_at,
     )
 
 
@@ -301,13 +378,15 @@ def render_manifest_cache_key(manifest: RenderManifest) -> str:
     """稳定 cache key：输入哈希 + 工具版本 + argv + 目标 + stage。sort_keys 保排序不敏感。"""
     sorted_digests = "|".join(f"{k}={v}" for k, v in sorted(manifest.input_digests.items()))
     argv_key = "\x00".join(manifest.render_graph.args)
-    payload = "\x01".join([
-        manifest.stage.value,
-        manifest.render_graph.target.value,
-        manifest.tool_version,
-        sorted_digests,
-        argv_key,
-    ])
+    payload = "\x01".join(
+        [
+            manifest.stage.value,
+            manifest.render_graph.target.value,
+            manifest.tool_version,
+            sorted_digests,
+            argv_key,
+        ]
+    )
     return hashlib.sha256(payload.encode("utf-8")).hexdigest()
 
 
