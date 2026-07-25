@@ -1,0 +1,451 @@
+{
+  "$defs": {
+    "CreationMode": {
+      "description": "两种二创模式（docs/architecture/31 §5）。",
+      "enum": [
+        "STRUCTURE_REWRITE",
+        "SOURCE_REEDIT"
+      ],
+      "title": "CreationMode",
+      "type": "string"
+    },
+    "PerformanceFeatures": {
+      "additionalProperties": false,
+      "description": "一条已发布视频的归因特征（§11）。分组维度相关字段；缺失(None)的维度该视频不计入该分组。",
+      "properties": {
+        "creation_mode": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/CreationMode"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "duration_ms": {
+          "anyOf": [
+            {
+              "minimum": 0,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Duration Ms"
+        },
+        "has_music": {
+          "anyOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Has Music"
+        },
+        "hook_kind": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Hook Kind"
+        },
+        "language": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Language"
+        },
+        "manual_edit_count": {
+          "anyOf": [
+            {
+              "minimum": 0,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Manual Edit Count"
+        },
+        "publish_hour": {
+          "anyOf": [
+            {
+              "maximum": 23,
+              "minimum": 0,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Publish Hour"
+        },
+        "publish_weekday": {
+          "anyOf": [
+            {
+              "maximum": 6,
+              "minimum": 0,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Publish Weekday"
+        },
+        "qa_warning_count": {
+          "anyOf": [
+            {
+              "minimum": 0,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Qa Warning Count"
+        },
+        "schema_version": {
+          "default": "1",
+          "description": "合同 schema 版本；Reader 需兼容当前与前一版本",
+          "title": "Schema Version",
+          "type": "string"
+        },
+        "subtitle_style": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Subtitle Style"
+        },
+        "template_id": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Template Id"
+        },
+        "trend_cluster_id": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Trend Cluster Id"
+        },
+        "voice_ref": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Voice Ref"
+        }
+      },
+      "title": "PerformanceFeatures",
+      "type": "object"
+    },
+    "PerformanceSnapshot": {
+      "additionalProperties": false,
+      "description": "§10 表现快照。**每个指标字段缺失保持 null，绝不填 0**（红线）。\n\n非指标元数据（platform/post_id/account/observed_at/age/source_confidence）是必填事实；\n只有平台\"实际提供的表现指标\"才 Optional——它们的 null 表示\"平台没给这个数\"，\n下游统计/归因必须把 null 当作\"未知\"跳过，永远不能当 0。",
+      "properties": {
+        "account_id": {
+          "minLength": 1,
+          "title": "Account Id",
+          "type": "string"
+        },
+        "age_hours": {
+          "description": "发布至观测时的小时数（可为小数）",
+          "minimum": 0,
+          "title": "Age Hours",
+          "type": "number"
+        },
+        "avg_watch_time_ms": {
+          "anyOf": [
+            {
+              "minimum": 0,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "平均观看时长",
+          "title": "Avg Watch Time Ms"
+        },
+        "click_through_rate": {
+          "anyOf": [
+            {
+              "maximum": 1,
+              "minimum": 0,
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Click Through Rate"
+        },
+        "comments": {
+          "anyOf": [
+            {
+              "minimum": 0,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Comments"
+        },
+        "completion_rate": {
+          "anyOf": [
+            {
+              "maximum": 1,
+              "minimum": 0,
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Completion Rate"
+        },
+        "follows": {
+          "anyOf": [
+            {
+              "minimum": 0,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Follows"
+        },
+        "id": {
+          "minLength": 1,
+          "title": "Id",
+          "type": "string"
+        },
+        "impressions": {
+          "anyOf": [
+            {
+              "minimum": 0,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Impressions"
+        },
+        "likes": {
+          "anyOf": [
+            {
+              "minimum": 0,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Likes"
+        },
+        "observed_at": {
+          "format": "date-time",
+          "title": "Observed At",
+          "type": "string"
+        },
+        "platform": {
+          "$ref": "#/$defs/PublishPlatform"
+        },
+        "platform_post_id": {
+          "minLength": 1,
+          "title": "Platform Post Id",
+          "type": "string"
+        },
+        "saves": {
+          "anyOf": [
+            {
+              "minimum": 0,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Saves"
+        },
+        "schema_version": {
+          "default": "1",
+          "description": "合同 schema 版本；Reader 需兼容当前与前一版本",
+          "title": "Schema Version",
+          "type": "string"
+        },
+        "shares": {
+          "anyOf": [
+            {
+              "minimum": 0,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Shares"
+        },
+        "source_confidence": {
+          "maximum": 1,
+          "minimum": 0,
+          "title": "Source Confidence",
+          "type": "number"
+        },
+        "views": {
+          "anyOf": [
+            {
+              "minimum": 0,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Views"
+        },
+        "watch_time_ms": {
+          "anyOf": [
+            {
+              "minimum": 0,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "总观看时长",
+          "title": "Watch Time Ms"
+        }
+      },
+      "required": [
+        "id",
+        "platform",
+        "platform_post_id",
+        "account_id",
+        "observed_at",
+        "age_hours",
+        "source_confidence"
+      ],
+      "title": "PerformanceSnapshot",
+      "type": "object"
+    },
+    "PublishPlatform": {
+      "enum": [
+        "TIKTOK",
+        "DOUYIN"
+      ],
+      "title": "PublishPlatform",
+      "type": "string"
+    }
+  },
+  "$id": "https://videoforge.dev/schemas/video-performance-record.schema.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "description": "一条已发布视频的归因事实：特征 + 抓到的表现快照（§10/§11 的输入事实，不可变）。",
+  "properties": {
+    "account_id": {
+      "minLength": 1,
+      "title": "Account Id",
+      "type": "string"
+    },
+    "features": {
+      "$ref": "#/$defs/PerformanceFeatures"
+    },
+    "id": {
+      "minLength": 1,
+      "title": "Id",
+      "type": "string"
+    },
+    "platform": {
+      "$ref": "#/$defs/PublishPlatform"
+    },
+    "published_at": {
+      "format": "date-time",
+      "title": "Published At",
+      "type": "string"
+    },
+    "schema_version": {
+      "default": "1",
+      "description": "合同 schema 版本；Reader 需兼容当前与前一版本",
+      "title": "Schema Version",
+      "type": "string"
+    },
+    "snapshots": {
+      "items": {
+        "$ref": "#/$defs/PerformanceSnapshot"
+      },
+      "title": "Snapshots",
+      "type": "array"
+    }
+  },
+  "required": [
+    "id",
+    "account_id",
+    "platform",
+    "published_at",
+    "features"
+  ],
+  "title": "VideoPerformanceRecord",
+  "type": "object"
+}

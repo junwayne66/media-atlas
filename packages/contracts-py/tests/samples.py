@@ -3,6 +3,8 @@
 from datetime import UTC, datetime
 
 from videoforge_contracts import (
+    AccountBaseline,
+    AccountBaselineEntry,
     AccountBinding,
     AccountStatus,
     Artifact,
@@ -59,6 +61,7 @@ from videoforge_contracts import (
     FrameSampleReason,
     Glossary,
     GlossaryEntry,
+    GroupDimension,
     HighlightCandidate,
     HighlightFeatures,
     HighlightLabel,
@@ -82,6 +85,9 @@ from videoforge_contracts import (
     MediaProbe,
     MetricField,
     MetricsConnectorCapability,
+    PerformanceDashboard,
+    PerformanceFeatures,
+    PerformanceGroupStat,
     PerformanceSnapshot,
     PlatformAccount,
     PlatformPublishSpec,
@@ -169,6 +175,7 @@ from videoforge_contracts import (
     TTSProviderTier,
     TTSWordTiming,
     VideoBlueprint,
+    VideoPerformanceRecord,
     VisualAnalysis,
     VisualBeat,
     VisualBeatKind,
@@ -1397,6 +1404,70 @@ def make_performance_snapshot() -> PerformanceSnapshot:
     )
 
 
+def make_video_performance_record() -> VideoPerformanceRecord:
+    return VideoPerformanceRecord(
+        id="01J2ZK3AC9V6XW8YQ4R5T6U7VR01",
+        account_id="01J2ZK3AC9V6XW8YQ4R5T6U7AC01",
+        platform=PublishPlatform.TIKTOK,
+        published_at=datetime(2026, 7, 25, 20, 0, tzinfo=UTC),
+        features=PerformanceFeatures(
+            template_id="tmpl_hook_reveal_v3",
+            hook_kind="QUESTION",
+            creation_mode=CreationMode.STRUCTURE_REWRITE,
+            duration_ms=45_000,
+            language="zh-CN",
+            publish_hour=20,
+            publish_weekday=5,
+            qa_warning_count=1,
+            manual_edit_count=2,
+        ),
+        snapshots=[make_performance_snapshot()],
+    )
+
+
+def make_account_baseline() -> AccountBaseline:
+    return AccountBaseline(
+        account_id="01J2ZK3AC9V6XW8YQ4R5T6U7AC01",
+        platform=PublishPlatform.TIKTOK,
+        generated_at=datetime(2026, 7, 26, 13, 0, tzinfo=UTC),
+        entries=[
+            AccountBaselineEntry(
+                age_hours=24.0, metric=MetricField.VIEWS,
+                median=9000.0, p25=4000.0, p75=15000.0, sample_count=20,
+            ),
+        ],
+    )
+
+
+def make_performance_dashboard() -> PerformanceDashboard:
+    return PerformanceDashboard(
+        account_id="01J2ZK3AC9V6XW8YQ4R5T6U7AC01",
+        platform=PublishPlatform.TIKTOK,
+        generated_at=datetime(2026, 7, 26, 13, 0, tzinfo=UTC),
+        age_hours=24.0,
+        metric=MetricField.VIEWS,
+        baseline=AccountBaselineEntry(
+            age_hours=24.0, metric=MetricField.VIEWS,
+            median=9000.0, p25=4000.0, p75=15000.0, sample_count=20,
+        ),
+        min_samples=5,
+        group_stats=[
+            PerformanceGroupStat(
+                dimension=GroupDimension.TEMPLATE, value="tmpl_hook_reveal_v3",
+                age_hours=24.0, metric=MetricField.VIEWS, sample_count=8,
+                median_relative=1.33, p25_relative=0.9, p75_relative=1.8,
+                enough_samples=True,
+            ),
+            PerformanceGroupStat(
+                dimension=GroupDimension.DURATION_BUCKET, value="30-60s",
+                age_hours=24.0, metric=MetricField.VIEWS, sample_count=3,
+                median_relative=0.75, p25_relative=0.6, p75_relative=0.95,
+                enough_samples=False,
+            ),
+        ],
+    )
+
+
 def make_snapshot_schedule() -> SnapshotSchedule:
     return SnapshotSchedule(
         id="01J2ZK3AC9V6XW8YQ4R5T6U7SC01",
@@ -1466,6 +1537,9 @@ SAMPLES: dict[str, ContractModel] = {
     "performance-snapshot": make_performance_snapshot(),
     "snapshot-schedule": make_snapshot_schedule(),
     "metrics-connector-capability": make_metrics_connector_capability(),
+    "video-performance-record": make_video_performance_record(),
+    "account-baseline": make_account_baseline(),
+    "performance-dashboard": make_performance_dashboard(),
     "reedit-plan": make_reedit_plan(),
     "asset-plan": make_asset_plan(),
     "creative-timeline": make_creative_timeline(),

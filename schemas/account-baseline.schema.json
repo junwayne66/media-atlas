@@ -1,0 +1,137 @@
+{
+  "$defs": {
+    "AccountBaselineEntry": {
+      "additionalProperties": false,
+      "description": "账号在某 (age, metric) 下的基线统计（中位数/分位数/样本数）。样本为空时统计为 null。",
+      "properties": {
+        "age_hours": {
+          "minimum": 0,
+          "title": "Age Hours",
+          "type": "number"
+        },
+        "median": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Median"
+        },
+        "metric": {
+          "$ref": "#/$defs/MetricField"
+        },
+        "p25": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "P25"
+        },
+        "p75": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "P75"
+        },
+        "sample_count": {
+          "minimum": 0,
+          "title": "Sample Count",
+          "type": "integer"
+        },
+        "schema_version": {
+          "default": "1",
+          "description": "合同 schema 版本；Reader 需兼容当前与前一版本",
+          "title": "Schema Version",
+          "type": "string"
+        }
+      },
+      "required": [
+        "age_hours",
+        "metric",
+        "sample_count"
+      ],
+      "title": "AccountBaselineEntry",
+      "type": "object"
+    },
+    "MetricField": {
+      "description": "§10 指标字段名——用于连接器上报\"我这个数据源能提供哪些字段\"。",
+      "enum": [
+        "VIEWS",
+        "WATCH_TIME",
+        "AVG_WATCH_TIME",
+        "COMPLETION_RATE",
+        "LIKES",
+        "COMMENTS",
+        "SHARES",
+        "SAVES",
+        "FOLLOWS",
+        "IMPRESSIONS",
+        "CLICK_THROUGH_RATE"
+      ],
+      "title": "MetricField",
+      "type": "string"
+    },
+    "PublishPlatform": {
+      "enum": [
+        "TIKTOK",
+        "DOUYIN"
+      ],
+      "title": "PublishPlatform",
+      "type": "string"
+    }
+  },
+  "$id": "https://videoforge.dev/schemas/account-baseline.schema.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "description": "账号基线（多个 age×metric 条目）——账号内相对指标的分母来源（§11）。",
+  "properties": {
+    "account_id": {
+      "minLength": 1,
+      "title": "Account Id",
+      "type": "string"
+    },
+    "entries": {
+      "items": {
+        "$ref": "#/$defs/AccountBaselineEntry"
+      },
+      "title": "Entries",
+      "type": "array"
+    },
+    "generated_at": {
+      "format": "date-time",
+      "title": "Generated At",
+      "type": "string"
+    },
+    "platform": {
+      "$ref": "#/$defs/PublishPlatform"
+    },
+    "schema_version": {
+      "default": "1",
+      "description": "合同 schema 版本；Reader 需兼容当前与前一版本",
+      "title": "Schema Version",
+      "type": "string"
+    }
+  },
+  "required": [
+    "account_id",
+    "platform",
+    "generated_at"
+  ],
+  "title": "AccountBaseline",
+  "type": "object"
+}
