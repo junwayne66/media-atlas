@@ -80,7 +80,7 @@ def _good_probe() -> PublishMediaProbe:
 def _ready_job(gw: DbPublishGateway, request: PublishJobCreate | None = None) -> str:
     """建任务 + 跑通预检（预检现在是提交的前置门），返回 job_id。"""
     job, _ = gw.create(request or _create_request())
-    result = gw.preflight(job.id, PreflightRequest(probe=_good_probe(), metadata=_metadata()))
+    result = gw.preflight(job.id, PreflightRequest(probe=_good_probe()))
     assert result.report.publishable
     return job.id
 
@@ -204,7 +204,7 @@ def test_preflight_blocks_job_when_media_violates_spec(migrated_engine: Engine):
     job, _ = gw.create(_create_request())
     bad = _good_probe().model_copy(update={"container": "avi", "duration_ms": 1_000})
 
-    result = gw.preflight(job.id, PreflightRequest(probe=bad, metadata=_metadata()))
+    result = gw.preflight(job.id, PreflightRequest(probe=bad))
     assert not result.report.publishable
     assert result.job.state is PublishState.PREFLIGHT_BLOCKED
     checks = {str(f.check) for f in result.report.findings}
@@ -217,7 +217,7 @@ def test_preflight_passes_and_blocks_on_unauthorized_connector(migrated_engine: 
         executors={PublishPlatform.TIKTOK: FakeTikTokPublishExecutor()},
     )
     job, _ = ok_gw.create(_create_request())
-    passed = ok_gw.preflight(job.id, PreflightRequest(probe=_good_probe(), metadata=_metadata()))
+    passed = ok_gw.preflight(job.id, PreflightRequest(probe=_good_probe()))
     assert passed.report.publishable and passed.job.state is PublishState.PENDING
 
     blocked_gw = DbPublishGateway(
@@ -232,9 +232,7 @@ def test_preflight_passes_and_blocks_on_unauthorized_connector(migrated_engine: 
         },
     )
     other, _ = blocked_gw.create(_create_request(media_digest="a" * 64))
-    result = blocked_gw.preflight(
-        other.id, PreflightRequest(probe=_good_probe(), metadata=_metadata())
-    )
+    result = blocked_gw.preflight(other.id, PreflightRequest(probe=_good_probe()))
     assert not result.report.publishable  # 未授权 + 账号封禁绝不可发
 
 
@@ -276,10 +274,7 @@ def test_http_double_submit_returns_409(client: TestClient):
 
     preflighted = client.post(
         f"/v1/publish-jobs/{job_id}/preflight",
-        json={
-            "probe": _good_probe().model_dump(mode="json"),
-            "metadata": _metadata().model_dump(mode="json"),
-        },
+        json={"probe": _good_probe().model_dump(mode="json")},
     )
     assert preflighted.status_code == 200 and preflighted.json()["report"]["publishable"]
 
@@ -403,9 +398,7 @@ def test_preflight_blocked_job_cannot_submit(migrated_engine: Engine):
         connectors={PublishPlatform.TIKTOK: banned_connector},
     )
     job, _ = blocked_gw.create(_create_request(media_digest="9" * 64))
-    report = blocked_gw.preflight(
-        job.id, PreflightRequest(probe=_good_probe(), metadata=_metadata())
-    )
+    report = blocked_gw.preflight(job.id, PreflightRequest(probe=_good_probe()))
     assert not report.report.publishable
     assert report.job.state is PublishState.PREFLIGHT_BLOCKED
 
@@ -438,3 +431,120 @@ def test_submit_without_preflight_is_refused(migrated_engine: Engine):
     with pytest.raises(PreflightRequired):
         gw.submit(job.id)
     assert executor.calls == 0
+
+
+def test_blocked_submit_persists_preflight_blocked_state_and_fresh_report(
+    migrated_engine: Engine,
+):
+    """submit 被预检门拦时，PREFLIGHT_BLOCKED 状态 + 新失败报告**必须真正落库**。
+
+    原缺陷（verifier 反例）：`_enforce_preflight` 先 `repo.update(→PREFLIGHT_BLOCKED, 新报告)`
+    再 `raise PreflightBlocked`，异常穿透 `session_scope` → rollback 把拦截写入一起吞掉。
+    结果 Job 停在 PENDING、`preflight_report` 列还是预检端点存的旧 `publishable=true` 报告，
+    展示层误导 UI（判定本身一直是 fail-closed 的，所以只是展示缺陷）。
+    修法：submit 接住异常让事务提交，再到 `with` 块外重新抛出。
+    """
+    from videoforge_api.publish import PreflightBlocked
+
+    executor = _CountingTikTokExecutor()
+    ok_connector = FakePublishConnector(platform=PublishPlatform.TIKTOK)
+    ok_gw = DbPublishGateway(
+        migrated_engine,
+        executors={PublishPlatform.TIKTOK: executor},
+        connectors={PublishPlatform.TIKTOK: ok_connector},
+    )
+    job, _ = ok_gw.create(_create_request(media_digest="5" * 64))
+    passed = ok_gw.preflight(job.id, PreflightRequest(probe=_good_probe()))
+    assert passed.report.publishable
+    assert passed.job.state is PublishState.PENDING  # 预检通过 → 仍在 PENDING
+
+    # 授权过期 + 账号封禁（能力在预检之后才变坏）——同 engine、同 executor 实例
+    banned_gw = DbPublishGateway(
+        migrated_engine,
+        executors={PublishPlatform.TIKTOK: executor},
+        connectors={
+            PublishPlatform.TIKTOK: FakePublishConnector(
+                platform=PublishPlatform.TIKTOK,
+                auth_status=AuthStatus.EXPIRED,
+                account_status=AccountStatus.SUSPENDED,
+            )
+        },
+    )
+    with pytest.raises(PreflightBlocked):
+        banned_gw.submit(job.id)
+    assert executor.calls == 0, "预检未过时 executor 绝不能被调用"
+
+    after = banned_gw.get(job.id)
+    assert after.job.state is PublishState.PREFLIGHT_BLOCKED  # 不再停留 PENDING
+    assert after.preflight_report is not None
+    assert after.preflight_report.publishable is False  # 新鲜失败报告，不是旧的 true 报告
+    assert after.job.attempts == []
+
+    # 再来一发：自环（PREFLIGHT_BLOCKED → PREFLIGHT_BLOCKED）不炸 assert_transition
+    with pytest.raises(PreflightBlocked):
+        banned_gw.submit(job.id)
+    assert executor.calls == 0
+    assert banned_gw.get(job.id).job.state is PublishState.PREFLIGHT_BLOCKED
+
+
+def test_preflight_evaluates_stored_metadata(migrated_engine: Engine):
+    """预检报告的输入 = 入库元数据 = submit 判定的输入，**同一份**，不分叉。
+
+    原缺陷：/preflight 用请求体 metadata 出报告，而 submit 的 `_enforce_preflight` 用建任务时
+    旁存的 `publish_metadata` 列——两者可以是不同的两份输入。修法：删掉请求体 metadata 参数。
+    这里用一个标题含平台禁用字符（TIKTOK `banned_title_chars` 含 "<"）的**入库**元数据，
+    请求体里无从覆盖，报告仍必须报 TITLE_BANNED_CHARS。
+    """
+    gw = _gateway(migrated_engine)
+    bad_metadata = PublishMetadata(
+        title="标题<带禁用字符>", description="三点结论", tags=["ai"], language="zh-CN"
+    )
+    job, _ = gw.create(_create_request(media_digest="3" * 64, metadata=bad_metadata))
+
+    result = gw.preflight(job.id, PreflightRequest(probe=_good_probe()))
+    assert not result.report.publishable
+    assert "TITLE_BANNED_CHARS" in {str(f.check) for f in result.report.findings}
+    assert result.job.state is PublishState.PREFLIGHT_BLOCKED
+
+    # submit 用的是同一份入库元数据 → 同样被拦（判定与展示不分叉）
+    from videoforge_api.publish import PreflightBlocked
+
+    with pytest.raises(PreflightBlocked) as exc:
+        gw.submit(job.id)
+    assert "TITLE_BANNED_CHARS" in " ".join(exc.value.summary())
+
+
+def test_http_preflight_rejects_legacy_metadata_in_body(client: TestClient):
+    """旧式请求体（带 metadata）→ 422 大声失败。
+
+    `PreflightRequest` 设了 `extra="forbid"`：宁可让旧调用方拿 422，也不静默忽略它传来的
+    元数据、改用另一份入库值出报告——「预检展示的输入」与「submit 判定的输入」静默分叉，
+    正是本次修复的缺陷类别。
+    """
+    created = client.post(
+        "/v1/publish-jobs",
+        json={
+            "account_id": "acct-legacy",
+            "platform": "TIKTOK",
+            "media_digest": "6" * 64,
+            "metadata": _metadata().model_dump(mode="json"),
+        },
+    )
+    assert created.status_code == 201
+    job_id = created.json()["id"]
+
+    legacy = client.post(
+        f"/v1/publish-jobs/{job_id}/preflight",
+        json={
+            "probe": _good_probe().model_dump(mode="json"),
+            "metadata": _metadata().model_dump(mode="json"),
+        },
+    )
+    assert legacy.status_code == 422
+
+    # 新式请求体（只带探针）正常
+    ok = client.post(
+        f"/v1/publish-jobs/{job_id}/preflight",
+        json={"probe": _good_probe().model_dump(mode="json")},
+    )
+    assert ok.status_code == 200 and ok.json()["report"]["publishable"]
