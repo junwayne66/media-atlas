@@ -1,10 +1,18 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
+from videoforge_api.creation import DbCreationGateway
+from videoforge_api.creation import router as creation_router
 from videoforge_api.operations import TemporalOperationsService
 from videoforge_api.operations import router as operations_router
+from videoforge_api.performance import DbPerformanceGateway
+from videoforge_api.performance import router as performance_router
 from videoforge_api.projects import DbProjectGateway
 from videoforge_api.projects import router as projects_router
+from videoforge_api.publish import DbPublishGateway
+from videoforge_api.publish import router as publish_router
+from videoforge_api.review import DbReviewGateway
+from videoforge_api.review import router as review_router
 from videoforge_api.settings import Settings
 from videoforge_api.sources import DbSourceGateway
 from videoforge_api.sources import router as sources_router
@@ -33,11 +41,21 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     app.state.trend_gateway = DbTrendGateway(engine)
     app.state.source_gateway = DbSourceGateway(engine)
     app.state.project_gateway = DbProjectGateway(engine)
+    app.state.creation_gateway = DbCreationGateway(engine, staging_dir=settings.render_staging_dir)
+    app.state.review_gateway = DbReviewGateway(engine)
+    # 发布/指标执行器均为 Fake（零 live network）——真实平台接入属 stop-condition，
+    # 集成测试可整体替换这两个 gateway 注入 challenge/限流等分支。
+    app.state.publish_gateway = DbPublishGateway(engine)
+    app.state.performance_gateway = DbPerformanceGateway(engine)
     app.include_router(operations_router)
     app.include_router(workers_router)
     app.include_router(trends_router)
     app.include_router(sources_router)
     app.include_router(projects_router)
+    app.include_router(creation_router)
+    app.include_router(review_router)
+    app.include_router(publish_router)
+    app.include_router(performance_router)
 
     @app.get("/healthz")
     def healthz() -> dict[str, str]:
