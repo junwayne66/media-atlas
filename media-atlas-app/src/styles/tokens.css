@@ -1,0 +1,199 @@
+/* ========================================
+   Media Atlas Design System — Design Tokens
+   Converted from Ardot design file variables
+   43 tokens: 16 Color (dual-mode) + 7 Spacing + 5 Radius + 9 FontSize
+   ======================================== */
+
+:root {
+  /* ---- Spacing (mode-independent) ---- */
+  --space-xs: 4px;
+  --space-sm: 8px;
+  --space-md: 12px;
+  --space-lg: 16px;
+  --space-xl: 24px;
+  --space-2xl: 32px;
+  --space-3xl: 48px;
+
+  /* ---- Radius (mode-independent) ---- */
+  --radius-sm: 4px;
+  --radius-md: 6px;
+  --radius-lg: 8px;
+  --radius-xl: 12px;
+  --radius-2xl: 16px;
+
+  /* ---- Font Size (mode-independent) ---- */
+  --font-size-xs: 11px;
+  --font-size-sm: 12px;
+  --font-size-base: 13px;
+  --font-size-lg: 14px;
+  --font-size-xl: 16px;
+  --font-size-2xl: 18px;
+  --font-size-3xl: 22px;
+  --font-size-4xl: 28px;
+  --font-size-5xl: 36px;
+
+  /* ---- Font Family ---- */
+  --font-family-ui: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  --font-family-mono: "Geist Mono", "JetBrains Mono", "SF Mono", "Fira Code", monospace;
+
+  /* ---- Status Colors (same across modes) ---- */
+  --color-success: #3CCF4E;
+  --color-warning: #F5A623;
+  --color-error: #EF4444;
+  --color-info: #3B82F6;
+  --color-neutral: #71717A;
+
+  /* ---- Accent Colors (same across modes) ---- */
+  --color-accent-primary: #3B82F6;
+  --color-accent-primary-hover: #4D8DF9;
+}
+
+/* ===== Dark Mode (default) ===== */
+[data-theme="dark"] {
+  --color-bg-primary: #0A0A0B;        /* r:0.039 g:0.039 b:0.043 */
+  --color-bg-card: #111113;           /* r:0.067 g:0.067 b:0.075 */
+  --color-bg-elevated: #18181B;       /* r:0.094 g:0.094 b:0.106 */
+  --color-bg-hover: #1C1C1F;          /* r:0.110 g:0.110 b:0.122 */
+  --color-bg-sidebar: #0C0C0D;        /* r:0.047 g:0.047 b:0.051 */
+
+  --color-text-primary: #F6F6F8;      /* r:0.965 g:0.965 b:0.972 */
+  --color-text-secondary: #A1A1AD;    /* r:0.631 g:0.631 b:0.678 */
+  --color-text-tertiary: #73737D;     /* r:0.451 g:0.451 b:0.490 */
+
+  --color-border-subtle: #27272A;     /* r:0.153 g:0.153 b:0.165 */
+  --color-border-strong: #3F3F43;     /* r:0.247 g:0.247 b:0.263 */
+
+  --color-status-success: #3CCF4E;    /* r:0.235 g:0.812 b:0.306 */
+  --color-status-warning: #F5A623;    /* r:0.961 g:0.651 b:0.137 */
+  --color-status-error: #EF4444;      /* r:0.937 g:0.302 b:0.302 */
+  --color-status-info: #58A1F7;       /* r:0.345 g:0.631 b:0.969 */
+  --color-status-neutral: #71717D;    /* r:0.451 g:0.451 b:0.490 */
+
+  /* Layout constants */
+  --sidebar-width: 220px;
+  --topbar-height: 48px;
+  --content-max-width: 1440px;
+
+  /* Z-index scale */
+  --z-sidebar: 100;
+  --z-topbar: 90;
+  --z-dropdown: 200;
+  --z-modal: 1000;
+  --z-tooltip: 1100;
+}
+
+/* ===== Light Mode ===== */
+[data-theme="light"] {
+  --color-bg-primary: #FAFAFA;        /* r:0.980 g:0.980 b:0.980 */
+  --color-bg-card: #FFFFFF;           /* r:1.0 g:1.0 b:1.0 */
+  --color-bg-elevated: #F7F7F8;       /* r:0.969 g:0.970 b:0.973 */
+  --color-bg-hover: #F5F5F7;          /* r:0.961 g:0.961 b:0.969 */
+  --color-bg-sidebar: #FDFDFE;       /* r:0.992 g:0.992 b:0.996 */
+
+  --color-text-primary: #0A0A0B;      /* r:0.039 g:0.039 b:0.043 */
+  --color-text-secondary: #525259;    /* r:0.322 g:0.322 b:0.357 */
+  --color-text-tertiary: #85858E;     /* r:0.522 g:0.522 b:0.557 */
+
+  --color-border-subtle: #E4E4E7;     /* r:0.894 g:0.894 b:0.906 */
+  --color-border-strong: #D4D4D8;     /* r:0.831 g:0.831 b:0.847 */
+
+  --color-status-success: #10B981;    /* r:0.063 g:0.725 b:0.306 */
+  --color-status-warning: #F59E08;    /* r:0.961 g:0.621 b:0.043 */
+  --color-status-error: #F04444;      /* r:0.937 g:0.267 b:0.267 */
+  --color-status-info: #3B82F6;       /* r:0.231 g:0.510 b:0.965 */
+  --color-status-neutral: #85858E;    /* r:0.522 g:0.522 b:0.557 */
+
+  --sidebar-width: 220px;
+  --topbar-height: 48px;
+  --content-max-width: 1440px;
+
+  --z-sidebar: 100;
+  --z-topbar: 90;
+  --z-dropdown: 200;
+  --z-modal: 1000;
+  --z-tooltip: 1100;
+}
+
+/* ===== Global Reset ===== */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html {
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+}
+
+body {
+  font-family: var(--font-family-ui);
+  font-size: var(--font-size-base);
+  color: var(--color-text-primary);
+  background-color: var(--color-bg-primary);
+  line-height: 1.5;
+  overflow: hidden;
+}
+
+#app {
+  width: 100vw;
+  height: 100vh;
+  overflow: hidden;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+button {
+  font-family: inherit;
+  cursor: pointer;
+  border: none;
+  background: none;
+}
+
+input,
+textarea,
+select {
+  font-family: inherit;
+}
+
+/* Scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--color-border-strong);
+  border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--color-text-tertiary);
+}
+
+/* Mono font for data fields */
+.mono {
+  font-family: var(--font-family-mono);
+  font-feature-settings: "tnum" on, "lnum" on;
+}
+
+/* Focus visible */
+:focus-visible {
+  outline: 2px solid var(--color-accent-primary);
+  outline-offset: 2px;
+  border-radius: var(--radius-sm);
+}
