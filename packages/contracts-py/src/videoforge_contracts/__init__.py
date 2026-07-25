@@ -30,6 +30,14 @@ from videoforge_contracts.brief import (
     CreativeOpportunity,
     VisualMix,
 )
+from videoforge_contracts.calibration import (
+    CalibrationDecision,
+    CalibrationProposal,
+    RankerKind,
+    RankerWeights,
+    RankingEvalResult,
+    RankingSample,
+)
 from videoforge_contracts.duration_fit import (
     DurationFitDecision,
     DurationFitPlan,
@@ -302,6 +310,8 @@ CONTRACTS: dict[str, type[ContractModel]] = {
     "performance-dashboard": PerformanceDashboard,
     "learning-signal-result": LearningSignalResult,
     "learning-report": LearningReport,
+    "ranker-weights": RankerWeights,
+    "calibration-proposal": CalibrationProposal,
     "asset-plan": AssetPlan,
     "creative-timeline": CreativeTimeline,
     "render-manifest": RenderManifest,
@@ -493,6 +503,12 @@ __all__ = [
     "SignalBucketStat",
     "SignalDirection",
     "SignalKind",
+    "CalibrationDecision",
+    "CalibrationProposal",
+    "RankerKind",
+    "RankerWeights",
+    "RankingEvalResult",
+    "RankingSample",
     "SegmentEffect",
     "SegmentJudgment",
     "StorageBackend",

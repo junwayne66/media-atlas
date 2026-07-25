@@ -22,6 +22,8 @@ from videoforge_contracts import (
     BeatSlot,
     BeatTemplate,
     BriefHook,
+    CalibrationDecision,
+    CalibrationProposal,
     CanonicalScript,
     CanonicalSentence,
     Claim,
@@ -113,6 +115,9 @@ from videoforge_contracts import (
     QAFindingKind,
     QAReport,
     QASeverity,
+    RankerKind,
+    RankerWeights,
+    RankingEvalResult,
     RationalTime,
     RationalTimeRange,
     ReeditPlan,
@@ -1409,6 +1414,39 @@ def make_performance_snapshot() -> PerformanceSnapshot:
     )
 
 
+def _ranker_weights(version: str, a: float, b: float) -> RankerWeights:
+    return RankerWeights(
+        ranker_kind=RankerKind.HIGHLIGHT, template_version=version,
+        coefficients={"hook_strength": a, "ending_payoff": b},
+    )
+
+
+def make_ranker_weights() -> RankerWeights:
+    return _ranker_weights("hl-weights-v3", 0.28, 0.14)
+
+
+def make_calibration_proposal() -> CalibrationProposal:
+    cur = _ranker_weights("hl-weights-v3", 0.28, 0.14)
+    cand = _ranker_weights("hl-weights-v3+cal", 0.31, 0.16)
+    cur_eval = RankingEvalResult(
+        ranker_kind=RankerKind.HIGHLIGHT, template_version="hl-weights-v3",
+        rank_correlation=0.55, top_k=3, top_k_hit_rate=0.67,
+        sample_count=24, enough_samples=True,
+    )
+    cand_eval = RankingEvalResult(
+        ranker_kind=RankerKind.HIGHLIGHT, template_version="hl-weights-v3+cal",
+        rank_correlation=0.63, top_k=3, top_k_hit_rate=0.67,
+        sample_count=24, enough_samples=True,
+    )
+    return CalibrationProposal(
+        ranker_kind=RankerKind.HIGHLIGHT, current=cur, candidate=cand,
+        current_eval=cur_eval, candidate_eval=cand_eval, improvement=0.08,
+        promotable=True, decision=CalibrationDecision.EXPLORE,
+        exploration_fraction=0.1, generated_at=datetime(2026, 7, 26, 14, 0, tzinfo=UTC),
+        note="候选离线秩相关 +0.080，进入少量探索（保留探索流量）",
+    )
+
+
 def make_learning_signal_result() -> LearningSignalResult:
     return LearningSignalResult(
         signal=SignalKind.QA_WARNING_COUNT,
@@ -1580,6 +1618,8 @@ SAMPLES: dict[str, ContractModel] = {
     "performance-dashboard": make_performance_dashboard(),
     "learning-signal-result": make_learning_signal_result(),
     "learning-report": make_learning_report(),
+    "ranker-weights": make_ranker_weights(),
+    "calibration-proposal": make_calibration_proposal(),
     "reedit-plan": make_reedit_plan(),
     "asset-plan": make_asset_plan(),
     "creative-timeline": make_creative_timeline(),
