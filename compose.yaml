@@ -114,6 +114,17 @@ services:
       minio:
         condition: service_healthy
 
+  # UI 工程师交付的 Web 控制台（media-atlas-app，独立 npm 项目）：
+  # 构建成静态资源由 nginx 托管，/api 同源反代到 api 服务（无 CORS）。
+  console:
+    build:
+      context: .
+      dockerfile: infra/docker/console.Dockerfile
+    ports:
+      - "${CONSOLE_PORT:-8080}:80"
+    depends_on:
+      - api
+
   web:
     build:
       context: .
