@@ -7,7 +7,10 @@ render 引用 source 产出。
 
 import uuid
 
+import pytest
 from temporalio import activity
+from temporalio.client import WorkflowFailureError
+from temporalio.exceptions import ApplicationError
 from temporalio.testing import WorkflowEnvironment
 from temporalio.worker import Worker
 
@@ -76,3 +79,42 @@ async def test_idempotency_keys_are_workflow_scoped() -> None:
     assert all(k.startswith(f"{workflow_id}-") for k in keys)
     # 前缀含 run_id，仅校验 workflow 归属与阶段后缀
     assert {k.rsplit("-", 1)[1] for k in keys} == {"source", "render"}
+
+
+terminal_calls: list[WorkerDispatch] = []
+
+
+@activity.defn(name=DISPATCH_ACTIVITY)
+async def terminal_failure_dispatch(dispatch: WorkerDispatch) -> WorkerDispatchResult:
+    """模拟 temporal-worker 侧的 WorkerTaskFailed：worker-task 已终态 FAILED。"""
+    terminal_calls.append(dispatch)
+    raise ApplicationError(
+        f"task ({dispatch.capability}) 已终态失败：attempts exhausted",
+        type="WorkerTaskFailed",
+        non_retryable=True,
+    )
+
+
+async def test_terminal_task_failure_fails_workflow_without_retrying() -> None:
+    """派发的 worker-task 终态 FAILED → activity 不重试，workflow 立刻失败。"""
+    terminal_calls.clear()
+    async with await WorkflowEnvironment.start_time_skipping() as env:
+        async with Worker(
+            env.client,
+            task_queue=CORE_TASK_QUEUE,
+            workflows=[PipelineViaLeaseWorkflow],
+            activities=[terminal_failure_dispatch],
+            max_cached_workflows=0,
+        ):
+            with pytest.raises(WorkflowFailureError) as exc:
+                await env.client.execute_workflow(
+                    PipelineViaLeaseWorkflow.run,
+                    LeasePipelineInput(project_id="p1", title="terminal"),
+                    id=f"wf-{uuid.uuid4()}",
+                    task_queue=CORE_TASK_QUEUE,
+                )
+
+    # _DISPATCH_RETRY 的 maximum_attempts=5 未被消耗：non_retryable 一次即止
+    assert len(terminal_calls) == 1
+    # WorkflowFailureError → ActivityError → ApplicationError
+    assert "终态失败" in str(exc.value.cause.cause)

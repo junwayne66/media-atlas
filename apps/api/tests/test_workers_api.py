@@ -5,7 +5,7 @@ from fastapi.testclient import TestClient
 from videoforge_api.main import create_app
 from videoforge_api.workers import ClaimRequest, EnqueueRequest, RegisterRequest
 from videoforge_contracts import TaskEnvelope
-from videoforge_persistence import LeaseLostError, NotFoundError
+from videoforge_persistence import LeaseLostError, NotFoundError, TaskStateError
 
 
 class StubGateway:
@@ -41,6 +41,12 @@ class StubGateway:
 
     def fail(self, task_id: str, request) -> None:
         return None
+
+    def requeue(self, task_id: str, request) -> None:
+        if task_id == "ghost":
+            raise NotFoundError("worker_task", task_id)
+        if task_id == "running":
+            raise TaskStateError("task running 状态为 LEASED，只有 FAILED 可 requeue")
 
     def task_status(self, task_id: str) -> dict:
         raise NotFoundError("worker_task", task_id)
@@ -101,3 +107,14 @@ def test_status_missing_404_and_enqueue_202() -> None:
     )
     assert resp.status_code == 202
     assert resp.json() == {"task_id": "t-1"}
+
+
+def test_requeue_failed_task_204_and_error_mapping() -> None:
+    client = _client()
+    assert client.post("/v1/worker-tasks/t-1/requeue", json={}).status_code == 204
+    assert client.post("/v1/worker-tasks/t-1/requeue", json={"max_attempts": 3}).status_code == 204
+    assert client.post("/v1/worker-tasks/ghost/requeue", json={}).status_code == 404
+    # 非 FAILED 任务不可重排 → 409
+    assert client.post("/v1/worker-tasks/running/requeue", json={}).status_code == 409
+    # 上限必须 ≥ 1
+    assert client.post("/v1/worker-tasks/t-1/requeue", json={"max_attempts": 0}).status_code == 422

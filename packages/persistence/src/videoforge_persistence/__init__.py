@@ -6,7 +6,9 @@ from videoforge_persistence.errors import (
 )
 from videoforge_persistence.ids import new_id
 from videoforge_persistence.lease import (
+    DEFAULT_MAX_ATTEMPTS,
     LeaseLostError,
+    TaskStateError,
     WorkerRepository,
     WorkerTaskRepository,
 )
@@ -23,6 +25,7 @@ from videoforge_persistence.trend import (
 )
 
 __all__ = [
+    "DEFAULT_MAX_ATTEMPTS",
     "ArtifactRepository",
     "DuplicateError",
     "LeaseLostError",
@@ -30,6 +33,7 @@ __all__ = [
     "OutboxEvent",
     "OutboxRepository",
     "ProjectRepository",
+    "TaskStateError",
     "TrendClusterRepository",
     "TrendItemSnapshotRepository",
     "VersionConflictError",
