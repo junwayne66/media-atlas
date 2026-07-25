@@ -67,7 +67,9 @@ class LipSyncEligibilityCriteria(ContractModel):
 
     max_faces: int = Field(default=1, ge=1, description="允许的最大脸数（单主脸=1）")
     min_face_height_ratio: float = Field(
-        default=0.15, ge=0.0, le=1.0,
+        default=0.15,
+        ge=0.0,
+        le=1.0,
         description="面部高度 / 画面高度的最小比（太小 → FACE_TOO_SMALL）",
     )
     max_occlusion_ratio: float = Field(default=0.2, ge=0.0, le=1.0)
@@ -110,13 +112,16 @@ class LipSyncSegmentDecision(ContractModel):
     ineligible_reasons: list[LipSyncIneligibleReason] = Field(default_factory=list)
     method: LipSyncMethod
     synthesized_artifact_id: str | None = Field(
-        default=None, description="GPU_SYNTHESIS 成功时的局部脸区产物",
+        default=None,
+        description="GPU_SYNTHESIS 成功时的局部脸区产物",
     )
     qa: LipSyncQAReport | None = Field(
-        default=None, description="GPU_SYNTHESIS 已执行时的 QA 报告",
+        default=None,
+        description="GPU_SYNTHESIS 已执行时的 QA 报告",
     )
     fallback_from: LipSyncMethod | None = Field(
-        default=None, description="从哪个方式降级来的（自动降级记录）",
+        default=None,
+        description="从哪个方式降级来的（自动降级记录）",
     )
     needs_review: bool = False
     review_reasons: list[LipSyncReviewReason] = Field(default_factory=list)

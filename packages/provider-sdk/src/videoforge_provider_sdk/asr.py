@@ -130,9 +130,7 @@ class FakeASRProvider:
         new_segments = []
         for seg in base.segments:
             new_words = [
-                w.model_copy(update={"confidence": max(w.confidence, 0.98)})
-                if w.text in hot
-                else w
+                w.model_copy(update={"confidence": max(w.confidence, 0.98)}) if w.text in hot else w
                 for w in seg.words
             ]
             new_segments.append(seg.model_copy(update={"words": new_words}))
@@ -201,9 +199,7 @@ class ASRRouter:
     def candidates(self, request: ASRRequest) -> list[ASRProvider]:
         lang = request.language_hint
         # 支持该语言的 Provider（无 language_hint 则全部候选）
-        pool = [
-            p for p in self._providers if lang is None or lang in p.languages
-        ]
+        pool = [p for p in self._providers if lang is None or lang in p.languages]
         want_hotwords = bool(request.hotwords)
         preferred_loc = "cloud" if request.policy == "cloud_preferred" else "local"
 

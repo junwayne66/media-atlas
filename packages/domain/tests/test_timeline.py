@@ -41,11 +41,16 @@ def _track(kind: TrackKind, segs: list[Segment], *, tid: str | None = None) -> T
 
 def _timeline(tracks: list[Track], *, duration: int = 150, rate: int = 30) -> CreativeTimeline:
     return CreativeTimeline(
-        id="tl", rate=rate, duration=_rt(duration, rate), tracks=tracks, created_at=_T0,
+        id="tl",
+        rate=rate,
+        duration=_rt(duration, rate),
+        tracks=tracks,
+        created_at=_T0,
     )
 
 
 # —— Validator ——
+
 
 def test_valid_minimal_timeline_passes() -> None:
     v1 = _track(TrackKind.V1_PRIMARY_VIDEO, [_seg("v0", 0, 150)])
@@ -75,8 +80,9 @@ def test_required_audio_track_missing() -> None:
     v1 = _track(TrackKind.V1_PRIMARY_VIDEO, [_seg("v0", 0, 150)])
     tl = _timeline([v1])
     issues = validate_timeline(tl)
-    assert any(i.kind is TimelineIssueKind.REQUIRED_TRACK_MISSING and "A0" in i.detail
-               for i in issues)
+    assert any(
+        i.kind is TimelineIssueKind.REQUIRED_TRACK_MISSING and "A0" in i.detail for i in issues
+    )
 
 
 def test_a1_dub_also_satisfies_audio_requirement() -> None:
@@ -125,11 +131,11 @@ def test_invalid_provenance_ref_flagged() -> None:
 
 # —— OTIO 往返 ——
 
+
 def test_to_otio_mapping_structure() -> None:
     v1 = _track(
         TrackKind.V1_PRIMARY_VIDEO,
-        [_seg("v0", 0, 150, source_ref="asset-a", semantic_role="HOOK",
-              script_sentence_id="s-0")],
+        [_seg("v0", 0, 150, source_ref="asset-a", semantic_role="HOOK", script_sentence_id="s-0")],
     )
     a0 = _track(TrackKind.A0_ORIGINAL, [_seg("a0", 0, 150)])
     otio = to_otio_mapping(_timeline([v1, a0]))
@@ -166,14 +172,25 @@ def test_from_otio_falls_back_to_max_end_when_duration_absent() -> None:
 
 
 def test_otio_roundtrip_preserves_extension_fields() -> None:
-    v1 = _track(TrackKind.V1_PRIMARY_VIDEO, [
-        _seg("v0", 0, 150, source_ref="asset-a", semantic_role="EVIDENCE",
-             script_sentence_id="s-1", speaker_id="host",
-             provenance_ref="ra-1", template_slot="slot-3",
-             effects=[SegmentEffect(kind="fade_in", params={"duration_ms": 300})],
-             crop_path="crop-a",
-             localization=LocalizationPolicy(language="zh-CN", strategy="dub")),
-    ])
+    v1 = _track(
+        TrackKind.V1_PRIMARY_VIDEO,
+        [
+            _seg(
+                "v0",
+                0,
+                150,
+                source_ref="asset-a",
+                semantic_role="EVIDENCE",
+                script_sentence_id="s-1",
+                speaker_id="host",
+                provenance_ref="ra-1",
+                template_slot="slot-3",
+                effects=[SegmentEffect(kind="fade_in", params={"duration_ms": 300})],
+                crop_path="crop-a",
+                localization=LocalizationPolicy(language="zh-CN", strategy="dub"),
+            ),
+        ],
+    )
     a0 = _track(TrackKind.A0_ORIGINAL, [_seg("a0", 0, 150)])
     original = _timeline([v1, a0])
     dumped = to_otio_mapping(original)
@@ -181,8 +198,9 @@ def test_otio_roundtrip_preserves_extension_fields() -> None:
     # 结构 semantic 一致：轨道数、类型、每 segment 扩展字段全部还原
     assert restored.rate == original.rate
     assert restored.duration == original.duration
-    assert [(t.kind, [s.id for s in t.segments]) for t in restored.tracks] == \
-           [(t.kind, [s.id for s in t.segments]) for t in original.tracks]
+    assert [(t.kind, [s.id for s in t.segments]) for t in restored.tracks] == [
+        (t.kind, [s.id for s in t.segments]) for t in original.tracks
+    ]
     r_seg = restored.tracks[0].segments[0]
     assert r_seg.source_ref == "asset-a"
     assert r_seg.semantic_role == "EVIDENCE"

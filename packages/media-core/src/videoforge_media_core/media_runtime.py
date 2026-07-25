@@ -123,11 +123,25 @@ class FfmpegRuntime:
         config = {"height": height, "crf": crf, "preset": preset, "vcodec": "libx264"}
         self._run(
             [
-                "-v", "error", "-y", "-i", str(src),
-                "-vf", f"scale=-2:{height}",
-                "-c:v", "libx264", "-crf", str(crf), "-preset", preset,
-                "-c:a", "aac", "-b:a", "128k",
-                "-movflags", "+faststart",
+                "-v",
+                "error",
+                "-y",
+                "-i",
+                str(src),
+                "-vf",
+                f"scale=-2:{height}",
+                "-c:v",
+                "libx264",
+                "-crf",
+                str(crf),
+                "-preset",
+                preset,
+                "-c:a",
+                "aac",
+                "-b:a",
+                "128k",
+                "-movflags",
+                "+faststart",
                 str(dst),
             ]
         )
@@ -151,9 +165,18 @@ class FfmpegRuntime:
         config = {"sample_rate": sample_rate, "channels": channels, "codec": "pcm_s16le"}
         self._run(
             [
-                "-v", "error", "-y", "-i", str(src),
-                "-vn", "-ac", str(channels), "-ar", str(sample_rate),
-                "-c:a", "pcm_s16le",
+                "-v",
+                "error",
+                "-y",
+                "-i",
+                str(src),
+                "-vn",
+                "-ac",
+                str(channels),
+                "-ar",
+                str(sample_rate),
+                "-c:a",
+                "pcm_s16le",
                 str(dst),
             ]
         )
@@ -170,9 +193,16 @@ class FfmpegRuntime:
         # 走 _run（capture_output 带 stdout，且把 CalledProcessError 统一包成 MediaRuntimeError）
         result = self._run(
             [
-                "-v", "error", "-i", str(src),
-                "-vf", f"select='gt(scene,{threshold})',metadata=print:file=-",
-                "-an", "-f", "null", "-",
+                "-v",
+                "error",
+                "-i",
+                str(src),
+                "-vf",
+                f"select='gt(scene,{threshold})',metadata=print:file=-",
+                "-an",
+                "-f",
+                "null",
+                "-",
             ]
         )
         cuts = tuple(sorted(float(m) for m in _PTS_TIME.findall(result.stdout)))

@@ -32,8 +32,9 @@ def _feat(good: bool) -> LipSyncSegmentFeatures:
 
 def _qa(passed: bool) -> LipSyncQAReport:
     v = 0.9 if passed else 0.4
-    return LipSyncQAReport(boundary_score=v, skin_tone_score=v, motion_score=v,
-                            identity_score=v, passed=passed)
+    return LipSyncQAReport(
+        boundary_score=v, skin_tone_score=v, motion_score=v, identity_score=v, passed=passed
+    )
 
 
 def _inputs():
@@ -45,26 +46,36 @@ def _inputs():
             case = i % 4
             avail = LipSyncAvailability(can_broll_cover=True)
             if case == 0:  # 合格 + QA 通过
-                inputs.append(LipSyncSegmentInput(
-                    s.sentence_id, 0, 3000, _feat(True), avail,
-                    qa=_qa(True), synthesized_artifact_id=f"a://{s.sentence_id}"))
+                inputs.append(
+                    LipSyncSegmentInput(
+                        s.sentence_id,
+                        0,
+                        3000,
+                        _feat(True),
+                        avail,
+                        qa=_qa(True),
+                        synthesized_artifact_id=f"a://{s.sentence_id}",
+                    )
+                )
             elif case == 1:  # 合格但 QA 未过 → 自动降级
-                inputs.append(LipSyncSegmentInput(
-                    s.sentence_id, 0, 3000, _feat(True), avail, qa=_qa(False)))
+                inputs.append(
+                    LipSyncSegmentInput(s.sentence_id, 0, 3000, _feat(True), avail, qa=_qa(False))
+                )
             elif case == 2:  # 不合格 → 回退
-                inputs.append(LipSyncSegmentInput(
-                    s.sentence_id, 0, 3000, _feat(False), avail))
+                inputs.append(LipSyncSegmentInput(s.sentence_id, 0, 3000, _feat(False), avail))
             else:  # 意图（尚未合成）
-                inputs.append(LipSyncSegmentInput(
-                    s.sentence_id, 0, 3000, _feat(True), avail))
+                inputs.append(LipSyncSegmentInput(s.sentence_id, 0, 3000, _feat(True), avail))
             i += 1
     return inputs
 
 
 def test_lipsync_plan_is_never_blocking():
     plan = plan_lipsync(
-        _inputs(), id="p4-ls", localization_variant_id="v",
-        mode=LipSyncMode.AUTO_ELIGIBLE, created_at=_T0,
+        _inputs(),
+        id="p4-ls",
+        localization_variant_id="v",
+        mode=LipSyncMode.AUTO_ELIGIBLE,
+        created_at=_T0,
     )
     assert validate_lipsync_plan(plan) == []
     # 每片段都有具体方法；QA 未过绝不停在 GPU_SYNTHESIS
@@ -78,16 +89,22 @@ def test_all_synthesis_failing_still_resolves():
     # 极端：所有句合成都失败（QA 全不过）+ 无回退资源 → 全部 KEEP_UNSYNCED，计划仍成立
     inputs = [
         LipSyncSegmentInput(
-            s.sentence_id, 0, 3000,
+            s.sentence_id,
+            0,
+            3000,
             LipSyncSegmentFeatures(1, 0.3, 0.05, 0.9, 10.0, 3000, True),
             LipSyncAvailability(),  # 无回退资源
             qa=_qa(False),
         )
-        for smp in SAMPLES for s in smp.sentences
+        for smp in SAMPLES
+        for s in smp.sentences
     ]
     plan = plan_lipsync(
-        inputs, id="p4-ls2", localization_variant_id="v",
-        mode=LipSyncMode.AUTO_ELIGIBLE, created_at=_T0,
+        inputs,
+        id="p4-ls2",
+        localization_variant_id="v",
+        mode=LipSyncMode.AUTO_ELIGIBLE,
+        created_at=_T0,
     )
     assert validate_lipsync_plan(plan) == []
     assert all(d.method is LipSyncMethod.KEEP_UNSYNCED for d in plan.decisions)
@@ -96,8 +113,11 @@ def test_all_synthesis_failing_still_resolves():
 
 def test_off_mode_keeps_all_unsynced():
     plan = plan_lipsync(
-        _inputs(), id="p4-ls3", localization_variant_id="v",
-        mode=LipSyncMode.OFF, created_at=_T0,
+        _inputs(),
+        id="p4-ls3",
+        localization_variant_id="v",
+        mode=LipSyncMode.OFF,
+        created_at=_T0,
     )
     assert validate_lipsync_plan(plan) == []
     assert all(d.method is LipSyncMethod.KEEP_UNSYNCED for d in plan.decisions)

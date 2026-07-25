@@ -31,9 +31,7 @@ DOWNLOAD_PRIORITY: dict[str, tuple[str, ...]] = {
 }
 
 # 终止状态：命中则不再回退下一个 provider
-_TERMINAL = frozenset(
-    {DownloadStatus.OK, DownloadStatus.CHALLENGE, DownloadStatus.AUTH_REQUIRED}
-)
+_TERMINAL = frozenset({DownloadStatus.OK, DownloadStatus.CHALLENGE, DownloadStatus.AUTH_REQUIRED})
 
 
 @dataclass(frozen=True)

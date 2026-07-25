@@ -115,9 +115,7 @@ def compile_timeline_to_remotion(
     """CreativeTimeline → RemotionRenderRequest（类型化 Props；不触真实 Remotion）。"""
     # 复用 VF-307 段级归一化白名单——安全一致性
     if not _path_within(config.entry_component_path, config.allowed_input_roots):
-        raise UnsafeInputPath(
-            f"entry_component_path 越出白名单：{config.entry_component_path}"
-        )
+        raise UnsafeInputPath(f"entry_component_path 越出白名单：{config.entry_component_path}")
     if not _path_within(config.output_path, config.allowed_input_roots):
         raise UnsafeInputPath(f"output_path 越出白名单：{config.output_path}")
 
@@ -168,10 +166,12 @@ def build_remotion_render_manifest(
     output_digest: str | None = None,
 ) -> RemotionRenderManifest:
     return RemotionRenderManifest(
-        id=manifest_id, request=request,
+        id=manifest_id,
+        request=request,
         input_digests=input_digests or {},
         output_digest=output_digest,
-        tool_version=tool_version, created_at=created_at,
+        tool_version=tool_version,
+        created_at=created_at,
     )
 
 
@@ -185,14 +185,19 @@ def remotion_manifest_cache_key(manifest: RemotionRenderManifest) -> str:
     """稳定 cache key：composition + tool_version + sorted digests + canonical props。"""
     request = manifest.request
     digests = "|".join(f"{k}={v}" for k, v in sorted(manifest.input_digests.items()))
-    payload = "\x01".join([
-        request.composition.value,
-        manifest.tool_version,
-        request.entry_component_path,
-        str(request.fps), str(request.width), str(request.height), str(request.duration_ms),
-        digests,
-        serialize_props(request.props),
-    ])
+    payload = "\x01".join(
+        [
+            request.composition.value,
+            manifest.tool_version,
+            request.entry_component_path,
+            str(request.fps),
+            str(request.width),
+            str(request.height),
+            str(request.duration_ms),
+            digests,
+            serialize_props(request.props),
+        ]
+    )
     return hashlib.sha256(payload.encode("utf-8")).hexdigest()
 
 

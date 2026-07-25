@@ -68,14 +68,16 @@ class ForcedAlignmentProvider(Protocol):
 class UnconfiguredForcedAlignmentProvider:
     """诚实占位：无真实对齐模型，绝不"猜"。返回 UNCONFIGURED，上层路由至人工/回退。"""
 
-    def __init__(self, *, name: str = "align.unconfigured",
-                  execution_location: str = "local") -> None:
+    def __init__(
+        self, *, name: str = "align.unconfigured", execution_location: str = "local"
+    ) -> None:
         self.name = name
         self.execution_location = execution_location
 
     def align(self, request: ForcedAlignmentRequest) -> ForcedAlignmentResult:
         return ForcedAlignmentResult(
-            status=ForcedAlignmentStatus.UNCONFIGURED, provider=self.name,
+            status=ForcedAlignmentStatus.UNCONFIGURED,
+            provider=self.name,
             error_code=ForcedAlignmentErrorCode.MODEL_UNAVAILABLE,
             error_detail=f"provider {self.name!r} 未配置真实对齐模型",
         )
@@ -96,8 +98,7 @@ class FakeForcedAlignmentProvider:
     - `end_ms < start_ms` → FAILED（诚实）；文本为空 → words=[] + OK。
     """
 
-    def __init__(self, *, name: str = "align.fake",
-                  execution_location: str = "local") -> None:
+    def __init__(self, *, name: str = "align.fake", execution_location: str = "local") -> None:
         self.name = name
         self.execution_location = execution_location
 
@@ -105,14 +106,17 @@ class FakeForcedAlignmentProvider:
         req = deepcopy(request)
         if req.end_ms < req.start_ms:
             return ForcedAlignmentResult(
-                status=ForcedAlignmentStatus.FAILED, provider=self.name,
+                status=ForcedAlignmentStatus.FAILED,
+                provider=self.name,
                 error_code=ForcedAlignmentErrorCode.UNKNOWN,
                 error_detail=f"end_ms({req.end_ms}) < start_ms({req.start_ms})",
             )
         tokens = self._tokenize(req.text, req.language)
         if not tokens:
             return ForcedAlignmentResult(
-                status=ForcedAlignmentStatus.OK, provider=self.name, words=[],
+                status=ForcedAlignmentStatus.OK,
+                provider=self.name,
+                words=[],
             )
         total_units = sum(max(1, len(t)) for t in tokens)
         span = req.end_ms - req.start_ms
@@ -128,11 +132,12 @@ class FakeForcedAlignmentProvider:
                 end = req.start_ms + int(round(span * acc / total_units))
                 if end <= cursor:
                     end = cursor + 1
-            words.append(SubtitleWord(text=t, start_ms=cursor, end_ms=end,
-                                        confidence=0.5))
+            words.append(SubtitleWord(text=t, start_ms=cursor, end_ms=end, confidence=0.5))
             cursor = end
         return ForcedAlignmentResult(
-            status=ForcedAlignmentStatus.OK, provider=self.name, words=words,
+            status=ForcedAlignmentStatus.OK,
+            provider=self.name,
+            words=words,
         )
 
     def health_check(self) -> ForcedAlignmentResult:

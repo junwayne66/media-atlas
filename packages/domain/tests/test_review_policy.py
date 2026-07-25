@@ -33,25 +33,50 @@ _NEW = TemplateTrustLevel.NEW
 _TRUSTED = TemplateTrustLevel.TRUSTED
 
 
-def _decision(*, version: int = 7, digest: str = "abc",
-              kind: ReviewDecisionKind = ReviewDecisionKind.APPROVED,
-              sign: bool = True, signature: str = "x") -> ReviewDecision:
-    sig = compute_approval_signature(
-        entity_id="var_1", entity_version=version, content_digest=digest,
-        decision=kind, scope="VARIANT", reviewer_id="u1", policy_snapshot_id="p1",
-    ) if sign else signature
+def _decision(
+    *,
+    version: int = 7,
+    digest: str = "abc",
+    kind: ReviewDecisionKind = ReviewDecisionKind.APPROVED,
+    sign: bool = True,
+    signature: str = "x",
+) -> ReviewDecision:
+    sig = (
+        compute_approval_signature(
+            entity_id="var_1",
+            entity_version=version,
+            content_digest=digest,
+            decision=kind,
+            scope="VARIANT",
+            reviewer_id="u1",
+            policy_snapshot_id="p1",
+        )
+        if sign
+        else signature
+    )
     return ReviewDecision(
-        id="rd1", decision=kind, scope=ReviewScope.VARIANT, entity_id="var_1",
-        entity_version=version, content_digest=digest, reviewer_id="u1",
-        policy_snapshot_id="p1", signature=sig, created_at=_T0,
+        id="rd1",
+        decision=kind,
+        scope=ReviewScope.VARIANT,
+        entity_id="var_1",
+        entity_version=version,
+        content_digest=digest,
+        reviewer_id="u1",
+        policy_snapshot_id="p1",
+        signature=sig,
+        created_at=_T0,
     )
 
 
 def _stats(**over) -> TemplateTrustStats:
     base = dict(
-        approved_render_count=24, recent_fatal_count=0, recent_error_rate=0.02,
-        qa_meets_standard=True, publish_success_ok=True,
-        duplicate_publish_ok=True, owner_approved=True,
+        approved_render_count=24,
+        recent_fatal_count=0,
+        recent_error_rate=0.02,
+        qa_meets_standard=True,
+        publish_success_ok=True,
+        duplicate_publish_ok=True,
+        owner_approved=True,
     )
     base.update(over)
     return TemplateTrustStats(**base)
@@ -59,17 +84,28 @@ def _stats(**over) -> TemplateTrustStats:
 
 def _state(level=_NEW, **stats_over) -> TemplateTrustState:
     return TemplateTrustState(
-        template_id="t", template_version=3, level=level,
-        stats=_stats(**stats_over), criteria=TemplateTrustCriteria(), updated_at=_T0,
+        template_id="t",
+        template_version=3,
+        level=level,
+        stats=_stats(**stats_over),
+        criteria=TemplateTrustCriteria(),
+        updated_at=_T0,
     )
 
 
 # --- 签名 + 修改失效（安全核心）------------------------------------------
 
+
 def test_signature_is_deterministic():
-    kw = dict(entity_id="e", entity_version=1, content_digest="d",
-              decision=ReviewDecisionKind.APPROVED, scope="VARIANT",
-              reviewer_id="u", policy_snapshot_id="p")
+    kw = dict(
+        entity_id="e",
+        entity_version=1,
+        content_digest="d",
+        decision=ReviewDecisionKind.APPROVED,
+        scope="VARIANT",
+        reviewer_id="u",
+        policy_snapshot_id="p",
+    )
     assert compute_approval_signature(**kw) == compute_approval_signature(**kw)
 
 
@@ -93,10 +129,11 @@ def test_approval_invalid_for_wrong_entity_when_bound():
     # 纵深防御：给定 current_entity_id 时，别的 entity 的审批不能通过
     d = _decision(version=7, digest="abc")  # entity_id="var_1"
     assert is_approval_valid(
-        d, current_version=7, current_content_digest="abc", current_entity_id="var_1")
+        d, current_version=7, current_content_digest="abc", current_entity_id="var_1"
+    )
     assert not is_approval_valid(
-        d, current_version=7, current_content_digest="abc",
-        current_entity_id="var_OTHER")
+        d, current_version=7, current_content_digest="abc", current_entity_id="var_OTHER"
+    )
 
 
 def test_rejected_decision_never_valid():
@@ -123,72 +160,101 @@ def test_resigning_tampered_still_fails_if_not_current():
 def test_validate_flags_signature_mismatch_and_stale():
     d = _decision(version=7, digest="abc")
     tampered = d.model_copy(update={"entity_version": 8})
-    kinds = {i.kind for i in validate_review_decision(
-        tampered, current_version=8, current_content_digest="abc")}
+    kinds = {
+        i.kind
+        for i in validate_review_decision(tampered, current_version=8, current_content_digest="abc")
+    }
     assert ReviewDecisionIssueKind.SIGNATURE_MISMATCH in kinds
 
     stale = _decision(version=7, digest="abc")  # 自洽但已过时
-    kinds2 = {i.kind for i in validate_review_decision(
-        stale, current_version=9, current_content_digest="abc")}
+    kinds2 = {
+        i.kind
+        for i in validate_review_decision(stale, current_version=9, current_content_digest="abc")
+    }
     assert ReviewDecisionIssueKind.APPROVAL_STALE in kinds2
 
 
 def test_clean_current_decision_has_no_issues():
     d = _decision(version=7, digest="abc")
-    assert validate_review_decision(
-        d, current_version=7, current_content_digest="abc") == []
+    assert validate_review_decision(d, current_version=7, current_content_digest="abc") == []
 
 
 # --- §2 严重级门 ---------------------------------------------------------
 
+
 def test_severity_gate():
     assert publish_severity_gate([ReviewSeverity.FATAL]) is ReviewDisposition.BLOCKED
     assert publish_severity_gate([ReviewSeverity.ERROR]) is ReviewDisposition.NEEDS_FIX
-    assert publish_severity_gate(
-        [ReviewSeverity.WARNING], warning_blocks=True) is ReviewDisposition.NEEDS_REVIEW
-    assert publish_severity_gate(
-        [ReviewSeverity.WARNING], warning_blocks=False) is ReviewDisposition.AUTO_APPROVE
+    assert (
+        publish_severity_gate([ReviewSeverity.WARNING], warning_blocks=True)
+        is ReviewDisposition.NEEDS_REVIEW
+    )
+    assert (
+        publish_severity_gate([ReviewSeverity.WARNING], warning_blocks=False)
+        is ReviewDisposition.AUTO_APPROVE
+    )
     assert publish_severity_gate([ReviewSeverity.INFO]) is ReviewDisposition.AUTO_APPROVE
     assert publish_severity_gate([]) is ReviewDisposition.AUTO_APPROVE
 
 
 def test_fatal_beats_error_when_both_present():
-    assert publish_severity_gate(
-        [ReviewSeverity.ERROR, ReviewSeverity.FATAL]) is ReviewDisposition.BLOCKED
+    assert (
+        publish_severity_gate([ReviewSeverity.ERROR, ReviewSeverity.FATAL])
+        is ReviewDisposition.BLOCKED
+    )
 
 
 # --- §12 策略 × 受信 -----------------------------------------------------
 
+
 def test_requires_human_review_by_mode():
     assert requires_human_review(ReviewPolicyMode.ALWAYS, template_level=_TRUSTED)
     assert requires_human_review(ReviewPolicyMode.NEW_TEMPLATE_ONLY, template_level=_NEW)
-    assert not requires_human_review(
-        ReviewPolicyMode.NEW_TEMPLATE_ONLY, template_level=_TRUSTED)
+    assert not requires_human_review(ReviewPolicyMode.NEW_TEMPLATE_ONLY, template_level=_TRUSTED)
     assert not requires_human_review(ReviewPolicyMode.AUTO, template_level=_NEW)
 
 
 def test_review_disposition_combinations():
     # 阻塞级优先，覆盖策略
-    assert review_disposition(
-        ReviewPolicyMode.AUTO, template_level=_TRUSTED,
-        severities=[ReviewSeverity.FATAL]) is ReviewDisposition.BLOCKED
-    assert review_disposition(
-        ReviewPolicyMode.AUTO, template_level=_TRUSTED,
-        severities=[ReviewSeverity.ERROR]) is ReviewDisposition.NEEDS_FIX
+    assert (
+        review_disposition(
+            ReviewPolicyMode.AUTO, template_level=_TRUSTED, severities=[ReviewSeverity.FATAL]
+        )
+        is ReviewDisposition.BLOCKED
+    )
+    assert (
+        review_disposition(
+            ReviewPolicyMode.AUTO, template_level=_TRUSTED, severities=[ReviewSeverity.ERROR]
+        )
+        is ReviewDisposition.NEEDS_FIX
+    )
     # 无阻塞：按策略
-    assert review_disposition(
-        ReviewPolicyMode.ALWAYS, template_level=_TRUSTED) is ReviewDisposition.NEEDS_REVIEW
-    assert review_disposition(
-        ReviewPolicyMode.NEW_TEMPLATE_ONLY, template_level=_NEW,
-    ) is ReviewDisposition.NEEDS_REVIEW
-    assert review_disposition(
-        ReviewPolicyMode.NEW_TEMPLATE_ONLY, template_level=_TRUSTED,
-    ) is ReviewDisposition.AUTO_APPROVE
-    assert review_disposition(
-        ReviewPolicyMode.AUTO, template_level=_TRUSTED) is ReviewDisposition.AUTO_APPROVE
+    assert (
+        review_disposition(ReviewPolicyMode.ALWAYS, template_level=_TRUSTED)
+        is ReviewDisposition.NEEDS_REVIEW
+    )
+    assert (
+        review_disposition(
+            ReviewPolicyMode.NEW_TEMPLATE_ONLY,
+            template_level=_NEW,
+        )
+        is ReviewDisposition.NEEDS_REVIEW
+    )
+    assert (
+        review_disposition(
+            ReviewPolicyMode.NEW_TEMPLATE_ONLY,
+            template_level=_TRUSTED,
+        )
+        is ReviewDisposition.AUTO_APPROVE
+    )
+    assert (
+        review_disposition(ReviewPolicyMode.AUTO, template_level=_TRUSTED)
+        is ReviewDisposition.AUTO_APPROVE
+    )
 
 
 # --- §12 Trusted Template 状态机 ----------------------------------------
+
 
 def test_all_good_stats_are_eligible():
     ok, failed = evaluate_trust_upgrade(_state())

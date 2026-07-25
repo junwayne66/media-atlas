@@ -29,17 +29,27 @@ _T0 = datetime(2026, 7, 25, tzinfo=UTC)
 
 
 def _key(**over) -> str:
-    base = dict(account_id="a", platform=PublishPlatform.TIKTOK, render_digest="r",
-                metadata_digest="m", scheduled_window="immediate")
+    base = dict(
+        account_id="a",
+        platform=PublishPlatform.TIKTOK,
+        render_digest="r",
+        metadata_digest="m",
+        scheduled_window="immediate",
+    )
     base.update(over)
     return compute_idempotency_key(**base)
 
 
 def _new() -> PublishJob:
     return new_publish_job(
-        id="j1", account_id="a", platform=PublishPlatform.TIKTOK,
-        method=PublishMethod.OFFICIAL_API, render_digest="r", metadata_digest="m",
-        scheduled_window="immediate", created_at=_T0,
+        id="j1",
+        account_id="a",
+        platform=PublishPlatform.TIKTOK,
+        method=PublishMethod.OFFICIAL_API,
+        render_digest="r",
+        metadata_digest="m",
+        scheduled_window="immediate",
+        created_at=_T0,
     )
 
 
@@ -48,11 +58,13 @@ def _uploading() -> PublishJob:
 
 
 def _submitted() -> PublishJob:
-    return record_submission(_uploading(), external_post_token="post_1",
-                              request_digest="rq1", now=_T0)
+    return record_submission(
+        _uploading(), external_post_token="post_1", request_digest="rq1", now=_T0
+    )
 
 
 # --- §5 幂等键 ------------------------------------------------------------
+
 
 def test_idempotency_key_deterministic():
     assert _key() == _key()
@@ -76,6 +88,7 @@ def test_new_job_is_pending_with_key():
 
 # --- §4 状态机 + 提交 -----------------------------------------------------
 
+
 def test_submit_moves_to_submitted_and_records_attempt():
     job = _submitted()
     assert job.state is PublishState.SUBMITTED
@@ -88,8 +101,7 @@ def test_double_submit_is_refused():
     # 核心红线（§13）：已提交的 Job 再提交必须被拒，绝不重复发布
     job = _submitted()
     with pytest.raises(IllegalPublishTransition, match="拒绝重复发布"):
-        record_submission(job, external_post_token="post_2", request_digest="rq2",
-                           now=_T0)
+        record_submission(job, external_post_token="post_2", request_digest="rq2", now=_T0)
 
 
 def test_cannot_submit_from_pending():
@@ -98,23 +110,32 @@ def test_cannot_submit_from_pending():
 
 
 def test_has_submitted_true_for_post_submit_states():
-    for st in (PublishState.SUBMITTED, PublishState.VERIFYING,
-               PublishState.SUCCEEDED, PublishState.SUCCEEDED_RECONCILED):
-        job = _new().model_copy(update={
-            "state": st,
-            "external_post_id": "e" if st in (
-                PublishState.SUCCEEDED, PublishState.SUCCEEDED_RECONCILED) else None,
-        })
+    for st in (
+        PublishState.SUBMITTED,
+        PublishState.VERIFYING,
+        PublishState.SUCCEEDED,
+        PublishState.SUCCEEDED_RECONCILED,
+    ):
+        job = _new().model_copy(
+            update={
+                "state": st,
+                "external_post_id": "e"
+                if st in (PublishState.SUCCEEDED, PublishState.SUCCEEDED_RECONCILED)
+                else None,
+            }
+        )
         assert has_submitted(job)
         assert not can_submit(job)
 
 
 # --- §5 对账（不重发）----------------------------------------------------
 
+
 def test_reconcile_found_marks_reconciled():
     job = _submitted()
-    rec = reconcile_publish(job, found_external_post=True, external_id="ext_9",
-                             external_url="u", now=_T0)
+    rec = reconcile_publish(
+        job, found_external_post=True, external_id="ext_9", external_url="u", now=_T0
+    )
     assert rec.state is PublishState.SUCCEEDED_RECONCILED
     assert rec.external_post_id == "ext_9"
     assert validate_publish_job(rec) == []
@@ -153,23 +174,24 @@ def test_to_waiting_for_human():
 
 def test_terminal_states_have_no_outgoing():
     from videoforge_domain import PUBLISH_TRANSITIONS
-    for st in (PublishState.SUCCEEDED, PublishState.SUCCEEDED_RECONCILED,
-               PublishState.FAILED):
+
+    for st in (PublishState.SUCCEEDED, PublishState.SUCCEEDED_RECONCILED, PublishState.FAILED):
         assert PUBLISH_TRANSITIONS[st] == frozenset()
 
 
 # --- 护栏 -----------------------------------------------------------------
 
+
 def test_validate_flags_double_submit():
-    job = _new().model_copy(update={
-        "state": PublishState.SUBMITTED,
-        "attempts": [
-            PublishAttempt(attempt=1, request_digest="r1", external_post_token="p1",
-                            at=_T0),
-            PublishAttempt(attempt=2, request_digest="r2", external_post_token="p2",
-                            at=_T0),
-        ],
-    })
+    job = _new().model_copy(
+        update={
+            "state": PublishState.SUBMITTED,
+            "attempts": [
+                PublishAttempt(attempt=1, request_digest="r1", external_post_token="p1", at=_T0),
+                PublishAttempt(attempt=2, request_digest="r2", external_post_token="p2", at=_T0),
+            ],
+        }
+    )
     kinds = {i.kind for i in validate_publish_job(job)}
     assert PublishJobIssueKind.DOUBLE_SUBMIT in kinds
 
@@ -191,8 +213,7 @@ def test_clean_lifecycle_never_double_publishes():
     job = _submitted()
     with pytest.raises(IllegalPublishTransition):
         record_submission(job, external_post_token="dup", request_digest="d", now=_T0)
-    rec = reconcile_publish(job, found_external_post=True, external_id="ext",
-                             now=_T0)
+    rec = reconcile_publish(job, found_external_post=True, external_id="ext", now=_T0)
     assert validate_publish_job(rec) == []
     posted = [a for a in rec.attempts if a.external_post_token]
     assert len(posted) == 1  # 只有一次真实提交

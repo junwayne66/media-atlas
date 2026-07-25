@@ -24,7 +24,9 @@ _T0 = datetime(2026, 7, 23, tzinfo=UTC)
 
 def _claim(cid, text, status=ClaimSourceStatus.UNVERIFIED) -> Claim:
     return Claim(
-        id=cid, text=text, source_status=status,
+        id=cid,
+        text=text,
+        source_status=status,
         evidence=[EvidenceSpan(kind="transcript", ref_id="seg-0", start_ms=0, end_ms=1000)],
     )
 
@@ -35,12 +37,17 @@ def _blueprint(claims) -> VideoBlueprint:
 
 def _opportunity() -> CreativeOpportunity:
     return CreativeOpportunity(
-        id="opp-1", blueprint_id="bp", rationale="热点上升缺角度",
-        target_platform="douyin", target_language="zh-CN", created_at=_T0,
+        id="opp-1",
+        blueprint_id="bp",
+        rationale="热点上升缺角度",
+        target_platform="douyin",
+        target_language="zh-CN",
+        created_at=_T0,
     )
 
 
 # —— ClaimTable 抽取 ——
+
 
 def test_claim_table_carries_status_and_evidence() -> None:
     bp = _blueprint([_claim("c0", "事实一", ClaimSourceStatus.VERIFIED)])
@@ -66,10 +73,16 @@ def test_disputed_claim_not_usable_in_rewrite() -> None:
 
 # —— Brief 组装 ——
 
+
 def test_brief_defaults_visual_mix_by_mode() -> None:
     brief = build_creative_brief(
-        _opportunity(), brief_id="b", created_at=_T0, objective="讲清影响",
-        audience="AI 用户", angle="实测成本", duration_target_ms=45000,
+        _opportunity(),
+        brief_id="b",
+        created_at=_T0,
+        objective="讲清影响",
+        audience="AI 用户",
+        angle="实测成本",
+        duration_target_ms=45000,
         creation_mode=CreationMode.STRUCTURE_REWRITE,
     )
     assert brief.platform == "douyin"  # 取自 opportunity
@@ -81,8 +94,14 @@ def test_brief_defaults_visual_mix_by_mode() -> None:
 
 def test_brief_explicit_visual_mix_and_platform_override() -> None:
     brief = build_creative_brief(
-        _opportunity(), brief_id="b", created_at=_T0, objective="x", audience="y",
-        angle="z", duration_target_ms=30000, creation_mode=CreationMode.SOURCE_REEDIT,
+        _opportunity(),
+        brief_id="b",
+        created_at=_T0,
+        objective="x",
+        audience="y",
+        angle="z",
+        duration_target_ms=30000,
+        creation_mode=CreationMode.SOURCE_REEDIT,
         platform="tiktok",
         visual_mix=VisualMix(talking_head=0.1, screen_demo=0.5, broll=0.3, info_card=0.1),
     )
@@ -92,13 +111,21 @@ def test_brief_explicit_visual_mix_and_platform_override() -> None:
 
 # —— 校验护栏 ——
 
+
 def test_valid_brief_passes() -> None:
     bp = _blueprint([_claim("c0", "事实一", ClaimSourceStatus.VERIFIED)])
     table = build_claim_table(bp, table_id="ct", created_at=_T0)
     brief = build_creative_brief(
-        _opportunity(), brief_id="b", created_at=_T0, objective="x", audience="y", angle="z",
-        duration_target_ms=45000, creation_mode=CreationMode.STRUCTURE_REWRITE,
-        claim_table=table, must_cover_claim_ids=("c0",),
+        _opportunity(),
+        brief_id="b",
+        created_at=_T0,
+        objective="x",
+        audience="y",
+        angle="z",
+        duration_target_ms=45000,
+        creation_mode=CreationMode.STRUCTURE_REWRITE,
+        claim_table=table,
+        must_cover_claim_ids=("c0",),
     )
     assert validate_brief(brief, table) == []
     assert is_valid_brief(brief, table)
@@ -109,9 +136,16 @@ def test_must_cover_missing_claim_detected() -> None:
     bp = _blueprint([_claim("c0", "事实一")])
     table = build_claim_table(bp, table_id="ct", created_at=_T0)
     brief = build_creative_brief(
-        _opportunity(), brief_id="b", created_at=_T0, objective="x", audience="y", angle="z",
-        duration_target_ms=45000, creation_mode=CreationMode.STRUCTURE_REWRITE,
-        claim_table=table, must_cover_claim_ids=("ghost",),
+        _opportunity(),
+        brief_id="b",
+        created_at=_T0,
+        objective="x",
+        audience="y",
+        angle="z",
+        duration_target_ms=45000,
+        creation_mode=CreationMode.STRUCTURE_REWRITE,
+        claim_table=table,
+        must_cover_claim_ids=("ghost",),
     )
     kinds = {i.kind for i in validate_brief(brief, table)}
     assert BriefIssueKind.MUST_COVER_CLAIM_MISSING in kinds
@@ -121,9 +155,16 @@ def test_must_cover_disputed_claim_detected() -> None:
     bp = _blueprint([_claim("c0", "有争议", ClaimSourceStatus.DISPUTED)])
     table = build_claim_table(bp, table_id="ct", created_at=_T0)
     brief = build_creative_brief(
-        _opportunity(), brief_id="b", created_at=_T0, objective="x", audience="y", angle="z",
-        duration_target_ms=45000, creation_mode=CreationMode.STRUCTURE_REWRITE,
-        claim_table=table, must_cover_claim_ids=("c0",),
+        _opportunity(),
+        brief_id="b",
+        created_at=_T0,
+        objective="x",
+        audience="y",
+        angle="z",
+        duration_target_ms=45000,
+        creation_mode=CreationMode.STRUCTURE_REWRITE,
+        claim_table=table,
+        must_cover_claim_ids=("c0",),
     )
     kinds = {i.kind for i in validate_brief(brief, table)}
     # DISPUTED 事实既不可强制覆盖、又不可直接改写

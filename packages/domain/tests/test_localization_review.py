@@ -31,14 +31,19 @@ from videoforge_domain import (
 _T0 = datetime(2026, 7, 24, tzinfo=UTC)
 
 
-def _finding(sid: str, sev: QASeverity,
-             check: LocalizationQACheck = LocalizationQACheck.TTS_GAP) -> LocalizationQAFinding:
+def _finding(
+    sid: str, sev: QASeverity, check: LocalizationQACheck = LocalizationQACheck.TTS_GAP
+) -> LocalizationQAFinding:
     return LocalizationQAFinding(
-        sentence_id=sid, check=check, severity=sev, detail="x",
+        sentence_id=sid,
+        check=check,
+        severity=sev,
+        detail="x",
     )
 
 
 # --- §12 数字一致 --------------------------------------------------------
+
 
 def test_numbers_match_returns_none():
     assert check_number_consistency("s", "有 5 个核 120W", "5 cores 120W") is None
@@ -69,17 +74,27 @@ def test_thousands_separator_normalized():
 
 # --- §12 否定一致 --------------------------------------------------------
 
+
 def test_negation_match_returns_none():
-    assert check_negation_consistency(
-        "s", "这不快", "this is not fast",
-        source_lang="zh-CN", target_lang="en-US",
-    ) is None
+    assert (
+        check_negation_consistency(
+            "s",
+            "这不快",
+            "this is not fast",
+            source_lang="zh-CN",
+            target_lang="en-US",
+        )
+        is None
+    )
 
 
 def test_dropped_negation_is_major():
     f = check_negation_consistency(
-        "s", "这不快", "this is fast",
-        source_lang="zh-CN", target_lang="en-US",
+        "s",
+        "这不快",
+        "this is fast",
+        source_lang="zh-CN",
+        target_lang="en-US",
     )
     assert f is not None
     assert f.check is LocalizationQACheck.NEGATION_CONSISTENCY
@@ -88,14 +103,18 @@ def test_dropped_negation_is_major():
 
 def test_english_contraction_negation_counted():
     f = check_negation_consistency(
-        "s", "它有效", "it doesn't work",
-        source_lang="zh-CN", target_lang="en-US",
+        "s",
+        "它有效",
+        "it doesn't work",
+        source_lang="zh-CN",
+        target_lang="en-US",
     )
     # 源 0 否定 vs 译 1 否定（doesn't）→ 不一致
     assert f is not None and f.severity is QASeverity.MAJOR
 
 
 # --- 发布门 --------------------------------------------------------------
+
 
 def test_gate_blocks_on_blocker():
     assert validate_localization_publish_gate([_finding("s", QASeverity.BLOCKER)]) is False
@@ -107,8 +126,11 @@ def test_gate_blocks_on_too_many_majors():
 
 
 def test_gate_passes_with_few_majors_and_minors():
-    fs = [_finding("s0", QASeverity.MAJOR), _finding("s1", QASeverity.MINOR),
-          _finding("s2", QASeverity.INFO)]
+    fs = [
+        _finding("s0", QASeverity.MAJOR),
+        _finding("s1", QASeverity.MINOR),
+        _finding("s2", QASeverity.INFO),
+    ]
     assert validate_localization_publish_gate(fs) is True
 
 
@@ -117,8 +139,11 @@ def test_aggregate_computes_gate_and_preserves_findings():
         [ConsistencyPair("s", "有 5 核", "no cores", "zh-CN", "en-US")]
     )
     rep = aggregate_localization_qa(
-        findings, id="r", localization_variant_id="v",
-        reviewed_sentence_ids=["s"], created_at=_T0,
+        findings,
+        id="r",
+        localization_variant_id="v",
+        reviewed_sentence_ids=["s"],
+        created_at=_T0,
     )
     assert rep.pass_or_block is False  # 数字 BLOCKER
     assert len(rep.findings) == len(findings)
@@ -126,12 +151,15 @@ def test_aggregate_computes_gate_and_preserves_findings():
 
 # --- §13 局部重跑（headline）--------------------------------------------
 
+
 def test_rerun_scope_only_edited_sentence():
     scope = compute_rerun_scope(["s2"], ["s1", "s2", "s3"])
     assert scope.edited_sentence_ids == ("s2",)
     assert set(scope.per_sentence_stages) == {"s2"}
     assert scope.per_sentence_stages["s2"] == (
-        ReRunStage.TTS, ReRunStage.SUBTITLE, ReRunStage.LIPSYNC,
+        ReRunStage.TTS,
+        ReRunStage.SUBTITLE,
+        ReRunStage.LIPSYNC,
     )
     assert scope.global_stages == (ReRunStage.AUDIO_MIX, ReRunStage.RENDER)
     assert scope.unaffected_sentence_ids == ("s1", "s3")
@@ -139,9 +167,9 @@ def test_rerun_scope_only_edited_sentence():
 
 def test_rerun_scope_never_reruns_translation_or_other_sentences():
     scope = compute_rerun_scope(["s2"], ["s1", "s2", "s3"])
-    all_stages = [
-        st for stages in scope.per_sentence_stages.values() for st in stages
-    ] + list(scope.global_stages)
+    all_stages = [st for stages in scope.per_sentence_stages.values() for st in stages] + list(
+        scope.global_stages
+    )
     # 改译文本身是输入 → TRANSLATION 绝不重跑
     assert ReRunStage.TRANSLATION not in all_stages
     # 其它句零阶段
@@ -171,17 +199,25 @@ def test_rerun_scope_rejects_unknown_sentence():
 def test_rerun_scope_voice_change_same_downstream():
     scope = compute_rerun_scope(["s1"], ["s1", "s2"], edit_kind=ReRunEditKind.VOICE_CHANGE)
     assert scope.per_sentence_stages["s1"] == (
-        ReRunStage.TTS, ReRunStage.SUBTITLE, ReRunStage.LIPSYNC,
+        ReRunStage.TTS,
+        ReRunStage.SUBTITLE,
+        ReRunStage.LIPSYNC,
     )
 
 
 # --- 审核队列 + 护栏 -----------------------------------------------------
 
+
 def test_review_queue_dedups_by_sentence():
     rep = aggregate_localization_qa(
-        [_finding("a", QASeverity.MINOR), _finding("a", QASeverity.MAJOR),
-         _finding("b", QASeverity.MINOR)],
-        id="r", localization_variant_id="v", reviewed_sentence_ids=["a", "b"],
+        [
+            _finding("a", QASeverity.MINOR),
+            _finding("a", QASeverity.MAJOR),
+            _finding("b", QASeverity.MINOR),
+        ],
+        id="r",
+        localization_variant_id="v",
+        reviewed_sentence_ids=["a", "b"],
         created_at=_T0,
     )
     assert sentence_review_queue(rep) == ["a", "b"]
@@ -190,7 +226,8 @@ def test_review_queue_dedups_by_sentence():
 def test_cannot_approve_sentence_with_blocker():
     findings = [_finding("s", QASeverity.BLOCKER, LocalizationQACheck.NUMBER_CONSISTENCY)]
     review = LocalizationReview(
-        id="rv", localization_variant_id="v",
+        id="rv",
+        localization_variant_id="v",
         decisions=[SentenceReviewDecision(sentence_id="s", state=ReviewState.APPROVED)],
         created_at=_T0,
     )
@@ -201,10 +238,12 @@ def test_cannot_approve_sentence_with_blocker():
 def test_editing_or_rejecting_a_blocker_sentence_is_allowed():
     findings = [_finding("s", QASeverity.BLOCKER)]
     review = LocalizationReview(
-        id="rv", localization_variant_id="v",
+        id="rv",
+        localization_variant_id="v",
         decisions=[
-            SentenceReviewDecision(sentence_id="s", state=ReviewState.EDITED,
-                                    edited_text="修好的译文"),
+            SentenceReviewDecision(
+                sentence_id="s", state=ReviewState.EDITED, edited_text="修好的译文"
+            ),
         ],
         created_at=_T0,
     )
@@ -214,7 +253,8 @@ def test_editing_or_rejecting_a_blocker_sentence_is_allowed():
 def test_approving_a_clean_sentence_is_valid():
     findings = [_finding("other", QASeverity.BLOCKER)]
     review = LocalizationReview(
-        id="rv", localization_variant_id="v",
+        id="rv",
+        localization_variant_id="v",
         decisions=[SentenceReviewDecision(sentence_id="s", state=ReviewState.APPROVED)],
         created_at=_T0,
     )

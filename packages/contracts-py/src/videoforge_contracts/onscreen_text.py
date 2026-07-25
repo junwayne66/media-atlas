@@ -76,11 +76,15 @@ class TextLocalizationPolicy(ContractModel):
     target_language: str = Field(min_length=1)
     per_kind: list[TextLocalizationKindPolicy] = Field(default_factory=list)
     max_occlusion_for_redraw: float = Field(
-        default=0.3, ge=0.0, le=1.0,
+        default=0.3,
+        ge=0.0,
+        le=1.0,
         description="遮挡比 > 此值即禁用重绘，回退",
     )
     max_layout_expansion_ratio: float = Field(
-        default=1.3, gt=1.0, le=3.0,
+        default=1.3,
+        gt=1.0,
+        le=3.0,
         description="目标语言长度相对源的最大扩张倍数（超即回退，§6.2 缩短而非无限缩小字号）",
     )
     info_card_style_ref: str | None = Field(
@@ -111,7 +115,8 @@ class CleanPlateRequest(ContractModel):
     frame_end_ms: int = Field(ge=0)
     method: CleanPlateMethod
     license_ref: str | None = Field(
-        default=None, description="AUTHORIZED_INPAINT 的授权凭证引用",
+        default=None,
+        description="AUTHORIZED_INPAINT 的授权凭证引用",
     )
 
     @model_validator(mode="after")
@@ -120,8 +125,7 @@ class CleanPlateRequest(ContractModel):
             raise ValueError("frame_end_ms 必须 ≥ frame_start_ms")
         if self.method is CleanPlateMethod.AUTHORIZED_INPAINT and not self.license_ref:
             raise ValueError(
-                "AUTHORIZED_INPAINT 必须携带 license_ref"
-                "（否则违反 docs/README §4 授权/清理红线）"
+                "AUTHORIZED_INPAINT 必须携带 license_ref（否则违反 docs/README §4 授权/清理红线）"
             )
         return self
 
@@ -139,10 +143,12 @@ class TextTrackLocalizationDecision(ContractModel):
         description="KEEP_AS_IS / SKIP / BRAND_MARK 未授权时可为 None",
     )
     clean_plate_request_id: str | None = Field(
-        default=None, description="策略需要 Clean Plate 时引用其 id",
+        default=None,
+        description="策略需要 Clean Plate 时引用其 id",
     )
     layout_expansion_ratio: float | None = Field(
-        default=None, ge=0.0,
+        default=None,
+        ge=0.0,
         description="翻译后文本长度 / 源长度；> policy.max 走回退",
     )
     needs_review: bool = False
@@ -176,8 +182,6 @@ class TextLocalizationPlan(ContractModel):
         seen: set[str] = set()
         for d in self.decisions:
             if d.source_track_id in seen:
-                raise ValueError(
-                    f"同一 source_track_id 出现两次：{d.source_track_id!r}"
-                )
+                raise ValueError(f"同一 source_track_id 出现两次：{d.source_track_id!r}")
             seen.add(d.source_track_id)
         return self

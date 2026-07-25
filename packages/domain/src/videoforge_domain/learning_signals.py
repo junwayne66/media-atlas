@@ -42,14 +42,17 @@ DEFAULT_CORR_THRESHOLD = 0.3
 MIN_SAMPLES_FOR_SIGNAL = 8
 
 # 布尔型信号（分两桶 是/否）；其余按信号值分三桶 低/中/高。
-_BOOLEAN_SIGNALS = frozenset({
-    SignalKind.HUMAN_SELECTED,
-    SignalKind.REJECTED_THEN_REVISED,
-    SignalKind.HAS_MUSIC,
-})
+_BOOLEAN_SIGNALS = frozenset(
+    {
+        SignalKind.HUMAN_SELECTED,
+        SignalKind.REJECTED_THEN_REVISED,
+        SignalKind.HAS_MUSIC,
+    }
+)
 
 
 # --- Spearman 秩相关（透明、可复现）----------------------------------------
+
 
 def _ranks(values: list[float]) -> list[float]:
     """1-based 平均秩（并列取平均）。"""
@@ -87,6 +90,7 @@ def spearman_correlation(pairs: list[tuple[float, float]]) -> float | None:
 
 # --- 信号取值 ---------------------------------------------------------------
 
+
 def _bool_to_float(b: bool | None) -> float | None:
     return None if b is None else (1.0 if b else 0.0)
 
@@ -116,6 +120,7 @@ def signal_value(kind: SignalKind, features: PerformanceFeatures) -> float | Non
 
 # --- 分桶 -------------------------------------------------------------------
 
+
 def _bucketize(
     signal: SignalKind, pairs: list[tuple[float, float]], min_samples: int
 ) -> list[SignalBucketStat]:
@@ -140,18 +145,21 @@ def _bucketize(
         if not vals:
             continue  # 空桶不报
         median = percentile(sorted(vals), 0.5)
-        stats.append(SignalBucketStat(
-            label=label, sample_count=len(vals), median_relative=median,
-            enough_samples=len(vals) >= min_samples,
-        ))
+        stats.append(
+            SignalBucketStat(
+                label=label,
+                sample_count=len(vals),
+                median_relative=median,
+                enough_samples=len(vals) >= min_samples,
+            )
+        )
     return stats
 
 
 # --- 方向 + 说明 ------------------------------------------------------------
 
-def _direction(
-    correlation: float | None, enough: bool, threshold: float
-) -> SignalDirection:
+
+def _direction(correlation: float | None, enough: bool, threshold: float) -> SignalDirection:
     if not enough:
         return SignalDirection.INSUFFICIENT
     if correlation is None:
@@ -163,22 +171,23 @@ def _direction(
     return SignalDirection.NONE
 
 
-def _explain(
-    signal: SignalKind, direction: SignalDirection, corr: float | None, n: int
-) -> str:
+def _explain(signal: SignalKind, direction: SignalDirection, corr: float | None, n: int) -> str:
     if direction is SignalDirection.INSUFFICIENT:
         return f"{signal.value}：样本不足（n={n}），暂不下结论"
     c = "n/a" if corr is None else f"{corr:.2f}"
     if direction is SignalDirection.POSITIVE:
-        return (f"{signal.value} 越高，账号内相对表现越高的**相关**"
-                f"（Spearman={c}, n={n}）——关联非因果")
+        return (
+            f"{signal.value} 越高，账号内相对表现越高的**相关**（Spearman={c}, n={n}）——关联非因果"
+        )
     if direction is SignalDirection.NEGATIVE:
-        return (f"{signal.value} 越高，账号内相对表现越低的**相关**"
-                f"（Spearman={c}, n={n}）——关联非因果")
+        return (
+            f"{signal.value} 越高，账号内相对表现越低的**相关**（Spearman={c}, n={n}）——关联非因果"
+        )
     return f"{signal.value}：无明显关联（Spearman={c}, n={n}）"
 
 
 # --- 单信号分析 -------------------------------------------------------------
+
 
 def analyze_signal(
     records: list[VideoPerformanceRecord],
@@ -196,9 +205,7 @@ def analyze_signal(
         sv = signal_value(signal, r.features)
         if sv is None:
             continue
-        rel = relative_to_baseline(
-            metric_value_at_age(r, age_hours, metric), baseline_median
-        )
+        rel = relative_to_baseline(metric_value_at_age(r, age_hours, metric), baseline_median)
         if rel is None:
             continue
         pairs.append((sv, rel))
@@ -208,9 +215,14 @@ def analyze_signal(
     enough = n >= min_samples
     direction = _direction(corr, enough, corr_threshold)
     return LearningSignalResult(
-        signal=signal, metric=metric, age_hours=age_hours,
-        correlation=corr, direction=direction, sample_count=n,
-        enough_samples=enough, buckets=_bucketize(signal, pairs, min_samples),
+        signal=signal,
+        metric=metric,
+        age_hours=age_hours,
+        correlation=corr,
+        direction=direction,
+        sample_count=n,
+        enough_samples=enough,
+        buckets=_bucketize(signal, pairs, min_samples),
         note=_explain(signal, direction, corr, n),
     )
 
@@ -233,14 +245,24 @@ def build_learning_report(
     baseline = compute_account_baseline_entry(mine, age_hours, metric)
     results = [
         analyze_signal(
-            mine, signal=s, baseline_median=baseline.median, age_hours=age_hours,
-            metric=metric, min_samples=min_samples, corr_threshold=corr_threshold,
+            mine,
+            signal=s,
+            baseline_median=baseline.median,
+            age_hours=age_hours,
+            metric=metric,
+            min_samples=min_samples,
+            corr_threshold=corr_threshold,
         )
         for s in sigs
     ]
     return LearningReport(
-        account_id=account_id, platform=platform, generated_at=generated_at,
-        age_hours=age_hours, metric=metric, min_samples=min_samples, signals=results,
+        account_id=account_id,
+        platform=platform,
+        generated_at=generated_at,
+        age_hours=age_hours,
+        metric=metric,
+        min_samples=min_samples,
+        signals=results,
     )
 
 
@@ -249,8 +271,10 @@ def significant_signals(
 ) -> list[LearningSignalResult]:
     """有方向、样本足、|相关| ≥ 阈值的信号，按 |相关| 降序。**仍是关联，绝非因果建议**。"""
     eligible = [
-        s for s in report.signals
-        if s.enough_samples and s.correlation is not None
+        s
+        for s in report.signals
+        if s.enough_samples
+        and s.correlation is not None
         and abs(s.correlation) >= min_abs_correlation
         and s.direction in (SignalDirection.POSITIVE, SignalDirection.NEGATIVE)
     ]
@@ -258,6 +282,7 @@ def significant_signals(
 
 
 # --- 护栏 -------------------------------------------------------------------
+
 
 class LearningIssueKind(StrEnum):
     CAUSAL_CLAIM = "CAUSAL_CLAIM"  # association_only=False（因果越界）
@@ -280,26 +305,50 @@ def validate_learning_report(report: LearningReport) -> list[LearningIssue]:
     for s in report.signals:
         ref = s.signal.value
         if s.association_only is not True:
-            issues.append(LearningIssue(LearningIssueKind.CAUSAL_CLAIM, ref,
-                                         "association_only 必须为 True（关联非因果）"))
+            issues.append(
+                LearningIssue(
+                    LearningIssueKind.CAUSAL_CLAIM,
+                    ref,
+                    "association_only 必须为 True（关联非因果）",
+                )
+            )
         if s.correlation is not None and not (-1.0 <= s.correlation <= 1.0):
-            issues.append(LearningIssue(LearningIssueKind.CORRELATION_OUT_OF_RANGE, ref,
-                                         f"correlation={s.correlation} ∉ [-1,1]"))
+            issues.append(
+                LearningIssue(
+                    LearningIssueKind.CORRELATION_OUT_OF_RANGE,
+                    ref,
+                    f"correlation={s.correlation} ∉ [-1,1]",
+                )
+            )
         if not s.enough_samples and s.direction in (
-            SignalDirection.POSITIVE, SignalDirection.NEGATIVE
+            SignalDirection.POSITIVE,
+            SignalDirection.NEGATIVE,
         ):
-            issues.append(LearningIssue(LearningIssueKind.DIRECTION_WITHOUT_SAMPLES, ref,
-                                         f"样本不足却给方向 {s.direction.value}"))
+            issues.append(
+                LearningIssue(
+                    LearningIssueKind.DIRECTION_WITHOUT_SAMPLES,
+                    ref,
+                    f"样本不足却给方向 {s.direction.value}",
+                )
+            )
         if s.enough_samples != (s.sample_count >= report.min_samples):
-            issues.append(LearningIssue(
-                LearningIssueKind.ENOUGH_SAMPLES_INCONSISTENT, ref,
-                f"enough_samples={s.enough_samples} 但 count={s.sample_count} "
-                f"min={report.min_samples}"))
+            issues.append(
+                LearningIssue(
+                    LearningIssueKind.ENOUGH_SAMPLES_INCONSISTENT,
+                    ref,
+                    f"enough_samples={s.enough_samples} 但 count={s.sample_count} "
+                    f"min={report.min_samples}",
+                )
+            )
         if s.metric != report.metric or s.age_hours != report.age_hours:
-            issues.append(LearningIssue(
-                LearningIssueKind.SIGNAL_LENS_MISMATCH, ref,
-                f"信号 {s.metric.value}@{s.age_hours} ≠ 报告 "
-                f"{report.metric.value}@{report.age_hours}"))
+            issues.append(
+                LearningIssue(
+                    LearningIssueKind.SIGNAL_LENS_MISMATCH,
+                    ref,
+                    f"信号 {s.metric.value}@{s.age_hours} ≠ 报告 "
+                    f"{report.metric.value}@{report.age_hours}",
+                )
+            )
     return issues
 
 

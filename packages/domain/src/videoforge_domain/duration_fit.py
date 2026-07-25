@@ -105,8 +105,11 @@ def decide_duration_fit(
     # 退化：无语音（空句）——无可合成，不需拟合
     if est <= 0:
         return DurationFitDecision(
-            sentence_id=sid, estimated_ms=max(est, 0), target_ms=target,
-            fit_method=None, final_ratio=1.0,
+            sentence_id=sid,
+            estimated_ms=max(est, 0),
+            target_ms=target,
+            fit_method=None,
+            final_ratio=1.0,
             status=DurationFitStatus.OK_UNCHANGED,
             rationale="无语音（estimated_ms=0），无需拟合",
         )
@@ -120,8 +123,11 @@ def decide_duration_fit(
     # 0. 已在预算容差内
     if unchanged_lo <= raw <= unchanged_hi:
         return DurationFitDecision(
-            sentence_id=sid, estimated_ms=est, target_ms=target,
-            fit_method=None, final_ratio=_final_ratio(raw),
+            sentence_id=sid,
+            estimated_ms=est,
+            target_ms=target,
+            fit_method=None,
+            final_ratio=_final_ratio(raw),
             status=DurationFitStatus.OK_UNCHANGED,
             rationale=(
                 f"估算 {est}ms 相对目标 {target}ms 偏差 {(raw - 1):+.1%} "
@@ -134,8 +140,11 @@ def decide_duration_fit(
         rr = inp.rewritten_estimate_ms / target
         if natural_min <= rr <= natural_max:
             return DurationFitDecision(
-                sentence_id=sid, estimated_ms=est, target_ms=target,
-                fit_method=DurationFitStrategy.LLM_REWRITE, final_ratio=_final_ratio(rr),
+                sentence_id=sid,
+                estimated_ms=est,
+                target_ms=target,
+                fit_method=DurationFitStrategy.LLM_REWRITE,
+                final_ratio=_final_ratio(rr),
                 status=DurationFitStatus.OK_FITTED,
                 rationale=(
                     f"LLM 改写后估算 {inp.rewritten_estimate_ms}ms，"
@@ -146,12 +155,13 @@ def decide_duration_fit(
     # 2. TTS_SPEED：原估算语速已在自然区间
     if natural_min <= raw <= natural_max:
         return DurationFitDecision(
-            sentence_id=sid, estimated_ms=est, target_ms=target,
-            fit_method=DurationFitStrategy.TTS_SPEED, final_ratio=_final_ratio(raw),
+            sentence_id=sid,
+            estimated_ms=est,
+            target_ms=target,
+            fit_method=DurationFitStrategy.TTS_SPEED,
+            final_ratio=_final_ratio(raw),
             status=DurationFitStatus.OK_FITTED,
-            rationale=(
-                f"TTS 语速 {raw:.3f}x 在自然区间 [{natural_min}, {natural_max}]"
-            ),
+            rationale=(f"TTS 语速 {raw:.3f}x 在自然区间 [{natural_min}, {natural_max}]"),
         )
 
     # 语速单独不够。把语速钳到最近的自然边界，剩余时间差交给借时间/伸缩。
@@ -164,8 +174,11 @@ def decide_duration_fit(
     if gap <= inp.broll_slack_ms:
         verb = "借" if too_long else "填"
         return DurationFitDecision(
-            sentence_id=sid, estimated_ms=est, target_ms=target,
-            fit_method=DurationFitStrategy.BROLL_ADJUST, final_ratio=_final_ratio(bound),
+            sentence_id=sid,
+            estimated_ms=est,
+            target_ms=target,
+            fit_method=DurationFitStrategy.BROLL_ADJUST,
+            final_ratio=_final_ratio(bound),
             status=DurationFitStatus.OK_FITTED,
             rationale=(
                 f"语速钳到自然边界 {bound:.2f}x，相邻 B-roll/停顿{verb} {gap:.0f}ms"
@@ -179,8 +192,11 @@ def decide_duration_fit(
         if stretch_ratio <= stretch_max_abs_ratio:
             sign = "拉长" if too_long else "缩短"
             return DurationFitDecision(
-                sentence_id=sid, estimated_ms=est, target_ms=target,
-                fit_method=DurationFitStrategy.TIME_STRETCH, final_ratio=_final_ratio(bound),
+                sentence_id=sid,
+                estimated_ms=est,
+                target_ms=target,
+                fit_method=DurationFitStrategy.TIME_STRETCH,
+                final_ratio=_final_ratio(bound),
                 status=DurationFitStatus.OK_FITTED,
                 rationale=(
                     f"语速钳到自然边界 {bound:.2f}x，非人脸镜头{sign}时间伸缩 "
@@ -193,8 +209,11 @@ def decide_duration_fit(
     if inp.face_locked and too_long:
         reasons.append("FACE_LOCKED_NO_STRETCH")
     return DurationFitDecision(
-        sentence_id=sid, estimated_ms=est, target_ms=target,
-        fit_method=DurationFitStrategy.BEAT_REPLAN, final_ratio=_final_ratio(raw),
+        sentence_id=sid,
+        estimated_ms=est,
+        target_ms=target,
+        fit_method=DurationFitStrategy.BEAT_REPLAN,
+        final_ratio=_final_ratio(raw),
         status=DurationFitStatus.NEEDS_REVIEW,
         rationale=(
             f"要命中目标需语速 {raw:g}x 超自然区间 [{natural_min}, {natural_max}]，"
@@ -221,7 +240,9 @@ def plan_duration_fit(
     """
     decisions = [
         decide_duration_fit(
-            inp, natural_min=natural_min, natural_max=natural_max,
+            inp,
+            natural_min=natural_min,
+            natural_max=natural_max,
             stretch_max_abs_ratio=stretch_max_abs_ratio,
             unchanged_tolerance=unchanged_tolerance,
         )
@@ -249,39 +270,55 @@ def validate_duration_fit_plan(plan: DurationFitPlan) -> list[DurationFitIssue]:
     hi = plan.natural_speed_max
 
     if not plan.decisions:
-        issues.append(DurationFitIssue(
-            DurationFitIssueKind.EMPTY_PLAN, plan.id,
-            "计划没有任何 decision",
-        ))
+        issues.append(
+            DurationFitIssue(
+                DurationFitIssueKind.EMPTY_PLAN,
+                plan.id,
+                "计划没有任何 decision",
+            )
+        )
 
     for d in plan.decisions:
         ok_status = d.status in (
-            DurationFitStatus.OK_UNCHANGED, DurationFitStatus.OK_FITTED,
+            DurationFitStatus.OK_UNCHANGED,
+            DurationFitStatus.OK_FITTED,
         )
         # 红线：OK_* 的最终语速必须在自然区间内
         if ok_status and not (lo <= d.final_ratio <= hi):
-            issues.append(DurationFitIssue(
-                DurationFitIssueKind.EXTREME_SPEED, d.sentence_id,
-                f"status={d.status.value} 但 final_ratio={d.final_ratio} "
-                f"超自然区间 [{lo}, {hi}]（禁止极端压速）",
-            ))
+            issues.append(
+                DurationFitIssue(
+                    DurationFitIssueKind.EXTREME_SPEED,
+                    d.sentence_id,
+                    f"status={d.status.value} 但 final_ratio={d.final_ratio} "
+                    f"超自然区间 [{lo}, {hi}]（禁止极端压速）",
+                )
+            )
         # 状态 ↔ fit_method 自洽
         if d.status is DurationFitStatus.OK_UNCHANGED and d.fit_method is not None:
-            issues.append(DurationFitIssue(
-                DurationFitIssueKind.STATUS_METHOD_INCONSISTENT, d.sentence_id,
-                f"OK_UNCHANGED 不应带 fit_method={d.fit_method.value}",
-            ))
+            issues.append(
+                DurationFitIssue(
+                    DurationFitIssueKind.STATUS_METHOD_INCONSISTENT,
+                    d.sentence_id,
+                    f"OK_UNCHANGED 不应带 fit_method={d.fit_method.value}",
+                )
+            )
         if d.status is DurationFitStatus.OK_FITTED and d.fit_method is None:
-            issues.append(DurationFitIssue(
-                DurationFitIssueKind.STATUS_METHOD_INCONSISTENT, d.sentence_id,
-                "OK_FITTED 必须记录 fit_method",
-            ))
+            issues.append(
+                DurationFitIssue(
+                    DurationFitIssueKind.STATUS_METHOD_INCONSISTENT,
+                    d.sentence_id,
+                    "OK_FITTED 必须记录 fit_method",
+                )
+            )
         # NEEDS_REVIEW 必须给出原因
         if d.status is DurationFitStatus.NEEDS_REVIEW and not d.review_reasons:
-            issues.append(DurationFitIssue(
-                DurationFitIssueKind.REVIEW_WITHOUT_REASON, d.sentence_id,
-                "NEEDS_REVIEW 必须带 review_reasons",
-            ))
+            issues.append(
+                DurationFitIssue(
+                    DurationFitIssueKind.REVIEW_WITHOUT_REASON,
+                    d.sentence_id,
+                    "NEEDS_REVIEW 必须带 review_reasons",
+                )
+            )
     return issues
 
 

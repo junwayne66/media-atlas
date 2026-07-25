@@ -27,28 +27,44 @@ _WEIGHTS = HighlightWeights(template_version="highlight-v1")
 
 def _transcript(spans: list[tuple[int, int]]) -> Transcript:
     return Transcript(
-        id="tr", language="zh-CN",
+        id="tr",
+        language="zh-CN",
         segments=[
-            TranscriptSegment(id=f"seg-{i}", start_ms=a, end_ms=b, language="zh-CN",
-                              text=f"第{i}句内容承接上下文", confidence=0.9)
+            TranscriptSegment(
+                id=f"seg-{i}",
+                start_ms=a,
+                end_ms=b,
+                language="zh-CN",
+                text=f"第{i}句内容承接上下文",
+                confidence=0.9,
+            )
             for i, (a, b) in enumerate(spans)
         ],
-        models=TranscriptModels(asr_provider="asr.x"), created_at=_T0,
+        models=TranscriptModels(asr_provider="asr.x"),
+        created_at=_T0,
     )
 
 
 def _feats(**over: float) -> HighlightFeatures:
     base = dict(
-        hook_strength=0.5, self_containedness=0.5, information_density=0.5,
-        surprise_or_conflict=0.5, emotional_energy=0.5, topic_relevance=0.5,
-        visual_activity=0.5, speaker_prominence=0.5, ending_payoff=0.5,
-        context_dependency=0.1, technical_defect=0.05,
+        hook_strength=0.5,
+        self_containedness=0.5,
+        information_density=0.5,
+        surprise_or_conflict=0.5,
+        emotional_energy=0.5,
+        topic_relevance=0.5,
+        visual_activity=0.5,
+        speaker_prominence=0.5,
+        ending_payoff=0.5,
+        context_dependency=0.1,
+        technical_defect=0.05,
     )
     base.update(over)
     return HighlightFeatures(**base)
 
 
 # —— 候选窗口 ——
+
 
 def test_windows_never_cut_a_sentence() -> None:
     spans = [(0, 5000), (5000, 10000), (10000, 15000), (15000, 20000), (20000, 25000)]
@@ -90,6 +106,7 @@ def test_min_gt_max_rejected() -> None:
 
 # —— 评分 ——
 
+
 def test_highlight_score_matches_formula() -> None:
     # 9 正向项各 0.5（权重和 1.0）→ 0.5；惩罚 0.12*0.1 + 0.08*0.05 = 0.016 → 0.484
     score = highlight_score(_feats(), _WEIGHTS)
@@ -108,9 +125,11 @@ def test_penalty_terms_lower_score() -> None:
 
 
 def test_reason_codes_from_thresholds() -> None:
-    reasons = set(derive_highlight_reasons(
-        _feats(hook_strength=0.8, ending_payoff=0.7, information_density=0.7)
-    ))
+    reasons = set(
+        derive_highlight_reasons(
+            _feats(hook_strength=0.8, ending_payoff=0.7, information_density=0.7)
+        )
+    )
     assert HighlightReason.HOOK_QUOTE in reasons
     assert HighlightReason.CLEAR_PAYOFF in reasons
     assert HighlightReason.HIGH_INFO_DENSITY in reasons
@@ -121,6 +140,7 @@ def test_reason_codes_from_thresholds() -> None:
 
 
 # —— 去重 + MMR + Top-N ——
+
 
 def _win(start: int, end: int, sid: str) -> CandidateWindow:
     return CandidateWindow(start_ms=start, end_ms=end, segment_ids=(sid,), text=f"{sid} 文本")
@@ -139,8 +159,12 @@ def test_dedup_drops_overlapping_lower_score() -> None:
     w_far = _win(60000, 80000, "far")  # 不重叠
     features = [_feats(hook_strength=0.9), _feats(hook_strength=0.2), _feats(hook_strength=0.6)]
     result = rank_highlights(
-        [w_hi, w_lo, w_far], features, weights=_WEIGHTS, top_n=5,
-        id_prefix="hl", created_at=_T0,
+        [w_hi, w_lo, w_far],
+        features,
+        weights=_WEIGHTS,
+        top_n=5,
+        id_prefix="hl",
+        created_at=_T0,
     )
     kept = {c.start_ms for c in result.candidates}
     assert kept == {0, 60000}  # w_lo 被去重，w_hi + w_far 保留
@@ -153,7 +177,12 @@ def test_top_n_cap_and_ordering() -> None:
     wins = [_win(i * 30000, i * 30000 + 20000, f"s{i}") for i in range(6)]  # 互不重叠
     features = [_feats(hook_strength=0.1 * (i + 1)) for i in range(6)]  # 递增分数
     result = rank_highlights(
-        wins, features, weights=_WEIGHTS, top_n=3, id_prefix="hl", created_at=_T0,
+        wins,
+        features,
+        weights=_WEIGHTS,
+        top_n=3,
+        id_prefix="hl",
+        created_at=_T0,
     )
     assert len(result.candidates) == 3  # Top-N 封顶
     assert result.candidates[0].id == "hl-0"
@@ -167,14 +196,16 @@ def test_rank_is_deterministic() -> None:
     kw = dict(weights=_WEIGHTS, top_n=4, id_prefix="hl", created_at=_T0)
     a = rank_highlights(wins, features, **kw)
     b = rank_highlights(wins, features, **kw)
-    assert [(c.id, c.start_ms, c.score) for c in a.candidates] == \
-           [(c.id, c.start_ms, c.score) for c in b.candidates]
+    assert [(c.id, c.start_ms, c.score) for c in a.candidates] == [
+        (c.id, c.start_ms, c.score) for c in b.candidates
+    ]
 
 
 def test_length_mismatch_rejected() -> None:
     with pytest.raises(ValueError, match="数量不一致"):
-        rank_highlights([_win(0, 20000, "a")], [], weights=_WEIGHTS, top_n=1,
-                        id_prefix="hl", created_at=_T0)
+        rank_highlights(
+            [_win(0, 20000, "a")], [], weights=_WEIGHTS, top_n=1, id_prefix="hl", created_at=_T0
+        )
 
 
 def test_empty_windows_yields_empty_set() -> None:

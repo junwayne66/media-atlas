@@ -42,8 +42,7 @@ def test_fake_align_zh_by_chars() -> None:
 
 def test_fake_align_en_by_words() -> None:
     r = FakeForcedAlignmentProvider().align(
-        ForcedAlignmentRequest(text="hello world", language="en-US",
-                                  start_ms=1000, end_ms=3000),
+        ForcedAlignmentRequest(text="hello world", language="en-US", start_ms=1000, end_ms=3000),
     )
     assert r.status is ForcedAlignmentStatus.OK
     assert [w.text for w in r.words] == ["hello", "world"]
@@ -69,8 +68,7 @@ def test_fake_empty_text_returns_empty_words_ok() -> None:
 
 def test_fake_end_before_start_fails() -> None:
     r = FakeForcedAlignmentProvider().align(
-        ForcedAlignmentRequest(text="x", language="zh-CN",
-                                  start_ms=1000, end_ms=500),
+        ForcedAlignmentRequest(text="x", language="zh-CN", start_ms=1000, end_ms=500),
     )
     assert r.status is ForcedAlignmentStatus.FAILED
     assert r.error_code is ForcedAlignmentErrorCode.UNKNOWN
@@ -78,8 +76,7 @@ def test_fake_end_before_start_fails() -> None:
 
 def test_fake_deep_copy_input() -> None:
     """修改 request 不能改变结果（deep-copy 保护）。"""
-    req = ForcedAlignmentRequest(text="hello", language="en-US",
-                                    start_ms=0, end_ms=1000)
+    req = ForcedAlignmentRequest(text="hello", language="en-US", start_ms=0, end_ms=1000)
     r = FakeForcedAlignmentProvider().align(req)
     # frozen dataclass 无法改；构造后再对结果修改也不能影响 provider（无内部状态）
     r.words.clear() if r.words else None

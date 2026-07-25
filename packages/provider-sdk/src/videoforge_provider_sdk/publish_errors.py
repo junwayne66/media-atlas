@@ -21,17 +21,45 @@ from videoforge_provider_sdk.publish_executor import (
 
 # 关键词（错误码或消息，小写匹配）。顺序内的匹配即命中该类。
 _AUTH_KEYS: tuple[str, ...] = (
-    "access_token", "accesstoken", "invalid_token", "token expired",
-    "token 过期", "token无效", "unauthorized", "授权过期", "重新授权", "登录态",
-    "auth expired", "scope", "permission denied", "2190008", "2190002",
+    "access_token",
+    "accesstoken",
+    "invalid_token",
+    "token expired",
+    "token 过期",
+    "token无效",
+    "unauthorized",
+    "授权过期",
+    "重新授权",
+    "登录态",
+    "auth expired",
+    "scope",
+    "permission denied",
+    "2190008",
+    "2190002",
 )
 _CHALLENGE_KEYS: tuple[str, ...] = (
-    "风控", "验证码", "captcha", "risk", "challenge", "verify", "人机",
-    "安全验证", "security check", "审核中", "manual review",
+    "风控",
+    "验证码",
+    "captcha",
+    "risk",
+    "challenge",
+    "verify",
+    "人机",
+    "安全验证",
+    "security check",
+    "审核中",
+    "manual review",
 )
 _RATE_KEYS: tuple[str, ...] = (
-    "频率", "限流", "rate limit", "ratelimit", "rate_limit", "qps",
-    "too many requests", "429", "触发限制",
+    "频率",
+    "限流",
+    "rate limit",
+    "ratelimit",
+    "rate_limit",
+    "qps",
+    "too many requests",
+    "429",
+    "触发限制",
 )
 
 
@@ -53,22 +81,30 @@ def map_publish_error(error_code: str, message: str = "") -> PublishErrorMapping
 
     if _hit(hay, _AUTH_KEYS):
         return PublishErrorMapping(
-            PublishExecStatus.AUTH_REQUIRED, PublishExecErrorCode.AUTH_REQUIRED,
-            human_required=True, retryable=False,
+            PublishExecStatus.AUTH_REQUIRED,
+            PublishExecErrorCode.AUTH_REQUIRED,
+            human_required=True,
+            retryable=False,
         )
     if _hit(hay, _CHALLENGE_KEYS):
         return PublishErrorMapping(
-            PublishExecStatus.CHALLENGE, PublishExecErrorCode.CHALLENGE,
-            human_required=True, retryable=False,
+            PublishExecStatus.CHALLENGE,
+            PublishExecErrorCode.CHALLENGE,
+            human_required=True,
+            retryable=False,
         )
     if _hit(hay, _RATE_KEYS):
         return PublishErrorMapping(
-            PublishExecStatus.FAILED, PublishExecErrorCode.RATE_LIMITED,
-            human_required=False, retryable=True,
+            PublishExecStatus.FAILED,
+            PublishExecErrorCode.RATE_LIMITED,
+            human_required=False,
+            retryable=True,
         )
     return PublishErrorMapping(
-        PublishExecStatus.FAILED, PublishExecErrorCode.UNKNOWN,
-        human_required=False, retryable=False,
+        PublishExecStatus.FAILED,
+        PublishExecErrorCode.UNKNOWN,
+        human_required=False,
+        retryable=False,
     )
 
 

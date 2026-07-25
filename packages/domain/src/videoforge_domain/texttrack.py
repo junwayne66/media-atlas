@@ -32,9 +32,7 @@ def vote_text(observations: list[TextObservation]) -> tuple[str, float]:
     by_text: dict[str, list[float]] = {}
     for o in observations:
         by_text.setdefault(o.text, []).append(o.confidence)
-    text, confs = min(
-        by_text.items(), key=lambda kv: (-len(kv[1]), -sum(kv[1]), kv[0])
-    )
+    text, confs = min(by_text.items(), key=lambda kv: (-len(kv[1]), -sum(kv[1]), kv[0]))
     return text, sum(confs) / len(confs)
 
 

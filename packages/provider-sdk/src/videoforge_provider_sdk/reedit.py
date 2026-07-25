@@ -101,9 +101,7 @@ class UnconfiguredSegmentJudgeProvider:
 class FakeSegmentJudgeProvider:
     """确定性 Fake：空文本→静音、口头禅词→filler、与上一保留句相同→repeat，其余保留。供下游开发。"""
 
-    def __init__(
-        self, *, name: str = "segjudge.fake", execution_location: str = "cloud"
-    ) -> None:
+    def __init__(self, *, name: str = "segjudge.fake", execution_location: str = "cloud") -> None:
         self.name = name
         self.execution_location = execution_location
 

@@ -79,18 +79,16 @@ def _is_cjk(text: str) -> bool:
 
 def _cjk_char_count(text: str) -> int:
     """有效字符数（CJK）：不算空白与半角标点。全角标点计入（占位真实）。"""
-    return sum(
-        1 for ch in text
-        if not ch.isspace() and not (ch.isascii() and not ch.isalnum())
-    )
+    return sum(1 for ch in text if not ch.isspace() and not (ch.isascii() and not ch.isalnum()))
 
 
 def _en_word_count(text: str) -> int:
     return len(_EN_TOKEN_RE.findall(text))
 
 
-def _reading_speed_ok(text: str, duration_ms: int, template: SubtitleTemplate,
-                        language: str) -> tuple[bool, str]:
+def _reading_speed_ok(
+    text: str, duration_ms: int, template: SubtitleTemplate, language: str
+) -> tuple[bool, str]:
     """返回 (是否达标, 违规细节)。达标即 True + ""。
 
     **按 `line.language` 决定规则**（verifier REFUTED：首版用 `or _is_cjk(text)` 使英文
@@ -114,23 +112,17 @@ def _reading_speed_ok(text: str, duration_ms: int, template: SubtitleTemplate,
         count = _cjk_char_count(text)
         rate = count / sec
         if rate > limit:
-            return False, (
-                f"CJK 阅读速度 {rate:.1f} 字/秒 超过模板 {limit:.1f}"
-            )
+            return False, (f"CJK 阅读速度 {rate:.1f} 字/秒 超过模板 {limit:.1f}")
         return True, ""
     # 英文：首选 CPS，其次 WPS（en_words_per_sec）
     if template.en_chars_per_sec is not None:
         rate = len(text) / sec
         if rate > template.en_chars_per_sec:
-            return False, (
-                f"英文 CPS {rate:.1f} 超过模板 {template.en_chars_per_sec:.1f}"
-            )
+            return False, (f"英文 CPS {rate:.1f} 超过模板 {template.en_chars_per_sec:.1f}")
     if template.en_words_per_sec is not None:
         rate = _en_word_count(text) / sec
         if rate > template.en_words_per_sec:
-            return False, (
-                f"英文 WPS {rate:.2f} 超过模板 {template.en_words_per_sec:.2f}"
-            )
+            return False, (f"英文 WPS {rate:.2f} 超过模板 {template.en_words_per_sec:.2f}")
     return True, ""
 
 
@@ -180,7 +172,10 @@ def _in_protected(pos: int, spans: list[tuple[int, int]]) -> bool:
 
 
 def segment_text_into_lines(
-    text: str, *, template: SubtitleTemplate, must_keep_terms: list[str] | None = None,
+    text: str,
+    *,
+    template: SubtitleTemplate,
+    must_keep_terms: list[str] | None = None,
 ) -> list[str]:
     """按 max_chars_per_line 分行；术语与数字+单位保护段不被切开。
 
@@ -241,8 +236,14 @@ def _segment_en(text: str, max_len: int) -> list[str]:
 
 
 def pack_lines_into_cue(
-    text: str, *, start_ms: int, end_ms: int, language: str, cue_id: str,
-    template: SubtitleTemplate, must_keep_terms: list[str] | None = None,
+    text: str,
+    *,
+    start_ms: int,
+    end_ms: int,
+    language: str,
+    cue_id: str,
+    template: SubtitleTemplate,
+    must_keep_terms: list[str] | None = None,
     words: list[SubtitleWord] | None = None,
 ) -> SubtitleCue:
     """把一句文本分行后合成一条 cue（≤ template.max_lines_per_cue 行）。
@@ -251,7 +252,9 @@ def pack_lines_into_cue(
     多余的行会溢出到后续 cue —— 但首版策略是"若超行数则合行"，避免破口。
     """
     all_lines = segment_text_into_lines(
-        text, template=template, must_keep_terms=must_keep_terms,
+        text,
+        template=template,
+        must_keep_terms=must_keep_terms,
     )
     if not all_lines:
         raise ValueError("空文本无法生成 cue")
@@ -264,7 +267,10 @@ def pack_lines_into_cue(
     line_times = _distribute_times(all_lines, start_ms, end_ms, words)
     lines = [
         SubtitleLine(
-            text=t, start_ms=s, end_ms=e, language=language,
+            text=t,
+            start_ms=s,
+            end_ms=e,
+            language=language,
             words=_words_for_line(t, words, s, e) if words else [],
         )
         for t, (s, e) in zip(all_lines, line_times, strict=True)
@@ -273,7 +279,9 @@ def pack_lines_into_cue(
 
 
 def _distribute_times(
-    lines: list[str], start_ms: int, end_ms: int,
+    lines: list[str],
+    start_ms: int,
+    end_ms: int,
     words: list[SubtitleWord] | None,
 ) -> list[tuple[int, int]]:
     """给每行分配 [start,end]。默认按字符长度占比均分；若有词时间且能对齐，则用词时间。
@@ -305,8 +313,10 @@ def _distribute_times(
 
 
 def _words_for_line(
-    line_text: str, all_words: list[SubtitleWord] | None,
-    start_ms: int, end_ms: int,
+    line_text: str,
+    all_words: list[SubtitleWord] | None,
+    start_ms: int,
+    end_ms: int,
 ) -> list[SubtitleWord]:
     """从 all_words 里选出落入 [start,end] 的词——**只按时间过滤**。
 
@@ -320,13 +330,14 @@ def _words_for_line(
 
 
 def validate_subtitle_track(
-    track: SubtitleTrack, *, template: SubtitleTemplate,
+    track: SubtitleTrack,
+    *,
+    template: SubtitleTemplate,
 ) -> list[SubtitleIssue]:
     """字幕护栏；返回全部违规（空 = 通过）。"""
     issues: list[SubtitleIssue] = []
     if not track.cues:
-        issues.append(SubtitleIssue(
-            SubtitleIssueKind.EMPTY_TRACK, track.id, "轨内无 cue"))
+        issues.append(SubtitleIssue(SubtitleIssueKind.EMPTY_TRACK, track.id, "轨内无 cue"))
         return issues
     # 顺序 + 重叠（分别检测）
     prev_start = -1
@@ -334,70 +345,101 @@ def validate_subtitle_track(
     prev_id: str | None = None
     for cue in track.cues:
         if prev_start >= 0 and cue.start_ms < prev_start:
-            issues.append(SubtitleIssue(
-                SubtitleIssueKind.CUE_ORDER_BROKEN, cue.id,
-                f"cue {cue.id!r} 起点 {cue.start_ms}ms 早于前一 cue "
-                f"{prev_id!r} 起点 {prev_start}ms（未按 start_ms 递增）",
-            ))
+            issues.append(
+                SubtitleIssue(
+                    SubtitleIssueKind.CUE_ORDER_BROKEN,
+                    cue.id,
+                    f"cue {cue.id!r} 起点 {cue.start_ms}ms 早于前一 cue "
+                    f"{prev_id!r} 起点 {prev_start}ms（未按 start_ms 递增）",
+                )
+            )
         elif cue.start_ms < prev_end:
-            issues.append(SubtitleIssue(
-                SubtitleIssueKind.CUE_OVERLAP, cue.id,
-                f"cue {cue.id!r} 起点 {cue.start_ms}ms 早于前一 cue "
-                f"{prev_id!r} 结束 {prev_end}ms",
-            ))
+            issues.append(
+                SubtitleIssue(
+                    SubtitleIssueKind.CUE_OVERLAP,
+                    cue.id,
+                    f"cue {cue.id!r} 起点 {cue.start_ms}ms 早于前一 cue "
+                    f"{prev_id!r} 结束 {prev_end}ms",
+                )
+            )
         prev_start = cue.start_ms
         prev_end = cue.end_ms
         prev_id = cue.id
         # 单条时长
         dur = cue.end_ms - cue.start_ms
         if dur < template.min_cue_duration_ms:
-            issues.append(SubtitleIssue(
-                SubtitleIssueKind.CUE_TOO_SHORT, cue.id,
-                f"cue 时长 {dur}ms < 模板 min {template.min_cue_duration_ms}ms",
-            ))
+            issues.append(
+                SubtitleIssue(
+                    SubtitleIssueKind.CUE_TOO_SHORT,
+                    cue.id,
+                    f"cue 时长 {dur}ms < 模板 min {template.min_cue_duration_ms}ms",
+                )
+            )
         if dur > template.max_cue_duration_ms:
-            issues.append(SubtitleIssue(
-                SubtitleIssueKind.CUE_TOO_LONG, cue.id,
-                f"cue 时长 {dur}ms > 模板 max {template.max_cue_duration_ms}ms",
-            ))
+            issues.append(
+                SubtitleIssue(
+                    SubtitleIssueKind.CUE_TOO_LONG,
+                    cue.id,
+                    f"cue 时长 {dur}ms > 模板 max {template.max_cue_duration_ms}ms",
+                )
+            )
         # 行数
         if len(cue.lines) > template.max_lines_per_cue:
-            issues.append(SubtitleIssue(
-                SubtitleIssueKind.TOO_MANY_LINES, cue.id,
-                f"cue 行数 {len(cue.lines)} > 模板 max {template.max_lines_per_cue}",
-            ))
+            issues.append(
+                SubtitleIssue(
+                    SubtitleIssueKind.TOO_MANY_LINES,
+                    cue.id,
+                    f"cue 行数 {len(cue.lines)} > 模板 max {template.max_lines_per_cue}",
+                )
+            )
         # 每行长度 + 语言 + 阅读速度 + word 单调
         for line in cue.lines:
             if line.language != template.language and line.language != track.language:
                 # 允许 line.language 与 track 同即可（混语用不同 track 覆盖）
-                issues.append(SubtitleIssue(
-                    SubtitleIssueKind.LANGUAGE_MISMATCH, cue.id,
-                    f"line.language={line.language} 与模板 "
-                    f"{template.language} / 轨 {track.language} 不一致",
-                ))
+                issues.append(
+                    SubtitleIssue(
+                        SubtitleIssueKind.LANGUAGE_MISMATCH,
+                        cue.id,
+                        f"line.language={line.language} 与模板 "
+                        f"{template.language} / 轨 {track.language} 不一致",
+                    )
+                )
             # 行长（按字符原始长度算，与切分保持一致）
             if _line_length_for(line.text) > template.max_chars_per_line:
-                issues.append(SubtitleIssue(
-                    SubtitleIssueKind.LINE_TOO_LONG, cue.id,
-                    f"line 长度 {_line_length_for(line.text)} > 模板 "
-                    f"{template.max_chars_per_line}",
-                ))
+                issues.append(
+                    SubtitleIssue(
+                        SubtitleIssueKind.LINE_TOO_LONG,
+                        cue.id,
+                        f"line 长度 {_line_length_for(line.text)} > 模板 "
+                        f"{template.max_chars_per_line}",
+                    )
+                )
             # 阅读速度
             ok, why = _reading_speed_ok(
-                line.text, line.end_ms - line.start_ms, template, line.language,
+                line.text,
+                line.end_ms - line.start_ms,
+                template,
+                line.language,
             )
             if not ok:
-                issues.append(SubtitleIssue(
-                    SubtitleIssueKind.READING_SPEED_EXCEEDED, cue.id, why,
-                ))
+                issues.append(
+                    SubtitleIssue(
+                        SubtitleIssueKind.READING_SPEED_EXCEEDED,
+                        cue.id,
+                        why,
+                    )
+                )
             # word 时间超行 span
             for w in line.words:
                 if w.start_ms < line.start_ms or w.end_ms > line.end_ms:
-                    issues.append(SubtitleIssue(
-                        SubtitleIssueKind.WORD_TIME_OUT_OF_LINE, cue.id,
-                        f"word {w.text!r} span [{w.start_ms},{w.end_ms}] 超出 "
-                        f"line span [{line.start_ms},{line.end_ms}]",
-                    ))
+                    issues.append(
+                        SubtitleIssue(
+                            SubtitleIssueKind.WORD_TIME_OUT_OF_LINE,
+                            cue.id,
+                            f"word {w.text!r} span [{w.start_ms},{w.end_ms}] 超出 "
+                            f"line span [{line.start_ms},{line.end_ms}]",
+                        )
+                    )
     return issues
 
 
@@ -411,6 +453,7 @@ def is_valid_subtitle_track(track: SubtitleTrack, *, template: SubtitleTemplate)
 
 
 # —— 输出格式 ——
+
 
 def _fmt_srt_time(ms: int) -> str:
     h = ms // 3_600_000
@@ -478,8 +521,7 @@ def render_ass(track: SubtitleTrack, *, template: SubtitleTemplate) -> str:
     for cue in track.cues:
         text = "\\N".join(line.text for line in cue.lines)
         events.append(
-            f"Dialogue: 0,{_fmt_ass_time(cue.start_ms)},"
-            f"{_fmt_ass_time(cue.end_ms)},Default,{text}",
+            f"Dialogue: 0,{_fmt_ass_time(cue.start_ms)},{_fmt_ass_time(cue.end_ms)},Default,{text}",
         )
     return header + "\n".join(events) + "\n"
 
@@ -503,8 +545,9 @@ def to_timeline_overlay(track: SubtitleTrack) -> list[dict[str, object]]:
     ]
 
 
-def render(track: SubtitleTrack, *, template: SubtitleTemplate,
-            format: SubtitleFormat) -> str | list[dict[str, object]]:
+def render(
+    track: SubtitleTrack, *, template: SubtitleTemplate, format: SubtitleFormat
+) -> str | list[dict[str, object]]:
     """统一入口：按 format 分派到 render_srt / render_ass / to_timeline_overlay。"""
     if format is SubtitleFormat.SRT:
         return render_srt(track)

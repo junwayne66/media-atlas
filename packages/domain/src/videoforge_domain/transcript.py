@@ -37,6 +37,4 @@ def needs_review(transcript: Transcript) -> bool:
 
 def low_confidence_spans(transcript: Transcript) -> list[tuple[int, int]]:
     """所有低置信段的时间区间（ms），供审核 UI 跳转。"""
-    return [
-        (seg.start_ms, seg.end_ms) for seg in transcript.segments if seg.low_confidence
-    ]
+    return [(seg.start_ms, seg.end_ms) for seg in transcript.segments if seg.low_confidence]

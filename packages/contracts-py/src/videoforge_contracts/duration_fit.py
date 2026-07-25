@@ -39,10 +39,12 @@ class DurationFitDecision(ContractModel):
     estimated_ms: int = Field(ge=0, description="TTS 估算时长（VF-404 estimate）")
     target_ms: int = Field(gt=0)
     fit_method: DurationFitStrategy | None = Field(
-        default=None, description="OK_UNCHANGED 时为 None",
+        default=None,
+        description="OK_UNCHANGED 时为 None",
     )
     final_ratio: float = Field(
-        gt=0.0, description="估算/目标；用于最终伸缩记录",
+        gt=0.0,
+        description="估算/目标；用于最终伸缩记录",
     )
     status: DurationFitStatus
     rationale: str = Field(min_length=1)
@@ -58,7 +60,9 @@ class DurationFitPlan(ContractModel):
     natural_speed_min: float = Field(default=0.92, gt=0.0, le=1.0)
     natural_speed_max: float = Field(default=1.08, gt=1.0)
     stretch_max_abs_ratio: float = Field(
-        default=0.05, ge=0.0, le=0.5,
+        default=0.05,
+        ge=0.0,
+        le=0.5,
         description="非人脸时间伸缩绝对幅度（±5%）",
     )
     created_at: datetime
@@ -67,14 +71,11 @@ class DurationFitPlan(ContractModel):
     def _check_unique_and_bounds(self) -> "DurationFitPlan":
         if self.natural_speed_min >= self.natural_speed_max:
             raise ValueError(
-                f"natural_speed_min({self.natural_speed_min}) 必须 < "
-                f"max({self.natural_speed_max})"
+                f"natural_speed_min({self.natural_speed_min}) 必须 < max({self.natural_speed_max})"
             )
         seen: set[str] = set()
         for d in self.decisions:
             if d.sentence_id in seen:
-                raise ValueError(
-                    f"重复的 sentence_id: {d.sentence_id!r}"
-                )
+                raise ValueError(f"重复的 sentence_id: {d.sentence_id!r}")
             seen.add(d.sentence_id)
         return self

@@ -30,14 +30,27 @@ def _all_findings():
     findings = []
     for smp in SAMPLES:
         for s in smp.sentences:
-            findings.extend(run_consistency_checks(
-                [ConsistencyPair(s.sentence_id, s.source, s.target,
-                                  s.source_lang, s.target_lang)]
-            ))
-            findings.extend(fake.check(ConsistencyCheckRequest(
-                s.sentence_id, s.source, s.target, s.source_lang,
-                s.target_lang, s.entities,
-            )).findings)
+            findings.extend(
+                run_consistency_checks(
+                    [
+                        ConsistencyPair(
+                            s.sentence_id, s.source, s.target, s.source_lang, s.target_lang
+                        )
+                    ]
+                )
+            )
+            findings.extend(
+                fake.check(
+                    ConsistencyCheckRequest(
+                        s.sentence_id,
+                        s.source,
+                        s.target,
+                        s.source_lang,
+                        s.target_lang,
+                        s.entities,
+                    )
+                ).findings
+            )
     return findings
 
 
@@ -48,15 +61,16 @@ def test_twenty_samples_forty_sentences():
 
 def test_number_negation_proper_noun_consistency_is_100_percent():
     findings = _all_findings()
-    assert findings == [], (
-        "忠实译对应零一致性发现，实际："
-        + "; ".join(f"{f.sentence_id}:{f.check.value}:{f.detail}" for f in findings)
+    assert findings == [], "忠实译对应零一致性发现，实际：" + "; ".join(
+        f"{f.sentence_id}:{f.check.value}:{f.detail}" for f in findings
     )
 
 
 def test_publish_gate_passes_for_clean_samples():
     report = aggregate_localization_qa(
-        _all_findings(), id="p4-qa", localization_variant_id="v",
+        _all_findings(),
+        id="p4-qa",
+        localization_variant_id="v",
         reviewed_sentence_ids=[s.sentence_id for smp in SAMPLES for s in smp.sentences],
         created_at=_T0,
     )
@@ -73,6 +87,7 @@ def test_checks_are_not_vacuous_number_tamper_caught():
                 continue  # 本就不一致的跳过（不应发生）
             # 构造去掉所有数字的"坏译文"
             import re
+
             bad_target = re.sub(r"\d", "", s.target)
             if bad_target == s.target:
                 continue  # 无数字句跳过
@@ -93,11 +108,16 @@ def test_checks_are_not_vacuous_proper_noun_drop_caught():
             bad = s.target
             for e in s.entities:
                 bad = bad.replace(e, "")
-            r = fake.check(ConsistencyCheckRequest(
-                s.sentence_id, s.source, bad, s.source_lang, s.target_lang, s.entities,
-            ))
-            assert r.findings and all(
-                f.severity is QASeverity.MAJOR for f in r.findings
+            r = fake.check(
+                ConsistencyCheckRequest(
+                    s.sentence_id,
+                    s.source,
+                    bad,
+                    s.source_lang,
+                    s.target_lang,
+                    s.entities,
+                )
             )
+            assert r.findings and all(f.severity is QASeverity.MAJOR for f in r.findings)
             caught += 1
     assert caught >= 5, f"应有足够多含专名句被抓，实际 {caught}"

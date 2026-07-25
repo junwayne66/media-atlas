@@ -21,8 +21,7 @@ def test_iou_basic() -> None:
 def test_jitter_stays_one_track() -> None:
     # 同一字幕逐帧轻微抖动（高 IoU）→ 应聚成 1 条轨，不分裂
     obs = [
-        _obs(t, 0.2 + 0.005 * i, 0.82, 0.6, 0.08, "字幕")
-        for i, t in enumerate([0, 400, 800, 1200])
+        _obs(t, 0.2 + 0.005 * i, 0.82, 0.6, 0.08, "字幕") for i, t in enumerate([0, 400, 800, 1200])
     ]
     tracks = track_text_observations(obs)
     assert len(tracks) == 1

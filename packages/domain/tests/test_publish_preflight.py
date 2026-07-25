@@ -28,12 +28,22 @@ _T0 = datetime(2026, 7, 25, tzinfo=UTC)
 
 def _spec(**over) -> PlatformPublishSpec:
     base = dict(
-        platform=PublishPlatform.TIKTOK, allowed_aspect_ratios=["9:16"],
-        min_width=360, min_height=640, max_width=1080, max_height=1920,
-        allowed_video_codecs=["h264"], allowed_audio_codecs=["aac"],
-        allowed_containers=["mp4"], max_file_size_bytes=500_000_000,
-        min_duration_ms=3000, max_duration_ms=600_000, title_max_len=150,
-        description_max_len=2200, max_tags=20, tag_max_len=100,
+        platform=PublishPlatform.TIKTOK,
+        allowed_aspect_ratios=["9:16"],
+        min_width=360,
+        min_height=640,
+        max_width=1080,
+        max_height=1920,
+        allowed_video_codecs=["h264"],
+        allowed_audio_codecs=["aac"],
+        allowed_containers=["mp4"],
+        max_file_size_bytes=500_000_000,
+        min_duration_ms=3000,
+        max_duration_ms=600_000,
+        title_max_len=150,
+        description_max_len=2200,
+        max_tags=20,
+        tag_max_len=100,
         banned_title_chars=["<", ">"],
     )
     base.update(over)
@@ -42,8 +52,13 @@ def _spec(**over) -> PlatformPublishSpec:
 
 def _probe(**over) -> PublishMediaProbe:
     base = dict(
-        width=1080, height=1920, aspect_ratio="9:16", video_codec="h264",
-        audio_codec="aac", container="mp4", file_size_bytes=50_000_000,
+        width=1080,
+        height=1920,
+        aspect_ratio="9:16",
+        video_codec="h264",
+        audio_codec="aac",
+        container="mp4",
+        file_size_bytes=50_000_000,
         duration_ms=30000,
     )
     base.update(over)
@@ -51,16 +66,17 @@ def _probe(**over) -> PublishMediaProbe:
 
 
 def _meta(**over) -> PublishMetadata:
-    base = dict(title="AI 芯片新品", description="desc", tags=["ai", "chip"],
-                language="zh-CN")
+    base = dict(title="AI 芯片新品", description="desc", tags=["ai", "chip"], language="zh-CN")
     base.update(over)
     return PublishMetadata(**base)
 
 
 def _cap(**over) -> PublishConnectorCapability:
     base = dict(
-        platform=PublishPlatform.TIKTOK, method=PublishMethod.OFFICIAL_API,
-        available=True, auth_status=AuthStatus.AUTHORIZED,
+        platform=PublishPlatform.TIKTOK,
+        method=PublishMethod.OFFICIAL_API,
+        available=True,
+        auth_status=AuthStatus.AUTHORIZED,
         client_review_status=ClientReviewStatus.APPROVED,
         account_status=AccountStatus.ACTIVE,
     )
@@ -82,6 +98,7 @@ def _checks(report) -> set:
 
 # --- 通过 -----------------------------------------------------------------
 
+
 def test_clean_package_is_publishable():
     r = _run()
     assert r.publishable and r.findings == []
@@ -89,6 +106,7 @@ def test_clean_package_is_publishable():
 
 
 # --- 媒体检查 -------------------------------------------------------------
+
 
 def test_each_media_check_fails():
     cases = {
@@ -108,27 +126,33 @@ def test_each_media_check_fails():
 
 def test_capability_file_size_cap_is_tighter():
     # 连接器上限比平台更严 → 用更严的
-    r = _run(probe=_probe(file_size_bytes=200_000_000),
-             cap=_cap(max_file_size_bytes=100_000_000))
+    r = _run(probe=_probe(file_size_bytes=200_000_000), cap=_cap(max_file_size_bytes=100_000_000))
     assert (PreflightCheck.FILE_SIZE, ReviewSeverity.ERROR) in _checks(r)
 
 
 # --- 元数据检查（§9）-----------------------------------------------------
 
+
 def test_metadata_checks_fail():
     assert (PreflightCheck.TITLE_LENGTH, ReviewSeverity.ERROR) in _checks(
-        _run(meta=_meta(title="x" * 200)))
+        _run(meta=_meta(title="x" * 200))
+    )
     assert (PreflightCheck.TITLE_BANNED_CHARS, ReviewSeverity.ERROR) in _checks(
-        _run(meta=_meta(title="hi <script>")))
+        _run(meta=_meta(title="hi <script>"))
+    )
     assert (PreflightCheck.DESCRIPTION_LENGTH, ReviewSeverity.ERROR) in _checks(
-        _run(meta=_meta(description="d" * 3000)))
+        _run(meta=_meta(description="d" * 3000))
+    )
     assert (PreflightCheck.TAG_COUNT, ReviewSeverity.ERROR) in _checks(
-        _run(meta=_meta(tags=[f"t{i}" for i in range(30)])))
+        _run(meta=_meta(tags=[f"t{i}" for i in range(30)]))
+    )
     assert (PreflightCheck.TAG_LENGTH, ReviewSeverity.ERROR) in _checks(
-        _run(meta=_meta(tags=["x" * 200])))
+        _run(meta=_meta(tags=["x" * 200]))
+    )
 
 
 # --- 授权/审核/账号（红线）----------------------------------------------
+
 
 def test_unauthorized_blocks():
     for st in (AuthStatus.UNAUTHORIZED, AuthStatus.PENDING_REVIEW, AuthStatus.EXPIRED):
@@ -171,6 +195,7 @@ def test_platform_mismatch_is_fatal():
 
 # --- 发布门 ---------------------------------------------------------------
 
+
 def test_gate_and_report_consistency():
     clean = _run()
     assert publish_preflight_gate(clean.findings) is True
@@ -182,6 +207,7 @@ def test_gate_and_report_consistency():
 
 
 # --- §3 方法阶梯 ----------------------------------------------------------
+
 
 def test_select_prefers_official_api():
     caps = [
@@ -203,8 +229,7 @@ def test_select_falls_to_manual_when_official_unavailable():
 def test_select_skips_unauthorized_and_suspended():
     caps = [
         _cap(method=PublishMethod.OFFICIAL_API, auth_status=AuthStatus.UNAUTHORIZED),
-        _cap(method=PublishMethod.BROWSER_AUTOMATION,
-             account_status=AccountStatus.SUSPENDED),
+        _cap(method=PublishMethod.BROWSER_AUTOMATION, account_status=AccountStatus.SUSPENDED),
     ]
     assert select_publish_method(caps) is None  # 无 manual 兜底 → None
 

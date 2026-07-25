@@ -352,8 +352,9 @@ def make_transcript() -> Transcript:
                 confidence=0.93,
                 words=[
                     TranscriptWord(text="今天", start_ms=120, end_ms=520, confidence=0.95),
-                    TranscriptWord(text="AI", start_ms=1400, end_ms=1720, confidence=0.55,
-                                   low_confidence=True),
+                    TranscriptWord(
+                        text="AI", start_ms=1400, end_ms=1720, confidence=0.55, low_confidence=True
+                    ),
                     TranscriptWord(text="芯片", start_ms=1720, end_ms=2480, confidence=0.9),
                 ],
             ),
@@ -488,15 +489,25 @@ def make_video_blueprint() -> VideoBlueprint:
         ],
         rhetorical_beats=[
             RhetoricalBeat(
-                id="rb-0", kind=RhetoricalBeatKind.HOOK, start_ms=0, end_ms=2600,
+                id="rb-0",
+                kind=RhetoricalBeatKind.HOOK,
+                start_ms=0,
+                end_ms=2600,
                 summary="开场抛出芯片话题",
             ),
             RhetoricalBeat(
-                id="rb-1", kind=RhetoricalBeatKind.EVIDENCE, start_ms=2600, end_ms=40000,
-                summary="跑分演示", claim_ids=["claim-0"],
+                id="rb-1",
+                kind=RhetoricalBeatKind.EVIDENCE,
+                start_ms=2600,
+                end_ms=40000,
+                summary="跑分演示",
+                claim_ids=["claim-0"],
             ),
             RhetoricalBeat(
-                id="rb-2", kind=RhetoricalBeatKind.CTA, start_ms=40000, end_ms=58200,
+                id="rb-2",
+                kind=RhetoricalBeatKind.CTA,
+                start_ms=40000,
+                end_ms=58200,
                 summary="关注引导",
             ),
         ],
@@ -505,7 +516,10 @@ def make_video_blueprint() -> VideoBlueprint:
                 id="vb-0", kind=VisualBeatKind.PERSON, start_ms=0, end_ms=3000, frame_time_ms=0
             ),
             VisualBeat(
-                id="vb-1", kind=VisualBeatKind.SCREEN_RECORD, start_ms=3000, end_ms=40000,
+                id="vb-1",
+                kind=VisualBeatKind.SCREEN_RECORD,
+                start_ms=3000,
+                end_ms=40000,
                 frame_time_ms=3000,
             ),
         ],
@@ -579,12 +593,30 @@ def make_beat_template() -> BeatTemplate:
         source_blueprint_id="01J2ZK3AC9V6XW8YQ4R5T6U7ZB",
         duration_target_ms=45000,
         slots=[
-            BeatSlot(id="slot-0", role=RhetoricalBeatKind.HOOK, start_ms=0, end_ms=3000,
-                     target_duration_ms=3000, guidance="抛出反常识结论"),
-            BeatSlot(id="slot-1", role=RhetoricalBeatKind.EVIDENCE, start_ms=3000, end_ms=40000,
-                     target_duration_ms=37000, guidance="实测演示与数据"),
-            BeatSlot(id="slot-2", role=RhetoricalBeatKind.CTA, start_ms=40000, end_ms=45000,
-                     target_duration_ms=5000, guidance="引导互动"),
+            BeatSlot(
+                id="slot-0",
+                role=RhetoricalBeatKind.HOOK,
+                start_ms=0,
+                end_ms=3000,
+                target_duration_ms=3000,
+                guidance="抛出反常识结论",
+            ),
+            BeatSlot(
+                id="slot-1",
+                role=RhetoricalBeatKind.EVIDENCE,
+                start_ms=3000,
+                end_ms=40000,
+                target_duration_ms=37000,
+                guidance="实测演示与数据",
+            ),
+            BeatSlot(
+                id="slot-2",
+                role=RhetoricalBeatKind.CTA,
+                start_ms=40000,
+                end_ms=45000,
+                target_duration_ms=5000,
+                guidance="引导互动",
+            ),
         ],
         created_at=_T0,
     )
@@ -600,17 +632,29 @@ def make_script_version() -> ScriptVersion:
         language="zh-CN",
         sentences=[
             ScriptSentence(
-                id="s-0", beat_slot_id="slot-0", role=RhetoricalBeatKind.HOOK,
-                text="有个参数表没告诉你的限制", target_duration_ms=2000, language="zh-CN",
+                id="s-0",
+                beat_slot_id="slot-0",
+                role=RhetoricalBeatKind.HOOK,
+                text="有个参数表没告诉你的限制",
+                target_duration_ms=2000,
+                language="zh-CN",
             ),
             ScriptSentence(
-                id="s-1", beat_slot_id="slot-1", role=RhetoricalBeatKind.EVIDENCE,
+                id="s-1",
+                beat_slot_id="slot-1",
+                role=RhetoricalBeatKind.EVIDENCE,
                 text="官方称端侧推理约为上代两倍，我们实测记录如下",
-                target_duration_ms=36000, claim_ids=["claim-0"], language="zh-CN",
+                target_duration_ms=36000,
+                claim_ids=["claim-0"],
+                language="zh-CN",
             ),
             ScriptSentence(
-                id="s-2", beat_slot_id="slot-2", role=RhetoricalBeatKind.CTA,
-                text="评论区说你最想测的场景", target_duration_ms=2200, language="zh-CN",
+                id="s-2",
+                beat_slot_id="slot-2",
+                role=RhetoricalBeatKind.CTA,
+                text="评论区说你最想测的场景",
+                target_duration_ms=2200,
+                language="zh-CN",
             ),
         ],
         total_duration_ms=40200,
@@ -621,21 +665,33 @@ def make_script_version() -> ScriptVersion:
 
 def make_highlight_set() -> HighlightSet:
     features = HighlightFeatures(
-        hook_strength=0.82, self_containedness=0.7, information_density=0.66,
-        surprise_or_conflict=0.55, emotional_energy=0.5, topic_relevance=0.75,
-        visual_activity=0.4, speaker_prominence=0.6, ending_payoff=0.72,
-        context_dependency=0.2, technical_defect=0.05,
+        hook_strength=0.82,
+        self_containedness=0.7,
+        information_density=0.66,
+        surprise_or_conflict=0.55,
+        emotional_energy=0.5,
+        topic_relevance=0.75,
+        visual_activity=0.4,
+        speaker_prominence=0.6,
+        ending_payoff=0.72,
+        context_dependency=0.2,
+        technical_defect=0.05,
     )
     return HighlightSet(
         id="01J2ZK3AC9V6XW8YQ4R5T6U7ZH",
         source_transcript_id="01J2ZK3AC9V6XW8YQ4R5T6U7ZC",
         candidates=[
             HighlightCandidate(
-                id="hl-0", source_transcript_id="01J2ZK3AC9V6XW8YQ4R5T6U7ZC",
-                start_ms=0, end_ms=18000, segment_ids=["seg-0", "seg-1", "seg-2"],
-                score=0.5423, features=features,
+                id="hl-0",
+                source_transcript_id="01J2ZK3AC9V6XW8YQ4R5T6U7ZC",
+                start_ms=0,
+                end_ms=18000,
+                segment_ids=["seg-0", "seg-1", "seg-2"],
+                score=0.5423,
+                features=features,
                 reason_codes=[HighlightReason.HOOK_QUOTE, HighlightReason.CLEAR_PAYOFF],
-                human_label=HighlightLabel.SELECTED, human_label_reason="开场强、结尾有回报",
+                human_label=HighlightLabel.SELECTED,
+                human_label_reason="开场强、结尾有回报",
                 weights_version="highlight-v1",
             ),
         ],
@@ -652,24 +708,33 @@ def make_canonical_script() -> CanonicalScript:
         source_language="zh-CN",
         sentences=[
             CanonicalSentence(
-                id="cs-0", beat_slot_id="slot-0", role=RhetoricalBeatKind.HOOK,
-                speaker_id="host", source_language="zh-CN",
+                id="cs-0",
+                beat_slot_id="slot-0",
+                role=RhetoricalBeatKind.HOOK,
+                speaker_id="host",
+                source_language="zh-CN",
                 source_text="这款端侧模型能在 2GB 内存里跑起来",
                 semantic_intent="强调关键性能钩子：小内存也能跑",
                 claim_ids=["c-hook-0"],
-                source_time_range_start_ms=0, source_time_range_end_ms=3000,
+                source_time_range_start_ms=0,
+                source_time_range_end_ms=3000,
                 target_duration_ms=3000,
-                must_keep_terms=["2GB"], edit_flexibility=0.15,
+                must_keep_terms=["2GB"],
+                edit_flexibility=0.15,
             ),
             CanonicalSentence(
-                id="cs-1", beat_slot_id="slot-1", role=RhetoricalBeatKind.EVIDENCE,
+                id="cs-1",
+                beat_slot_id="slot-1",
+                role=RhetoricalBeatKind.EVIDENCE,
                 source_language="zh-CN",
                 source_text="实测推理时延 20ms，比上一代降低四成",
                 semantic_intent="证据：延时与降幅",
                 claim_ids=["c-evidence-0"],
-                source_time_range_start_ms=3000, source_time_range_end_ms=8000,
+                source_time_range_start_ms=3000,
+                source_time_range_end_ms=8000,
                 target_duration_ms=5000,
-                must_keep_terms=["20ms"], edit_flexibility=0.1,
+                must_keep_terms=["20ms"],
+                edit_flexibility=0.1,
             ),
         ],
         total_duration_ms=8000,
@@ -680,18 +745,24 @@ def make_canonical_script() -> CanonicalScript:
 def make_glossary() -> Glossary:
     return Glossary(
         id="01J2ZK3AC9V6XW8YQ4R5T6U7ZLG",
-        source_language="zh-CN", target_language="en-US",
+        source_language="zh-CN",
+        target_language="en-US",
         entries=[
-            GlossaryEntry(source_term="2GB", target_term="2 GB",
-                            preserve_source=False, notes="英文加空格"),
+            GlossaryEntry(
+                source_term="2GB", target_term="2 GB", preserve_source=False, notes="英文加空格"
+            ),
             GlossaryEntry(source_term="端侧", target_term="on-device"),
-            GlossaryEntry(source_term="20ms", target_term="20 ms",
-                            preserve_source=False),
-            GlossaryEntry(source_term="Qwen", target_term="Qwen",
-                            preserve_source=True, pronunciation="/tʃwɛn/",
-                            notes="产品名不译"),
+            GlossaryEntry(source_term="20ms", target_term="20 ms", preserve_source=False),
+            GlossaryEntry(
+                source_term="Qwen",
+                target_term="Qwen",
+                preserve_source=True,
+                pronunciation="/tʃwɛn/",
+                notes="产品名不译",
+            ),
         ],
-        version=1, created_at=_T0,
+        version=1,
+        created_at=_T0,
     )
 
 
@@ -722,19 +793,26 @@ def make_localization_variant() -> LocalizationVariant:
         glossary_id="01J2ZK3AC9V6XW8YQ4R5T6U7ZLG",
         sentences=[
             LocalizedSentence(
-                id="ls-0", canonical_sentence_id="cs-0", target_language="en-US",
+                id="ls-0",
+                canonical_sentence_id="cs-0",
+                target_language="en-US",
                 text="This on-device model runs in just 2 GB of RAM.",
                 claim_ids=["c-hook-0"],
                 claim_source_status=ClaimSourceStatus.VERIFIED,
-                duration_estimate_ms=3200, semantic_similarity=0.92,
-                needs_review=False, review_reasons=[],
+                duration_estimate_ms=3200,
+                semantic_similarity=0.92,
+                needs_review=False,
+                review_reasons=[],
             ),
             LocalizedSentence(
-                id="ls-1", canonical_sentence_id="cs-1", target_language="en-US",
+                id="ls-1",
+                canonical_sentence_id="cs-1",
+                target_language="en-US",
                 text="Inference clocks in at 20 ms — 40% lower than last gen.",
                 claim_ids=["c-evidence-0"],
                 claim_source_status=ClaimSourceStatus.VERIFIED,
-                duration_estimate_ms=5000, semantic_similarity=0.94,
+                duration_estimate_ms=5000,
+                semantic_similarity=0.94,
                 needs_review=False,
             ),
         ],
@@ -754,14 +832,21 @@ def make_subtitle_template() -> SubtitleTemplate:
         min_cue_duration_ms=800,
         max_cue_duration_ms=6000,
         safe_area=SafeAreaSpec(
-            left_min_pct=5.0, right_max_pct=95.0,
-            top_min_pct=5.0, bottom_max_pct=90.0,
+            left_min_pct=5.0,
+            right_max_pct=95.0,
+            top_min_pct=5.0,
+            bottom_max_pct=90.0,
         ),
         style_hint=SubtitleStyleHint(
-            font_family="Source Han Sans", font_size_pt=48, bold=True,
-            color="#FFFFFF", outline_color="#000000", outline_width=2.0,
+            font_family="Source Han Sans",
+            font_size_pt=48,
+            bold=True,
+            color="#FFFFFF",
+            outline_color="#000000",
+            outline_width=2.0,
         ),
-        version=1, created_at=_T0,
+        version=1,
+        created_at=_T0,
     )
 
 
@@ -774,28 +859,39 @@ def make_subtitle_track() -> SubtitleTrack:
         alignment_provider="asr.fake",
         cues=[
             SubtitleCue(
-                id="cue-0", start_ms=120, end_ms=2480,
-                lines=[SubtitleLine(
-                    text="今天带大家拆解这款 AI 芯片",
-                    start_ms=120, end_ms=2480, language="zh-CN",
-                    words=[
-                        SubtitleWord(text="今天", start_ms=120, end_ms=520,
-                                        confidence=0.95),
-                        SubtitleWord(text="AI", start_ms=1400, end_ms=1720,
-                                        confidence=0.55),
-                        SubtitleWord(text="芯片", start_ms=1720, end_ms=2480,
-                                        confidence=0.9),
-                    ],
-                )],
-                source_ref_kind="transcript_segment", source_ref_id="seg-0",
+                id="cue-0",
+                start_ms=120,
+                end_ms=2480,
+                lines=[
+                    SubtitleLine(
+                        text="今天带大家拆解这款 AI 芯片",
+                        start_ms=120,
+                        end_ms=2480,
+                        language="zh-CN",
+                        words=[
+                            SubtitleWord(text="今天", start_ms=120, end_ms=520, confidence=0.95),
+                            SubtitleWord(text="AI", start_ms=1400, end_ms=1720, confidence=0.55),
+                            SubtitleWord(text="芯片", start_ms=1720, end_ms=2480, confidence=0.9),
+                        ],
+                    )
+                ],
+                source_ref_kind="transcript_segment",
+                source_ref_id="seg-0",
             ),
             SubtitleCue(
-                id="cue-1", start_ms=2600, end_ms=5000,
-                lines=[SubtitleLine(
-                    text="端侧推理只用了 20 毫秒",
-                    start_ms=2600, end_ms=5000, language="zh-CN",
-                )],
-                source_ref_kind="transcript_segment", source_ref_id="seg-1",
+                id="cue-1",
+                start_ms=2600,
+                end_ms=5000,
+                lines=[
+                    SubtitleLine(
+                        text="端侧推理只用了 20 毫秒",
+                        start_ms=2600,
+                        end_ms=5000,
+                        language="zh-CN",
+                    )
+                ],
+                source_ref_kind="transcript_segment",
+                source_ref_id="seg-1",
             ),
         ],
         created_at=_T0,
@@ -842,9 +938,11 @@ def make_text_localization_plan() -> TextLocalizationPlan:
         ],
         clean_plate_requests=[
             CleanPlateRequest(
-                id="cp-0", source_track_id="tt-caption-0",
+                id="cp-0",
+                source_track_id="tt-caption-0",
                 source_artifact_id="01J2ZK3AC9V6XW8YQ4R5T6U7W1",
-                frame_start_ms=120, frame_end_ms=2480,
+                frame_start_ms=120,
+                frame_end_ms=2480,
                 method=CleanPlateMethod.BACKGROUND_ESTIMATE,
             ),
         ],
@@ -875,11 +973,11 @@ def make_pronunciation_lexicon() -> PronunciationLexicon:
         language="en-US",
         provider_tier=TTSProviderTier.CLOUD_HIGH_QUALITY,
         entries=[
-            PronunciationEntry(surface="Qwen", pronunciation="/tʃwɛn/",
-                                  notes="product name"),
+            PronunciationEntry(surface="Qwen", pronunciation="/tʃwɛn/", notes="product name"),
             PronunciationEntry(surface="LoRA", pronunciation="/ˈloʊ.rə/"),
         ],
-        version=1, created_at=_T0,
+        version=1,
+        created_at=_T0,
     )
 
 
@@ -897,10 +995,8 @@ def make_tts_manifest() -> TTSManifest:
         duration_ms=3200,
         word_timings=[
             TTSWordTiming(text="This", start_ms=0, end_ms=280, confidence=0.98),
-            TTSWordTiming(text="on-device", start_ms=280, end_ms=1200,
-                             confidence=0.97),
-            TTSWordTiming(text="model", start_ms=1200, end_ms=1720,
-                             confidence=0.97),
+            TTSWordTiming(text="on-device", start_ms=280, end_ms=1200, confidence=0.97),
+            TTSWordTiming(text="model", start_ms=1200, end_ms=1720, confidence=0.97),
         ],
         speed_used=1.0,
         seed=42,
@@ -914,14 +1010,18 @@ def make_duration_fit_plan() -> DurationFitPlan:
         localization_variant_id="01J2ZK3AC9V6XW8YQ4R5T6U7ZLV",
         decisions=[
             DurationFitDecision(
-                sentence_id="ls-0", estimated_ms=3200, target_ms=3000,
+                sentence_id="ls-0",
+                estimated_ms=3200,
+                target_ms=3000,
                 fit_method=DurationFitStrategy.TTS_SPEED,
                 final_ratio=1.067,
                 status=DurationFitStatus.OK_FITTED,
                 rationale="TTS 语速 1.07x 在自然区间 [0.92, 1.08]，命中",
             ),
             DurationFitDecision(
-                sentence_id="ls-1", estimated_ms=5000, target_ms=5000,
+                sentence_id="ls-1",
+                estimated_ms=5000,
+                target_ms=5000,
                 final_ratio=1.0,
                 status=DurationFitStatus.OK_UNCHANGED,
                 rationale="估算已等于预算，无需拟合",
@@ -936,24 +1036,35 @@ def make_audio_mix_plan() -> AudioMixPlan:
         id="01J2ZK3AC9V6XW8YQ4R5T6U7AM01",
         tracks=[
             AudioMixTrack(
-                id="voice-dub", kind=AudioMixTrackKind.VOICE_DUB,
+                id="voice-dub",
+                kind=AudioMixTrackKind.VOICE_DUB,
                 tts_manifest_id="01J2ZK3AC9V6XW8YQ4R5T6U7TTS3",
-                start_ms=0, end_ms=8200, gain_db=0.0,
+                start_ms=0,
+                end_ms=8200,
+                gain_db=0.0,
             ),
             AudioMixTrack(
-                id="music", kind=AudioMixTrackKind.MUSIC,
+                id="music",
+                kind=AudioMixTrackKind.MUSIC,
                 source_artifact_id="artifact://music/bg.mp3",
-                start_ms=0, end_ms=8200, gain_db=-6.0,
+                start_ms=0,
+                end_ms=8200,
+                gain_db=-6.0,
                 ducked_by="voice-dub",
             ),
         ],
         ducking=DuckingPolicy(
             sidechain=DuckingSidechain.VOICE_ACTIVITY,
-            threshold_db=-20.0, ratio=8.0,
-            attack_ms=20, release_ms=300, reduction_db=-8.0,
+            threshold_db=-20.0,
+            ratio=8.0,
+            attack_ms=20,
+            release_ms=300,
+            reduction_db=-8.0,
         ),
         loudness_target=LoudnessTarget(
-            lufs=-14.0, lufs_tolerance=2.0, true_peak_max_dbtp=-1.0,
+            lufs=-14.0,
+            lufs_tolerance=2.0,
+            true_peak_max_dbtp=-1.0,
         ),
         room_tone_artifact_id="artifact://ambience/room.wav",
         total_duration_ms=8200,
@@ -969,18 +1080,25 @@ def make_lipsync_plan() -> LipSyncPlan:
         criteria=LipSyncEligibilityCriteria(),
         decisions=[
             LipSyncSegmentDecision(
-                segment_id="ls-0", start_ms=0, end_ms=3000,
+                segment_id="ls-0",
+                start_ms=0,
+                end_ms=3000,
                 eligible=True,
                 method=LipSyncMethod.GPU_SYNTHESIS,
                 synthesized_artifact_id="artifact://lipsync/ls-0.mp4",
                 qa=LipSyncQAReport(
-                    boundary_score=0.92, skin_tone_score=0.9,
-                    motion_score=0.88, identity_score=0.95, passed=True,
+                    boundary_score=0.92,
+                    skin_tone_score=0.9,
+                    motion_score=0.88,
+                    identity_score=0.95,
+                    passed=True,
                 ),
                 rationale="单主脸、遮挡小、配音已对齐 → GPU 合成，QA 通过",
             ),
             LipSyncSegmentDecision(
-                segment_id="ls-1", start_ms=3000, end_ms=6000,
+                segment_id="ls-1",
+                start_ms=3000,
+                end_ms=6000,
                 eligible=False,
                 ineligible_reasons=[LipSyncIneligibleReason.MULTIPLE_FACES],
                 method=LipSyncMethod.BROLL_COVER,
@@ -999,7 +1117,8 @@ def make_localization_qa_report() -> LocalizationQAReport:
         localization_variant_id="01J2ZK3AC9V6XW8YQ4R5T6U7ZLV",
         findings=[
             LocalizationQAFinding(
-                sentence_id="ls-0", check=LocalizationQACheck.SUBTITLE_READING_SPEED,
+                sentence_id="ls-0",
+                check=LocalizationQACheck.SUBTITLE_READING_SPEED,
                 severity=QASeverity.MINOR,
                 detail="英文 CPS 略高，建议缩短或延长该 cue",
             ),
@@ -1016,10 +1135,14 @@ def make_localization_review() -> LocalizationReview:
         localization_variant_id="01J2ZK3AC9V6XW8YQ4R5T6U7ZLV",
         decisions=[
             SentenceReviewDecision(
-                sentence_id="ls-0", state=ReviewState.APPROVED, reviewer="editor-a",
+                sentence_id="ls-0",
+                state=ReviewState.APPROVED,
+                reviewer="editor-a",
             ),
             SentenceReviewDecision(
-                sentence_id="ls-1", state=ReviewState.EDITED, reviewer="editor-a",
+                sentence_id="ls-1",
+                state=ReviewState.EDITED,
+                reviewer="editor-a",
                 edited_text="端侧 AI 芯片把推理带到本地。",
                 note="更贴近平台口语",
             ),
@@ -1077,14 +1200,20 @@ def make_platform_publish_spec() -> PlatformPublishSpec:
     return PlatformPublishSpec(
         platform=PublishPlatform.TIKTOK,
         allowed_aspect_ratios=["9:16"],
-        min_width=360, min_height=640, max_width=1080, max_height=1920,
+        min_width=360,
+        min_height=640,
+        max_width=1080,
+        max_height=1920,
         allowed_video_codecs=["h264", "h265"],
         allowed_audio_codecs=["aac"],
         allowed_containers=["mp4", "mov"],
         max_file_size_bytes=500_000_000,
-        min_duration_ms=3000, max_duration_ms=600_000,
-        title_max_len=150, description_max_len=2200,
-        max_tags=20, tag_max_len=100,
+        min_duration_ms=3000,
+        max_duration_ms=600_000,
+        title_max_len=150,
+        description_max_len=2200,
+        max_tags=20,
+        tag_max_len=100,
         banned_title_chars=["<", ">"],
     )
 
@@ -1136,8 +1265,10 @@ def make_publish_job() -> PublishJob:
         content_fingerprint="cf_abc",
         attempts=[
             PublishAttempt(
-                attempt=1, request_digest="req_1",
-                external_upload_token="up_1", external_post_token="post_1",
+                attempt=1,
+                request_digest="req_1",
+                external_upload_token="up_1",
+                external_post_token="post_1",
                 at=_T0,
             ),
         ],
@@ -1171,23 +1302,38 @@ def make_reedit_plan() -> ReeditPlan:
         source_asset_id="01J2ZK3AC9V6XW8YQ4R5T6U7ZA",
         ops=[
             EditOp(
-                id="op-0", op=EditOpKind.KEEP, source_start_ms=0, source_end_ms=5000,
-                segment_ids=["seg-0"], output_order=0,
+                id="op-0",
+                op=EditOpKind.KEEP,
+                source_start_ms=0,
+                source_end_ms=5000,
+                segment_ids=["seg-0"],
+                output_order=0,
                 reframe=ReframeHint(target_aspect_ratio="9:16", follow=ReframeFollow.SPEAKER),
             ),
             EditOp(
-                id="op-1", op=EditOpKind.DELETE, source_start_ms=5000, source_end_ms=6200,
-                segment_ids=["seg-1"], reason="filler",
+                id="op-1",
+                op=EditOpKind.DELETE,
+                source_start_ms=5000,
+                source_end_ms=6200,
+                segment_ids=["seg-1"],
+                reason="filler",
             ),
             EditOp(
-                id="op-2", op=EditOpKind.KEEP, source_start_ms=6200, source_end_ms=12000,
-                segment_ids=["seg-2"], output_order=1,
+                id="op-2",
+                op=EditOpKind.KEEP,
+                source_start_ms=6200,
+                source_end_ms=12000,
+                segment_ids=["seg-2"],
+                output_order=1,
                 reframe=ReframeHint(target_aspect_ratio="9:16", follow=ReframeFollow.SPEAKER),
             ),
         ],
         continuity=[
-            ContinuityNote(kind=ContinuityRuleKind.JUMPCUT_SMOOTH, at_ms=5000,
-                           detail="删除填充段后 seg-0→seg-2 相邻，用推拉平滑"),
+            ContinuityNote(
+                kind=ContinuityRuleKind.JUMPCUT_SMOOTH,
+                at_ms=5000,
+                detail="删除填充段后 seg-0→seg-2 相邻，用推拉平滑",
+            ),
         ],
         kept_duration_ms=10800,
         created_at=_T0,
@@ -1229,36 +1375,46 @@ def make_asset_plan() -> AssetPlan:
 
 def make_creative_timeline() -> CreativeTimeline:
     rate = 30  # 30 fps 基准
+
     def rt(v: int) -> RationalTime:
         return RationalTime(value=v, rate=rate)
 
     v1 = Track(
-        id="v1", kind=TrackKind.V1_PRIMARY_VIDEO,
+        id="v1",
+        kind=TrackKind.V1_PRIMARY_VIDEO,
         segments=[
             Segment(
                 id="v1-s0",
                 time_range=RationalTimeRange(start=rt(0), duration=rt(150)),  # 5 秒
-                source_ref="01J2ZK3AC9V6XW8YQ4R5T6U7ZA", semantic_role="HOOK",
-                script_sentence_id="s-0", speaker_id="host",
+                source_ref="01J2ZK3AC9V6XW8YQ4R5T6U7ZA",
+                semantic_role="HOOK",
+                script_sentence_id="s-0",
+                speaker_id="host",
                 provenance_ref="01J2ZK3AC9V6XW8YQ4R5T6U7ZM",  # ResolvedAsset id
                 template_slot="slot-0",
             ),
         ],
     )
     v4 = Track(
-        id="v4", kind=TrackKind.V4_CAPTIONS,
+        id="v4",
+        kind=TrackKind.V4_CAPTIONS,
         segments=[
-            Segment(id="v4-s0",
-                    time_range=RationalTimeRange(start=rt(0), duration=rt(150)),
-                    script_sentence_id="s-0"),
+            Segment(
+                id="v4-s0",
+                time_range=RationalTimeRange(start=rt(0), duration=rt(150)),
+                script_sentence_id="s-0",
+            ),
         ],
     )
     a0 = Track(
-        id="a0", kind=TrackKind.A0_ORIGINAL,
+        id="a0",
+        kind=TrackKind.A0_ORIGINAL,
         segments=[
-            Segment(id="a0-s0",
-                    time_range=RationalTimeRange(start=rt(0), duration=rt(150)),
-                    source_ref="01J2ZK3AC9V6XW8YQ4R5T6U7ZA"),
+            Segment(
+                id="a0-s0",
+                time_range=RationalTimeRange(start=rt(0), duration=rt(150)),
+                source_ref="01J2ZK3AC9V6XW8YQ4R5T6U7ZA",
+            ),
         ],
     )
     return CreativeTimeline(
@@ -1278,28 +1434,63 @@ def make_render_manifest() -> RenderManifest:
     # 绝无 shell 拼接、绝无 filter_complex 长串（分号是 ffmpeg 分隔符，会误触本层拒绝）。
     render_graph = FfmpegRenderGraph(
         args=[
-            "ffmpeg", "-y", "-hide_banner",
-            "-i", "/staging/source.mp4",
-            "-map", "[v]", "-map", "[a]",
-            "-c:v", "libx264", "-preset", "medium", "-crf", "20",
-            "-c:a", "aac", "-b:a", "192k",
-            "-movflags", "+faststart",
+            "ffmpeg",
+            "-y",
+            "-hide_banner",
+            "-i",
+            "/staging/source.mp4",
+            "-map",
+            "[v]",
+            "-map",
+            "[a]",
+            "-c:v",
+            "libx264",
+            "-preset",
+            "medium",
+            "-crf",
+            "20",
+            "-c:a",
+            "aac",
+            "-b:a",
+            "192k",
+            "-movflags",
+            "+faststart",
             "/output/final.mp4",
         ],
         filter_complex=FilterGraph(
             nodes=[
-                FilterNode(id="n0", filter="scale", params={"w": "1080", "h": "1920"},
-                           inputs=["0:v"], outputs=["v_scaled"]),
-                FilterNode(id="n1", filter="setsar", params={"sar": "1"},
-                           inputs=["v_scaled"], outputs=["v"]),
-                FilterNode(id="n2", filter="aformat", params={"sample_fmts": "fltp"},
-                           inputs=["0:a"], outputs=["a"]),
+                FilterNode(
+                    id="n0",
+                    filter="scale",
+                    params={"w": "1080", "h": "1920"},
+                    inputs=["0:v"],
+                    outputs=["v_scaled"],
+                ),
+                FilterNode(
+                    id="n1",
+                    filter="setsar",
+                    params={"sar": "1"},
+                    inputs=["v_scaled"],
+                    outputs=["v"],
+                ),
+                FilterNode(
+                    id="n2",
+                    filter="aformat",
+                    params={"sample_fmts": "fltp"},
+                    inputs=["0:a"],
+                    outputs=["a"],
+                ),
             ],
             sinks=["v", "a"],
         ),
-        inputs=[RenderInput(asset_id="01J2ZK3AC9V6XW8YQ4R5T6U7ZA",
-                             sha256="a" * 64, resolved_path="/staging/source.mp4",
-                             role="video")],
+        inputs=[
+            RenderInput(
+                asset_id="01J2ZK3AC9V6XW8YQ4R5T6U7ZA",
+                sha256="a" * 64,
+                resolved_path="/staging/source.mp4",
+                role="video",
+            )
+        ],
         output_path="/output/final.mp4",
         target=RenderTargetKind.MP4_H264,
         tool_version="ffmpeg-8.1.2",
@@ -1323,10 +1514,13 @@ def make_remotion_render_manifest() -> RemotionRenderManifest:
         timeline_id="01J2ZK3AC9V6XW8YQ4R5T6U7ZN",
         composition=RemotionComposition.CAPTIONS,
         props=[
-            RemotionProp(key="segments", value=[
-                {"text": "大家好", "start_ms": 0, "end_ms": 1500},
-                {"text": "今天带大家拆解", "start_ms": 1500, "end_ms": 4500},
-            ]),
+            RemotionProp(
+                key="segments",
+                value=[
+                    {"text": "大家好", "start_ms": 0, "end_ms": 1500},
+                    {"text": "今天带大家拆解", "start_ms": 1500, "end_ms": 4500},
+                ],
+            ),
             RemotionProp(key="font_family", value="Noto Sans CJK SC"),
             RemotionProp(key="font_size_px", value=48),
             RemotionProp(key="show_background", value=True),
@@ -1356,14 +1550,22 @@ def make_qa_report() -> QAReport:
         render_manifest_id="01J2ZK3AC9V6XW8YQ4R5T6U7ZP",
         findings=[
             QAFinding(
-                id="f-0", kind=QAFindingKind.CAPTION_OFF_SAFE_AREA, severity=QASeverity.MINOR,
-                at_ms=12000, duration_ms=800, track_ref="v4",
+                id="f-0",
+                kind=QAFindingKind.CAPTION_OFF_SAFE_AREA,
+                severity=QASeverity.MINOR,
+                at_ms=12000,
+                duration_ms=800,
+                track_ref="v4",
                 detail="字幕底部越出 90% 安全区",
                 evidence={"y_bottom_pct": 96.2, "safe_area_bottom_pct": 90.0},
             ),
             QAFinding(
-                id="f-1", kind=QAFindingKind.LOUDNESS_OUT_OF_RANGE, severity=QASeverity.MAJOR,
-                at_ms=0, duration_ms=45000, track_ref="a2",
+                id="f-1",
+                kind=QAFindingKind.LOUDNESS_OUT_OF_RANGE,
+                severity=QASeverity.MAJOR,
+                at_ms=0,
+                duration_ms=45000,
+                track_ref="a2",
                 detail="整体响度 -20 LUFS 低于目标 -14 ±2",
                 evidence={"lufs": -20.1, "target_min": -16.0, "target_max": -12.0},
             ),
@@ -1411,21 +1613,33 @@ def make_exporter_report() -> ExporterReport:
         id="01J2ZK3AC9V6XW8YQ4R5T6U7ZT",
         timeline_id="01J2ZK3AC9V6XW8YQ4R5T6U7ZN",
         entries=[
-            ExportEntry(kind=ExporterKind.OTIO_FILE, status=ExporterStatus.OK,
-                         output_path="/output/timeline.otio",
-                         tool_version="videoforge.otio.writer@0.1.0",
-                         bytes_written=2048),
-            ExportEntry(kind=ExporterKind.FCPXML, status=ExporterStatus.OK,
-                         output_path="/output/timeline.fcpxml",
-                         tool_version="videoforge.fcpxml.writer@0.1.0",
-                         bytes_written=4096),
-            ExportEntry(kind=ExporterKind.JIANYING, status=ExporterStatus.PARTIAL,
-                         output_path="/output/jianying-package/",
-                         tool_version="videoforge.jianying.writer@0.1.0-experimental",
-                         warnings=["新版本 Draft 加密；已产出包+README 说明供人工导入"]),
-            ExportEntry(kind=ExporterKind.CAPCUT, status=ExporterStatus.UNSUPPORTED,
-                         tool_version="videoforge.capcut.writer@0.1.0-experimental",
-                         errors=["CapCut Draft Adapter 尚未支持该模板"]),
+            ExportEntry(
+                kind=ExporterKind.OTIO_FILE,
+                status=ExporterStatus.OK,
+                output_path="/output/timeline.otio",
+                tool_version="videoforge.otio.writer@0.1.0",
+                bytes_written=2048,
+            ),
+            ExportEntry(
+                kind=ExporterKind.FCPXML,
+                status=ExporterStatus.OK,
+                output_path="/output/timeline.fcpxml",
+                tool_version="videoforge.fcpxml.writer@0.1.0",
+                bytes_written=4096,
+            ),
+            ExportEntry(
+                kind=ExporterKind.JIANYING,
+                status=ExporterStatus.PARTIAL,
+                output_path="/output/jianying-package/",
+                tool_version="videoforge.jianying.writer@0.1.0-experimental",
+                warnings=["新版本 Draft 加密；已产出包+README 说明供人工导入"],
+            ),
+            ExportEntry(
+                kind=ExporterKind.CAPCUT,
+                status=ExporterStatus.UNSUPPORTED,
+                tool_version="videoforge.capcut.writer@0.1.0-experimental",
+                errors=["CapCut Draft Adapter 尚未支持该模板"],
+            ),
         ],
         created_at=_T0,
     )
@@ -1452,7 +1666,8 @@ def make_performance_snapshot() -> PerformanceSnapshot:
 
 def _ranker_weights(version: str, a: float, b: float) -> RankerWeights:
     return RankerWeights(
-        ranker_kind=RankerKind.HIGHLIGHT, template_version=version,
+        ranker_kind=RankerKind.HIGHLIGHT,
+        template_version=version,
         coefficients={"hook_strength": a, "ending_payoff": b},
     )
 
@@ -1465,20 +1680,34 @@ def make_calibration_proposal() -> CalibrationProposal:
     cur = _ranker_weights("hl-weights-v3", 0.28, 0.14)
     cand = _ranker_weights("hl-weights-v3+cal", 0.31, 0.16)
     cur_eval = RankingEvalResult(
-        ranker_kind=RankerKind.HIGHLIGHT, template_version="hl-weights-v3",
-        rank_correlation=0.55, top_k=3, top_k_hit_rate=0.67,
-        sample_count=24, enough_samples=True,
+        ranker_kind=RankerKind.HIGHLIGHT,
+        template_version="hl-weights-v3",
+        rank_correlation=0.55,
+        top_k=3,
+        top_k_hit_rate=0.67,
+        sample_count=24,
+        enough_samples=True,
     )
     cand_eval = RankingEvalResult(
-        ranker_kind=RankerKind.HIGHLIGHT, template_version="hl-weights-v3+cal",
-        rank_correlation=0.63, top_k=3, top_k_hit_rate=0.67,
-        sample_count=24, enough_samples=True,
+        ranker_kind=RankerKind.HIGHLIGHT,
+        template_version="hl-weights-v3+cal",
+        rank_correlation=0.63,
+        top_k=3,
+        top_k_hit_rate=0.67,
+        sample_count=24,
+        enough_samples=True,
     )
     return CalibrationProposal(
-        ranker_kind=RankerKind.HIGHLIGHT, current=cur, candidate=cand,
-        current_eval=cur_eval, candidate_eval=cand_eval, improvement=0.08,
-        promotable=True, decision=CalibrationDecision.EXPLORE,
-        exploration_fraction=0.1, generated_at=datetime(2026, 7, 26, 14, 0, tzinfo=UTC),
+        ranker_kind=RankerKind.HIGHLIGHT,
+        current=cur,
+        candidate=cand,
+        current_eval=cur_eval,
+        candidate_eval=cand_eval,
+        improvement=0.08,
+        promotable=True,
+        decision=CalibrationDecision.EXPLORE,
+        exploration_fraction=0.1,
+        generated_at=datetime(2026, 7, 26, 14, 0, tzinfo=UTC),
         note="候选离线秩相关 +0.080，进入少量探索（保留探索流量）",
     )
 
@@ -1493,12 +1722,9 @@ def make_learning_signal_result() -> LearningSignalResult:
         sample_count=18,
         enough_samples=True,
         buckets=[
-            SignalBucketStat(label="低", sample_count=6, median_relative=1.3,
-                              enough_samples=False),
-            SignalBucketStat(label="中", sample_count=6, median_relative=1.0,
-                              enough_samples=False),
-            SignalBucketStat(label="高", sample_count=6, median_relative=0.7,
-                              enough_samples=False),
+            SignalBucketStat(label="低", sample_count=6, median_relative=1.3, enough_samples=False),
+            SignalBucketStat(label="中", sample_count=6, median_relative=1.0, enough_samples=False),
+            SignalBucketStat(label="高", sample_count=6, median_relative=0.7, enough_samples=False),
         ],
         note="QA_WARNING_COUNT 越高，相对表现越低的**相关**（Spearman=-0.42, n=18）——关联非因果",
     )
@@ -1544,8 +1770,12 @@ def make_account_baseline() -> AccountBaseline:
         generated_at=datetime(2026, 7, 26, 13, 0, tzinfo=UTC),
         entries=[
             AccountBaselineEntry(
-                age_hours=24.0, metric=MetricField.VIEWS,
-                median=9000.0, p25=4000.0, p75=15000.0, sample_count=20,
+                age_hours=24.0,
+                metric=MetricField.VIEWS,
+                median=9000.0,
+                p25=4000.0,
+                p75=15000.0,
+                sample_count=20,
             ),
         ],
     )
@@ -1559,21 +1789,35 @@ def make_performance_dashboard() -> PerformanceDashboard:
         age_hours=24.0,
         metric=MetricField.VIEWS,
         baseline=AccountBaselineEntry(
-            age_hours=24.0, metric=MetricField.VIEWS,
-            median=9000.0, p25=4000.0, p75=15000.0, sample_count=20,
+            age_hours=24.0,
+            metric=MetricField.VIEWS,
+            median=9000.0,
+            p25=4000.0,
+            p75=15000.0,
+            sample_count=20,
         ),
         min_samples=5,
         group_stats=[
             PerformanceGroupStat(
-                dimension=GroupDimension.TEMPLATE, value="tmpl_hook_reveal_v3",
-                age_hours=24.0, metric=MetricField.VIEWS, sample_count=8,
-                median_relative=1.33, p25_relative=0.9, p75_relative=1.8,
+                dimension=GroupDimension.TEMPLATE,
+                value="tmpl_hook_reveal_v3",
+                age_hours=24.0,
+                metric=MetricField.VIEWS,
+                sample_count=8,
+                median_relative=1.33,
+                p25_relative=0.9,
+                p75_relative=1.8,
                 enough_samples=True,
             ),
             PerformanceGroupStat(
-                dimension=GroupDimension.DURATION_BUCKET, value="30-60s",
-                age_hours=24.0, metric=MetricField.VIEWS, sample_count=3,
-                median_relative=0.75, p25_relative=0.6, p75_relative=0.95,
+                dimension=GroupDimension.DURATION_BUCKET,
+                value="30-60s",
+                age_hours=24.0,
+                metric=MetricField.VIEWS,
+                sample_count=3,
+                median_relative=0.75,
+                p25_relative=0.6,
+                p75_relative=0.95,
                 enough_samples=False,
             ),
         ],
@@ -1598,8 +1842,11 @@ def make_metrics_connector_capability() -> MetricsConnectorCapability:
         available=True,
         auth_status=AuthStatus.AUTHORIZED,
         provided_fields=[
-            MetricField.VIEWS, MetricField.LIKES, MetricField.COMMENTS,
-            MetricField.SHARES, MetricField.COMPLETION_RATE,
+            MetricField.VIEWS,
+            MetricField.LIKES,
+            MetricField.COMMENTS,
+            MetricField.SHARES,
+            MetricField.COMPLETION_RATE,
         ],
         min_seconds_between_calls=30,
     )

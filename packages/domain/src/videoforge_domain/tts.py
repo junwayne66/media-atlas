@@ -116,8 +116,7 @@ def text_hash_of(
         }
     else:
         payload["style"] = None
-    canonical = json.dumps(payload, sort_keys=True, separators=(",", ":"),
-                              ensure_ascii=False)
+    canonical = json.dumps(payload, sort_keys=True, separators=(",", ":"), ensure_ascii=False)
     return hashlib.sha256(canonical.encode("utf-8")).hexdigest()
 
 
@@ -131,56 +130,73 @@ def _is_authorized(profile: VoiceProfile, now: datetime | None = None) -> bool:
 
 
 def validate_voice_profile(
-    profile: VoiceProfile, *, now: datetime | None = None,
+    profile: VoiceProfile,
+    *,
+    now: datetime | None = None,
     request_language: str | None = None,
 ) -> list[VoiceProfileIssue]:
     """VoiceProfile 护栏；返回全部违规（空 = 通过）。"""
     issues: list[VoiceProfileIssue] = []
     if profile.license_status is not VoiceLicenseStatus.AUTHORIZED:
-        issues.append(VoiceProfileIssue(
-            VoiceProfileIssueKind.LICENSE_NOT_AUTHORIZED, profile.id,
-            f"license_status={profile.license_status.value} 不可合成"
-            "（仅 AUTHORIZED 可用，§7 硬红线）",
-        ))
-    if (
-        profile.expires_at is not None
-        and now is not None
-        and profile.expires_at < now
-    ):
-        issues.append(VoiceProfileIssue(
-            VoiceProfileIssueKind.LICENSE_EXPIRED, profile.id,
-            f"license expired at {profile.expires_at.isoformat()}",
-        ))
+        issues.append(
+            VoiceProfileIssue(
+                VoiceProfileIssueKind.LICENSE_NOT_AUTHORIZED,
+                profile.id,
+                f"license_status={profile.license_status.value} 不可合成"
+                "（仅 AUTHORIZED 可用，§7 硬红线）",
+            )
+        )
+    if profile.expires_at is not None and now is not None and profile.expires_at < now:
+        issues.append(
+            VoiceProfileIssue(
+                VoiceProfileIssueKind.LICENSE_EXPIRED,
+                profile.id,
+                f"license expired at {profile.expires_at.isoformat()}",
+            )
+        )
     # 合同层已拦但仍双保险（防手工构造/未来路径）
     if profile.voice_kind is VoiceKind.CLONED:
         if not profile.sample_source_ref:
-            issues.append(VoiceProfileIssue(
-                VoiceProfileIssueKind.CLONED_MISSING_SAMPLE, profile.id,
-                "CLONED 缺 sample_source_ref",
-            ))
+            issues.append(
+                VoiceProfileIssue(
+                    VoiceProfileIssueKind.CLONED_MISSING_SAMPLE,
+                    profile.id,
+                    "CLONED 缺 sample_source_ref",
+                )
+            )
         if not profile.consent_ref:
-            issues.append(VoiceProfileIssue(
-                VoiceProfileIssueKind.CLONED_MISSING_CONSENT, profile.id,
-                "CLONED 缺 consent_ref",
-            ))
+            issues.append(
+                VoiceProfileIssue(
+                    VoiceProfileIssueKind.CLONED_MISSING_CONSENT,
+                    profile.id,
+                    "CLONED 缺 consent_ref",
+                )
+            )
     if request_language is not None and request_language != profile.language:
-        issues.append(VoiceProfileIssue(
-            VoiceProfileIssueKind.LANGUAGE_MISMATCH, profile.id,
-            f"请求语言 {request_language} 与 profile.language={profile.language} 不一致",
-        ))
+        issues.append(
+            VoiceProfileIssue(
+                VoiceProfileIssueKind.LANGUAGE_MISMATCH,
+                profile.id,
+                f"请求语言 {request_language} 与 profile.language={profile.language} 不一致",
+            )
+        )
     return issues
 
 
 def is_authorized_for_synthesis(
-    profile: VoiceProfile, *, now: datetime | None = None,
+    profile: VoiceProfile,
+    *,
+    now: datetime | None = None,
 ) -> bool:
     """便捷入口——只检授权，用于路由/合成前的 gate。"""
     return _is_authorized(profile, now)
 
 
 def suggest_speed(
-    estimated_ms: int, target_ms: int,
-    *, natural_min: float = NATURAL_SPEED_MIN,
+    estimated_ms: int,
+    target_ms: int,
+    *,
+    natural_min: float = NATURAL_SPEED_MIN,
     natural_max: float = NATURAL_SPEED_MAX,
 ) -> float:
     """按 §8 时长拟合：`speed = estimated / target`（合成后应总时长 ≈ target）。
@@ -234,24 +250,30 @@ def plan_tts_synthesis(
             suggested = suggest_speed(est, target)
             if suggested < NATURAL_SPEED_MIN or suggested > NATURAL_SPEED_MAX:
                 reasons.append(TTSManifestIssueKind.SPEED_OUT_OF_NATURAL_BOUNDS.value)
-        jobs.append(TTSSynthesisJob(
-            sentence_id=sid,
-            text=text,
-            language=lang,
-            voice_profile_id=voice.id,
-            provider_tier=voice.provider_tier,
-            text_hash=text_hash_of(
-                text, language=lang, voice_profile_id=voice.id,
-                style=style, target_duration_ms=target,
-                lexicon_id=lexicon_id, seed=seed,
-            ),
-            style=style,
-            target_duration_ms=target,
-            lexicon_id=lexicon_id,
-            seed=seed,
-            suggested_speed=suggested,
-            review_reasons=reasons,
-        ))
+        jobs.append(
+            TTSSynthesisJob(
+                sentence_id=sid,
+                text=text,
+                language=lang,
+                voice_profile_id=voice.id,
+                provider_tier=voice.provider_tier,
+                text_hash=text_hash_of(
+                    text,
+                    language=lang,
+                    voice_profile_id=voice.id,
+                    style=style,
+                    target_duration_ms=target,
+                    lexicon_id=lexicon_id,
+                    seed=seed,
+                ),
+                style=style,
+                target_duration_ms=target,
+                lexicon_id=lexicon_id,
+                seed=seed,
+                suggested_speed=suggested,
+                review_reasons=reasons,
+            )
+        )
     return jobs
 
 
@@ -268,52 +290,67 @@ def validate_tts_manifest(
 ) -> list[TTSManifestIssue]:
     """TTS 合成结果护栏；返回全部违规（空 = 通过）。"""
     issues: list[TTSManifestIssue] = []
-    if manifest.audio_artifact_id is None and (
-        manifest.duration_ms or manifest.word_timings
-    ):
-        issues.append(TTSManifestIssue(
-            TTSManifestIssueKind.AUDIO_MISSING, manifest.id,
-            "audio_artifact_id 为 None 但 duration/word_timings 非空",
-        ))
+    if manifest.audio_artifact_id is None and (manifest.duration_ms or manifest.word_timings):
+        issues.append(
+            TTSManifestIssue(
+                TTSManifestIssueKind.AUDIO_MISSING,
+                manifest.id,
+                "audio_artifact_id 为 None 但 duration/word_timings 非空",
+            )
+        )
     if manifest.audio_artifact_id is not None:
         if not manifest.word_timings:
-            issues.append(TTSManifestIssue(
-                TTSManifestIssueKind.WORD_TIMINGS_EMPTY, manifest.id,
-                "audio 已产但 word_timings 为空——subtitle 对齐将失败",
-            ))
+            issues.append(
+                TTSManifestIssue(
+                    TTSManifestIssueKind.WORD_TIMINGS_EMPTY,
+                    manifest.id,
+                    "audio 已产但 word_timings 为空——subtitle 对齐将失败",
+                )
+            )
         else:
             # 单调
             prev_end = -1
             for w in manifest.word_timings:
                 if w.start_ms < prev_end:
-                    issues.append(TTSManifestIssue(
-                        TTSManifestIssueKind.WORD_TIMINGS_NOT_MONOTONIC,
-                        manifest.id,
-                        f"word {w.text!r} start={w.start_ms} 早于前一 end={prev_end}",
-                    ))
+                    issues.append(
+                        TTSManifestIssue(
+                            TTSManifestIssueKind.WORD_TIMINGS_NOT_MONOTONIC,
+                            manifest.id,
+                            f"word {w.text!r} start={w.start_ms} 早于前一 end={prev_end}",
+                        )
+                    )
                     break
                 prev_end = w.end_ms
             # 词超总时长
             if manifest.duration_ms is not None:
                 last_end = max(w.end_ms for w in manifest.word_timings)
                 if last_end > manifest.duration_ms:
-                    issues.append(TTSManifestIssue(
-                        TTSManifestIssueKind.WORD_TIMING_OUT_OF_TOTAL, manifest.id,
-                        f"末 word end={last_end}ms > duration={manifest.duration_ms}ms",
-                    ))
+                    issues.append(
+                        TTSManifestIssue(
+                            TTSManifestIssueKind.WORD_TIMING_OUT_OF_TOTAL,
+                            manifest.id,
+                            f"末 word end={last_end}ms > duration={manifest.duration_ms}ms",
+                        )
+                    )
     # text_hash 校验（若 caller 提供 request 上下文）
     if request_text is not None:
         expected = text_hash_of(
-            request_text, language=manifest.language,
+            request_text,
+            language=manifest.language,
             voice_profile_id=manifest.voice_profile_id,
-            style=request_style, target_duration_ms=target_duration_ms,
-            lexicon_id=request_lexicon_id, seed=manifest.seed,
+            style=request_style,
+            target_duration_ms=target_duration_ms,
+            lexicon_id=request_lexicon_id,
+            seed=manifest.seed,
         )
         if expected != manifest.text_hash:
-            issues.append(TTSManifestIssue(
-                TTSManifestIssueKind.TEXT_HASH_MISMATCH, manifest.id,
-                "manifest.text_hash 与 request 派生的 hash 不一致",
-            ))
+            issues.append(
+                TTSManifestIssue(
+                    TTSManifestIssueKind.TEXT_HASH_MISMATCH,
+                    manifest.id,
+                    "manifest.text_hash 与 request 派生的 hash 不一致",
+                )
+            )
     # 时长偏差
     if (
         target_duration_ms is not None
@@ -322,29 +359,39 @@ def validate_tts_manifest(
     ):
         ratio = manifest.duration_ms / target_duration_ms
         if ratio < 1 - duration_tolerance or ratio > 1 + duration_tolerance:
-            issues.append(TTSManifestIssue(
-                TTSManifestIssueKind.DURATION_OUT_OF_TOLERANCE, manifest.id,
-                f"duration {manifest.duration_ms}ms 相对目标 {target_duration_ms}ms "
-                f"偏差 {(ratio - 1):+.0%} 超容差 ±{int(duration_tolerance * 100)}%",
-            ))
+            issues.append(
+                TTSManifestIssue(
+                    TTSManifestIssueKind.DURATION_OUT_OF_TOLERANCE,
+                    manifest.id,
+                    f"duration {manifest.duration_ms}ms 相对目标 {target_duration_ms}ms "
+                    f"偏差 {(ratio - 1):+.0%} 超容差 ±{int(duration_tolerance * 100)}%",
+                )
+            )
     # 语速自然区间
     if manifest.speed_used is not None and (
         manifest.speed_used < natural_min or manifest.speed_used > natural_max
     ):
-        issues.append(TTSManifestIssue(
-            TTSManifestIssueKind.SPEED_OUT_OF_NATURAL_BOUNDS, manifest.id,
-            f"speed_used={manifest.speed_used:.2f} 超自然区间"
-            f"[{natural_min:.2f}, {natural_max:.2f}]（§8 应先走 LLM 改写等回退）",
-        ))
+        issues.append(
+            TTSManifestIssue(
+                TTSManifestIssueKind.SPEED_OUT_OF_NATURAL_BOUNDS,
+                manifest.id,
+                f"speed_used={manifest.speed_used:.2f} 超自然区间"
+                f"[{natural_min:.2f}, {natural_max:.2f}]（§8 应先走 LLM 改写等回退）",
+            )
+        )
     return issues
 
 
 def is_valid_voice_profile(
-    profile: VoiceProfile, *, now: datetime | None = None,
+    profile: VoiceProfile,
+    *,
+    now: datetime | None = None,
     request_language: str | None = None,
 ) -> bool:
     return not validate_voice_profile(
-        profile, now=now, request_language=request_language,
+        profile,
+        now=now,
+        request_language=request_language,
     )
 
 
@@ -357,7 +404,9 @@ def is_valid_tts_manifest(
     target_duration_ms: int | None = None,
 ) -> bool:
     return not validate_tts_manifest(
-        manifest, request_text=request_text, request_style=request_style,
+        manifest,
+        request_text=request_text,
+        request_style=request_style,
         request_lexicon_id=request_lexicon_id,
         target_duration_ms=target_duration_ms,
     )

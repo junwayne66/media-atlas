@@ -20,7 +20,9 @@ def test_editing_one_sentence_scopes_to_only_that_sentence():
         # 只该句进逐句重跑
         assert set(scope.per_sentence_stages) == {edited}
         assert scope.per_sentence_stages[edited] == (
-            ReRunStage.TTS, ReRunStage.SUBTITLE, ReRunStage.LIPSYNC,
+            ReRunStage.TTS,
+            ReRunStage.SUBTITLE,
+            ReRunStage.LIPSYNC,
         )
         # 其余 39 句零重跑
         assert len(scope.unaffected_sentence_ids) == len(_ALL_IDS) - 1
@@ -50,9 +52,13 @@ def test_scope_partition_property_over_full_set():
 
 def test_voice_change_same_downstream_scope():
     scope = compute_rerun_scope(
-        ["z2-1"], _ALL_IDS, edit_kind=ReRunEditKind.VOICE_CHANGE,
+        ["z2-1"],
+        _ALL_IDS,
+        edit_kind=ReRunEditKind.VOICE_CHANGE,
     )
     assert scope.per_sentence_stages["z2-1"] == (
-        ReRunStage.TTS, ReRunStage.SUBTITLE, ReRunStage.LIPSYNC,
+        ReRunStage.TTS,
+        ReRunStage.SUBTITLE,
+        ReRunStage.LIPSYNC,
     )
     assert len(scope.unaffected_sentence_ids) == len(_ALL_IDS) - 1

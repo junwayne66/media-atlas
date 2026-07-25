@@ -30,24 +30,43 @@ _DURATION = 12000
 
 def _transcript() -> Transcript:
     return Transcript(
-        id="tr", source_artifact_id="art-1", language="zh-CN",
+        id="tr",
+        source_artifact_id="art-1",
+        language="zh-CN",
         segments=[
-            TranscriptSegment(id="seg-0", start_ms=0, end_ms=3000, speaker_id="spk_0",
-                              language="zh-CN", text="今天拆解这款芯片", confidence=0.9),
-            TranscriptSegment(id="seg-1", start_ms=4000, end_ms=9000, speaker_id="spk_0",
-                              language="zh-CN", text="跑分是上代两倍", confidence=0.9),
+            TranscriptSegment(
+                id="seg-0",
+                start_ms=0,
+                end_ms=3000,
+                speaker_id="spk_0",
+                language="zh-CN",
+                text="今天拆解这款芯片",
+                confidence=0.9,
+            ),
+            TranscriptSegment(
+                id="seg-1",
+                start_ms=4000,
+                end_ms=9000,
+                speaker_id="spk_0",
+                language="zh-CN",
+                text="跑分是上代两倍",
+                confidence=0.9,
+            ),
         ],
-        models=TranscriptModels(asr_provider="asr.x"), created_at=_T0,
+        models=TranscriptModels(asr_provider="asr.x"),
+        created_at=_T0,
     )
 
 
 def _visual_analysis() -> VisualAnalysis:
     return VisualAnalysis(
-        id="va", sampling_policy="representative@v1",
+        id="va",
+        sampling_policy="representative@v1",
         frames=[
             FrameAnalysis(frame_time_ms=0, reasons=[FrameSampleReason.KEYFRAME], labels=["person"]),
-            FrameAnalysis(frame_time_ms=4000, reasons=[FrameSampleReason.SCENE_CUT],
-                          labels=["screen_record"]),
+            FrameAnalysis(
+                frame_time_ms=4000, reasons=[FrameSampleReason.SCENE_CUT], labels=["screen_record"]
+            ),
         ],
         created_at=_T0,
     )
@@ -56,10 +75,13 @@ def _visual_analysis() -> VisualAnalysis:
 def _request() -> BlueprintFusionRequest:
     tr = _transcript()
     return BlueprintFusionRequest(
-        blueprint_id="bp-1", created_at=_T0, duration_ms=_DURATION,
+        blueprint_id="bp-1",
+        created_at=_T0,
+        duration_ms=_DURATION,
         candidate_beats=build_candidate_rhetorical_beats(tr, _DURATION),
         visual_beats=build_visual_beats(_visual_analysis(), _DURATION),
-        transcript=tr, source_artifact_id="art-1",
+        transcript=tr,
+        source_artifact_id="art-1",
     )
 
 
@@ -76,9 +98,7 @@ def test_fake_fusion_produces_valid_blueprint() -> None:
     assert r.ok
     bp = r.blueprint
     assert bp is not None
-    issues = validate_blueprint(
-        bp, transcript_segment_ids={"seg-0", "seg-1"}, text_track_ids=set()
-    )
+    issues = validate_blueprint(bp, transcript_segment_ids={"seg-0", "seg-1"}, text_track_ids=set())
     assert issues == [], issues  # 合法蓝图：时间在时长内、单调、证据引用真实、覆盖率达标
 
 

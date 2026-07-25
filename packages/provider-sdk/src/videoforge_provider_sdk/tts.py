@@ -86,9 +86,13 @@ class TTSProvider(Protocol):
 class UnconfiguredTTSProvider:
     """诚实占位：无真实 TTS 引擎，绝不合成。"""
 
-    def __init__(self, *, name: str = "tts.unconfigured",
-                  tier: TTSProviderTier = TTSProviderTier.CLOUD_HIGH_QUALITY,
-                  execution_location: str = "cloud") -> None:
+    def __init__(
+        self,
+        *,
+        name: str = "tts.unconfigured",
+        tier: TTSProviderTier = TTSProviderTier.CLOUD_HIGH_QUALITY,
+        execution_location: str = "cloud",
+    ) -> None:
         self.name = name
         self.tier = tier
         self.execution_location = execution_location
@@ -97,9 +101,7 @@ class UnconfiguredTTSProvider:
         return TTSResult(
             status=TTSStatus.UNCONFIGURED,
             error_code=TTSErrorCode.ENGINE_UNAVAILABLE,
-            error_detail=(
-                f"provider {self.name!r} 未配置真实 TTS 引擎（{self.tier.value}）"
-            ),
+            error_detail=(f"provider {self.name!r} 未配置真实 TTS 引擎（{self.tier.value}）"),
         )
 
     def health_check(self) -> TTSResult:
@@ -110,26 +112,33 @@ class UnconfiguredTTSProvider:
 
 
 def _text_hash_local(
-    text: str, language: str, voice_profile_id: str,
-    style: VoiceStyle | None, target_duration_ms: int | None,
-    lexicon_id: str | None, seed: int | None,
+    text: str,
+    language: str,
+    voice_profile_id: str,
+    style: VoiceStyle | None,
+    target_duration_ms: int | None,
+    lexicon_id: str | None,
+    seed: int | None,
 ) -> str:
     """provider 侧算 text_hash——与 domain.text_hash_of 逐位一致（不能 import domain）。"""
     payload: dict[str, object] = {
-        "text": text, "language": language,
+        "text": text,
+        "language": language,
         "voice_profile_id": voice_profile_id,
         "target_duration_ms": target_duration_ms,
-        "lexicon_id": lexicon_id, "seed": seed,
+        "lexicon_id": lexicon_id,
+        "seed": seed,
     }
     if style is not None:
         payload["style"] = {
-            "pace": style.pace, "emotion": style.emotion,
-            "energy": style.energy, "pitch_semitones": style.pitch_semitones,
+            "pace": style.pace,
+            "emotion": style.emotion,
+            "energy": style.energy,
+            "pitch_semitones": style.pitch_semitones,
         }
     else:
         payload["style"] = None
-    canonical = json.dumps(payload, sort_keys=True, separators=(",", ":"),
-                              ensure_ascii=False)
+    canonical = json.dumps(payload, sort_keys=True, separators=(",", ":"), ensure_ascii=False)
     return hashlib.sha256(canonical.encode("utf-8")).hexdigest()
 
 
@@ -147,11 +156,15 @@ class FakeTTSProvider:
     _CHARS_PER_SEC_ZH = 5.0
     _WORDS_PER_SEC_EN = 2.5
 
-    def __init__(self, *, name: str = "tts.fake.cloud",
-                  tier: TTSProviderTier = TTSProviderTier.CLOUD_HIGH_QUALITY,
-                  execution_location: str = "cloud",
-                  supported_languages: tuple[str, ...] = ("zh-CN", "en-US"),
-                  tool_version: str = "fake-tts-1.0") -> None:
+    def __init__(
+        self,
+        *,
+        name: str = "tts.fake.cloud",
+        tier: TTSProviderTier = TTSProviderTier.CLOUD_HIGH_QUALITY,
+        execution_location: str = "cloud",
+        supported_languages: tuple[str, ...] = ("zh-CN", "en-US"),
+        tool_version: str = "fake-tts-1.0",
+    ) -> None:
         self.name = name
         self.tier = tier
         self.execution_location = execution_location
@@ -163,8 +176,7 @@ class FakeTTSProvider:
             return [c for c in text if not c.isspace()]
         return _EN_TOKEN_RE.findall(text)
 
-    def _estimate_ms(self, text: str, language: str,
-                      pace: float | None) -> int:
+    def _estimate_ms(self, text: str, language: str, pace: float | None) -> int:
         speed = pace if (pace and pace > 0) else 1.0
         if language.lower().startswith("zh"):
             units = sum(1 for c in text if not c.isspace())
@@ -212,17 +224,27 @@ class FakeTTSProvider:
                     end = int(round(duration * acc / total_units))
                     if end <= cursor:
                         end = cursor + 1
-                word_timings.append(TTSWordTiming(
-                    text=t, start_ms=cursor, end_ms=end, confidence=0.5,
-                ))
+                word_timings.append(
+                    TTSWordTiming(
+                        text=t,
+                        start_ms=cursor,
+                        end_ms=end,
+                        confidence=0.5,
+                    )
+                )
                 cursor = end
         text_hash = _text_hash_local(
-            req.text, req.language, vp.id, req.style,
+            req.text,
+            req.language,
+            vp.id,
+            req.style,
             req.target_duration_ms,
-            req.lexicon.id if req.lexicon else None, req.seed,
+            req.lexicon.id if req.lexicon else None,
+            req.seed,
         )
         # 用与 request 完全一致的 datetime；由调用方传 → 此处无 clock 依赖，取一固定伪时间
         from datetime import UTC, datetime
+
         manifest = TTSManifest(
             id=f"tts-{req.sentence_id}-{text_hash[:12]}",
             sentence_id=req.sentence_id,
@@ -240,7 +262,8 @@ class FakeTTSProvider:
             created_at=datetime(2026, 7, 24, tzinfo=UTC),  # 确定性
         )
         return TTSResult(
-            status=TTSStatus.OK, manifest=manifest,
+            status=TTSStatus.OK,
+            manifest=manifest,
             warnings=["Fake TTS：非真实音频，仅供 pipeline 开发"],
         )
 
@@ -260,15 +283,19 @@ class TTSRouter:
         TTSProviderTier.SYSTEM_PREVIEW,
     )
 
-    _TERMINAL_STATUSES: frozenset[TTSStatus] = frozenset({
-        TTSStatus.OK,
-        TTSStatus.VOICE_UNAUTHORIZED,
-        TTSStatus.UNSUPPORTED_LANGUAGE,
-    })
+    _TERMINAL_STATUSES: frozenset[TTSStatus] = frozenset(
+        {
+            TTSStatus.OK,
+            TTSStatus.VOICE_UNAUTHORIZED,
+            TTSStatus.UNSUPPORTED_LANGUAGE,
+        }
+    )
 
     def __init__(
-        self, providers: dict[TTSProviderTier, TTSProvider],
-        *, order: tuple[TTSProviderTier, ...] | None = None,
+        self,
+        providers: dict[TTSProviderTier, TTSProvider],
+        *,
+        order: tuple[TTSProviderTier, ...] | None = None,
     ) -> None:
         self.providers = providers
         self.order = order or self.DEFAULT_ORDER
@@ -288,7 +315,8 @@ class TTSRouter:
                     f"router attempts: {' → '.join(attempts)}"
                 ]
                 return TTSResult(
-                    status=result.status, manifest=result.manifest,
+                    status=result.status,
+                    manifest=result.manifest,
                     error_code=result.error_code,
                     error_detail=result.error_detail,
                     warnings=merged_warnings,

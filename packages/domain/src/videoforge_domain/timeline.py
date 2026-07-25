@@ -82,7 +82,8 @@ def validate_timeline(timeline: CreativeTimeline) -> list[TimelineIssue]:
             if seg.time_range.start.rate != rate or seg.time_range.duration.rate != rate:
                 issues.append(
                     TimelineIssue(
-                        TimelineIssueKind.RATE_MISMATCH, seg.id,
+                        TimelineIssueKind.RATE_MISMATCH,
+                        seg.id,
                         f"segment 时基 ({seg.time_range.start.rate},"
                         f"{seg.time_range.duration.rate}) 与 timeline.rate={rate} 不一致",
                     )
@@ -92,7 +93,8 @@ def validate_timeline(timeline: CreativeTimeline) -> list[TimelineIssue]:
             if not _rt_le(end, duration) or seg.time_range.start.value < 0:
                 issues.append(
                     TimelineIssue(
-                        TimelineIssueKind.TIME_OUT_OF_RANGE, seg.id,
+                        TimelineIssueKind.TIME_OUT_OF_RANGE,
+                        seg.id,
                         f"[{seg.time_range.start.value},{end.value}] 超出 [0,{duration.value}]",
                     )
                 )
@@ -113,7 +115,8 @@ def validate_timeline(timeline: CreativeTimeline) -> list[TimelineIssue]:
             if b.time_range.start.value < _seg_end_value(a):
                 issues.append(
                     TimelineIssue(
-                        TimelineIssueKind.SEGMENT_OVERLAP, b.id,
+                        TimelineIssueKind.SEGMENT_OVERLAP,
+                        b.id,
                         f"与 {a.id} 在轨 {track.id} ({track.kind.value}) 重叠",
                     )
                 )
@@ -173,7 +176,8 @@ def _segment_to_otio_clip(seg: Segment) -> dict[str, Any]:
         extras["effects"] = [{"kind": e.kind, "params": dict(e.params)} for e in seg.effects]
     if seg.localization is not None:
         extras["localization"] = {
-            "language": seg.localization.language, "strategy": seg.localization.strategy,
+            "language": seg.localization.language,
+            "strategy": seg.localization.strategy,
         }
     clip: dict[str, Any] = {
         "OTIO_SCHEMA": "Clip.1",
@@ -241,25 +245,29 @@ def _rt_from_otio(d: dict[str, Any]) -> RationalTime:
 
 
 def _range_from_otio(d: dict[str, Any]) -> RationalTimeRange:
-    return RationalTimeRange(start=_rt_from_otio(d["start_time"]),
-                             duration=_rt_from_otio(d["duration"]))
+    return RationalTimeRange(
+        start=_rt_from_otio(d["start_time"]), duration=_rt_from_otio(d["duration"])
+    )
 
 
 def _clip_from_otio(clip: dict[str, Any]) -> Segment:
     from videoforge_contracts import LocalizationPolicy, SegmentEffect
+
     extras = (clip.get("metadata") or {}).get("videoforge") or {}
     localization = None
     if isinstance(extras.get("localization"), dict):
         loc = extras["localization"]
         localization = LocalizationPolicy(
-            language=loc["language"], strategy=loc.get("strategy", "passthrough"),
+            language=loc["language"],
+            strategy=loc.get("strategy", "passthrough"),
         )
     effects = [
         SegmentEffect(kind=e["kind"], params=dict(e.get("params") or {}))
         for e in (extras.get("effects") or [])
     ]
     kwargs: dict[str, Any] = {
-        "id": clip["name"], "time_range": _range_from_otio(clip["source_range"]),
+        "id": clip["name"],
+        "time_range": _range_from_otio(clip["source_range"]),
     }
     for k in _SEGMENT_EXTRA_KEYS:
         if k in extras:

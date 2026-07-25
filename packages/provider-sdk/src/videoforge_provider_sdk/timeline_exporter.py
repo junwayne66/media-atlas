@@ -87,7 +87,9 @@ class UnconfiguredTimelineExporter:
 
     def health_check(self) -> TimelineExportResult:
         return TimelineExportResult(
-            status=TimelineExporterStatus.UNCONFIGURED, provider=self.name, format=self.format,
+            status=TimelineExporterStatus.UNCONFIGURED,
+            provider=self.name,
+            format=self.format,
         )
 
 
@@ -114,13 +116,17 @@ class OtioDictExporter:
     def export(self, request: TimelineExportRequest) -> TimelineExportResult:
         payload = self._mapper(request.timeline)
         return TimelineExportResult(
-            status=TimelineExporterStatus.OK, provider=self.name, format=self.format,
+            status=TimelineExporterStatus.OK,
+            provider=self.name,
+            format=self.format,
             payload=payload,
         )
 
     def health_check(self) -> TimelineExportResult:
         return TimelineExportResult(
-            status=TimelineExporterStatus.OK, provider=self.name, format=self.format,
+            status=TimelineExporterStatus.OK,
+            provider=self.name,
+            format=self.format,
         )
 
 

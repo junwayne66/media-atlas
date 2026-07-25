@@ -99,9 +99,7 @@ class LocalizationQAReport(ContractModel):
 
     @model_validator(mode="after")
     def _check_gate_integrity(self) -> "LocalizationQAReport":
-        if self.pass_or_block and any(
-            f.severity is QASeverity.BLOCKER for f in self.findings
-        ):
+        if self.pass_or_block and any(f.severity is QASeverity.BLOCKER for f in self.findings):
             raise ValueError(
                 "pass_or_block=True 不能与 BLOCKER 发现并存"
                 "（必须调用 domain.validate_localization_publish_gate 计算）"
@@ -117,7 +115,8 @@ class SentenceReviewDecision(ContractModel):
     reviewer: str | None = None
     note: str | None = None
     edited_text: str | None = Field(
-        default=None, description="EDITED 时的新译文；其它状态必须为 None",
+        default=None,
+        description="EDITED 时的新译文；其它状态必须为 None",
     )
 
     @model_validator(mode="after")

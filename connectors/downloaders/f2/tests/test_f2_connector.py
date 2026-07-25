@@ -43,6 +43,7 @@ class _StubCookieResolver:
 
 # —— 默认后端：不触网、不静默 ——
 
+
 def test_default_connector_is_unconfigured(tmp_path) -> None:
     result = F2DownloadConnector().download(_req(tmp_path))
     assert result.status is DownloadStatus.UNCONFIGURED
@@ -67,6 +68,7 @@ def test_descriptor_pins_the_runner_version() -> None:
 
 
 # —— argv 构造：注入安全 + 平台子命令 ——
+
 
 def test_build_argv_is_injection_safe(tmp_path) -> None:
     req = _req(tmp_path)
@@ -117,6 +119,7 @@ def test_build_argv_rejects_manual(tmp_path) -> None:
 
 # —— 下载成功：manifest 可重放 + 脱敏 ——
 
+
 def test_download_produces_replayable_manifest(tmp_path) -> None:
     result = F2DownloadConnector(runner=FixtureF2Runner()).download(_req(tmp_path))
     assert result.status is DownloadStatus.OK
@@ -151,6 +154,7 @@ def test_download_is_idempotent(tmp_path) -> None:
 
 
 # —— Cookie handle：不透明、不入明文 ——
+
 
 def test_cookie_handle_never_plaintext(tmp_path) -> None:
     cookie_file = tmp_path / "cookies.txt"

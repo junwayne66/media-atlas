@@ -31,12 +31,27 @@ _EN_TOKEN_RE = re.compile(r"\S+")
 # 注意：只收非词汇性犹豫音。刻意**不含** 'err'（英文动词 "to err is human"）与 '唔'
 # （粤语否定 "唔好"=不好）——它们虽像语气词却是内容词，删了会改 Claim（verifier round-3）。
 # 'erm' 才是真犹豫音，保留。
-_FILLER: frozenset[str] = frozenset({
-    # 英文犹豫音
-    "um", "umm", "uh", "uhh", "uhm", "erm", "hmm", "mmm",
-    # 中文纯语气/犹豫词
-    "呃", "呃呃", "嗯", "嗯嗯", "唉", "呀", "哦",
-})
+_FILLER: frozenset[str] = frozenset(
+    {
+        # 英文犹豫音
+        "um",
+        "umm",
+        "uh",
+        "uhh",
+        "uhm",
+        "erm",
+        "hmm",
+        "mmm",
+        # 中文纯语气/犹豫词
+        "呃",
+        "呃呃",
+        "嗯",
+        "嗯嗯",
+        "唉",
+        "呀",
+        "哦",
+    }
+)
 
 _CHARS_PER_SEC_ZH = 5.0
 _WORDS_PER_SEC_EN = 2.5
@@ -68,11 +83,7 @@ def _strip_filler_tokens(text: str, keep: tuple[str, ...]) -> tuple[str, int]:
     dropped = 0
     kept: list[tuple[str, str]] = []
     for kind, txt in chunks:
-        if (
-            kind == "word"
-            and txt.lower() in _FILLER
-            and txt.lower() not in keep_lower
-        ):
+        if kind == "word" and txt.lower() in _FILLER and txt.lower() not in keep_lower:
             dropped += 1
             continue
         kept.append((kind, txt))
@@ -196,8 +207,12 @@ class FakeDurationRewriteProvider:
     - deep-copy 输入；无内部状态。
     """
 
-    def __init__(self, *, name: str = "duration_rewrite.fake",
-                  supported_languages: tuple[str, ...] = ("zh-CN", "en-US")) -> None:
+    def __init__(
+        self,
+        *,
+        name: str = "duration_rewrite.fake",
+        supported_languages: tuple[str, ...] = ("zh-CN", "en-US"),
+    ) -> None:
         self.name = name
         self.supported_languages = supported_languages
 
@@ -239,7 +254,8 @@ class FakeDurationRewriteProvider:
 
     def health_check(self) -> DurationRewriteResult:
         return DurationRewriteResult(
-            status=DurationRewriteStatus.OK, sentence_id="",
+            status=DurationRewriteStatus.OK,
+            sentence_id="",
         )
 
 

@@ -120,9 +120,7 @@ class FakeMetricsConnector:
     ) -> None:
         self.platform = platform
         # 深拷贝入参，避免外部后续改动污染录制。
-        self._recorded = {
-            key: snap.model_copy(deep=True) for key, snap in (recorded or {}).items()
-        }
+        self._recorded = {key: snap.model_copy(deep=True) for key, snap in (recorded or {}).items()}
         self._provided_fields = list(provided_fields)
         self._min_seconds = min_seconds_between_calls
         self._available = available
@@ -153,18 +151,21 @@ class FakeMetricsConnector:
     ) -> MetricsFetchResult:
         self.fetch_count += 1
         if self._auth_required:
-            return MetricsFetchResult(MetricsFetchStatus.AUTH_REQUIRED, None,
-                                       error_code="AUTH_REQUIRED")
+            return MetricsFetchResult(
+                MetricsFetchStatus.AUTH_REQUIRED, None, error_code="AUTH_REQUIRED"
+            )
         if self._rate_limited:
-            return MetricsFetchResult(MetricsFetchStatus.RATE_LIMITED, None,
-                                       retry_after_seconds=self._retry_after,
-                                       error_code="RATE_LIMITED")
+            return MetricsFetchResult(
+                MetricsFetchStatus.RATE_LIMITED,
+                None,
+                retry_after_seconds=self._retry_after,
+                error_code="RATE_LIMITED",
+            )
         if self._fail:
             return MetricsFetchResult(MetricsFetchStatus.FAILED, None, error_code="FAILED")
         snap = self._recorded.get((platform_post_id, age_hours))
         if snap is None:
-            return MetricsFetchResult(MetricsFetchStatus.NOT_FOUND, None,
-                                       error_code="NOT_FOUND")
+            return MetricsFetchResult(MetricsFetchStatus.NOT_FOUND, None, error_code="NOT_FOUND")
         # 深拷贝返回：调用方改动不污染内部录制；null 字段照样 null。
         return MetricsFetchResult(MetricsFetchStatus.OK, snap.model_copy(deep=True))
 

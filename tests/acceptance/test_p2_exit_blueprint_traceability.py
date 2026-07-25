@@ -24,8 +24,12 @@ def _blueprint(s: Sample) -> VideoBlueprint:
     candidates = build_candidate_rhetorical_beats(s.transcript, s.duration_ms)
     visual = build_visual_beats(s.visual_analysis, s.duration_ms)
     req = BlueprintFusionRequest(
-        blueprint_id=s.id, created_at=_T0, duration_ms=s.duration_ms,
-        candidate_beats=candidates, visual_beats=visual, transcript=s.transcript,
+        blueprint_id=s.id,
+        created_at=_T0,
+        duration_ms=s.duration_ms,
+        candidate_beats=candidates,
+        visual_beats=visual,
+        transcript=s.transcript,
     )
     return FakeBlueprintFusionProvider().fuse(req).blueprint
 

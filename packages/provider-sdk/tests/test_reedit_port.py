@@ -34,16 +34,22 @@ def _transcript() -> Transcript:
         ("seg-4", 13500, 16000, "总结一下适合谁用"),
     ]
     return Transcript(
-        id="tr", language="zh-CN", duration_ms=16000,
-        segments=[TranscriptSegment(id=i, start_ms=a, end_ms=b, language="zh-CN",
-                                    text=t, confidence=0.9) for i, a, b, t in rows],
-        models=TranscriptModels(asr_provider="asr.x"), created_at=_T0,
+        id="tr",
+        language="zh-CN",
+        duration_ms=16000,
+        segments=[
+            TranscriptSegment(id=i, start_ms=a, end_ms=b, language="zh-CN", text=t, confidence=0.9)
+            for i, a, b, t in rows
+        ],
+        models=TranscriptModels(asr_provider="asr.x"),
+        created_at=_T0,
     )
 
 
 def _specs(tr: Transcript) -> list[SegmentSpec]:
-    return [SegmentSpec(id=s.id, start_ms=s.start_ms, end_ms=s.end_ms, text=s.text)
-            for s in tr.segments]
+    return [
+        SegmentSpec(id=s.id, start_ms=s.start_ms, end_ms=s.end_ms, text=s.text) for s in tr.segments
+    ]
 
 
 def test_protocol_conformance() -> None:
@@ -76,8 +82,10 @@ def test_fake_flags_filler_silence_repeat() -> None:
         SegmentSpec("s2", 3200, 3400, "   "),  # 空白 → silence
         SegmentSpec("s3", 3400, 6000, "正常一句有信息"),  # 与 s0 重复
     ]
-    js = {j.segment_id: j for j in FakeSegmentJudgeProvider().judge(
-        SegmentJudgeRequest(segments=specs)).judgments}
+    js = {
+        j.segment_id: j
+        for j in FakeSegmentJudgeProvider().judge(SegmentJudgeRequest(segments=specs)).judgments
+    }
     assert js["s0"].keep_recommended
     assert js["s1"].is_filler and not js["s1"].keep_recommended
     assert js["s2"].is_silence and not js["s2"].keep_recommended
@@ -91,8 +99,13 @@ def test_end_to_end_transcript_to_valid_plan() -> None:
 
     plan = build_reedit_plan(tr, result.judgments, plan_id="plan-e2e", created_at=_T0)
     kinds = [op.op for op in plan.ops]
-    assert kinds == [EditOpKind.KEEP, EditOpKind.DELETE, EditOpKind.KEEP,
-                     EditOpKind.DELETE, EditOpKind.KEEP]
+    assert kinds == [
+        EditOpKind.KEEP,
+        EditOpKind.DELETE,
+        EditOpKind.KEEP,
+        EditOpKind.DELETE,
+        EditOpKind.KEEP,
+    ]
     reasons = {op.reason for op in plan.ops if op.op == EditOpKind.DELETE}
     assert reasons == {"filler", "repeat"}
     # 两处删除各产生一个 jump cut，均有连续性说明

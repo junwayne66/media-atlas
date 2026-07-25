@@ -31,10 +31,17 @@ from videoforge_contracts import (
 )
 
 # §12：模板"关键字段"——变更这些即回退 NEW（超出字幕样式/Beat/Provider/发布元数据）
-KEY_TEMPLATE_FIELDS: frozenset[str] = frozenset({
-    "subtitle_style", "beat", "beats", "provider", "providers",
-    "publish_metadata", "publish_meta",
-})
+KEY_TEMPLATE_FIELDS: frozenset[str] = frozenset(
+    {
+        "subtitle_style",
+        "beat",
+        "beats",
+        "provider",
+        "providers",
+        "publish_metadata",
+        "publish_meta",
+    }
+)
 
 
 class ReviewDisposition(StrEnum):
@@ -73,14 +80,12 @@ def compute_approval_signature(
         "entity_id": entity_id,
         "entity_version": entity_version,
         "content_digest": content_digest,
-        "decision": decision.value if isinstance(decision, ReviewDecisionKind)
-        else str(decision),
+        "decision": decision.value if isinstance(decision, ReviewDecisionKind) else str(decision),
         "scope": scope,
         "reviewer_id": reviewer_id,
         "policy_snapshot_id": policy_snapshot_id,
     }
-    canonical = json.dumps(payload, sort_keys=True, separators=(",", ":"),
-                            ensure_ascii=False)
+    canonical = json.dumps(payload, sort_keys=True, separators=(",", ":"), ensure_ascii=False)
     return hashlib.sha256(canonical.encode("utf-8")).hexdigest()
 
 
@@ -128,7 +133,9 @@ def is_approval_valid(
 
 
 def publish_severity_gate(
-    severities: Iterable[ReviewSeverity], *, warning_blocks: bool = False,
+    severities: Iterable[ReviewSeverity],
+    *,
+    warning_blocks: bool = False,
 ) -> ReviewDisposition:
     """§2 严重级 → 发布门。FATAL 不可覆盖；ERROR 阻止可修；WARNING 看策略；INFO 放行。"""
     sev = set(severities)
@@ -142,7 +149,9 @@ def publish_severity_gate(
 
 
 def requires_human_review(
-    mode: ReviewPolicyMode, *, template_level: TemplateTrustLevel,
+    mode: ReviewPolicyMode,
+    *,
+    template_level: TemplateTrustLevel,
 ) -> bool:
     """§12 策略 × 受信：是否需人工（不含严重级门，严重级由 publish_severity_gate 处理）。"""
     if mode is ReviewPolicyMode.ALWAYS:
@@ -202,7 +211,8 @@ def promote_if_eligible(state: TemplateTrustState) -> TemplateTrustState:
 
 
 def demote_on_change(
-    state: TemplateTrustState, changed_fields: Iterable[str],
+    state: TemplateTrustState,
+    changed_fields: Iterable[str],
 ) -> TemplateTrustState:
     """§12：变更关键字段（字幕样式/Beat/Provider/发布元数据）→ 回退 NEW；否则原样。"""
     changed = {f.lower() for f in changed_fields}
@@ -222,10 +232,13 @@ def validate_review_decision(
     """审核决定护栏：签名完整性 + （给了当前上下文时）陈旧审批。"""
     issues: list[ReviewDecisionIssue] = []
     if not signature_matches(decision):
-        issues.append(ReviewDecisionIssue(
-            ReviewDecisionIssueKind.SIGNATURE_MISMATCH, decision.id,
-            "signature 与按记录字段重算的不一致——记录可能被篡改",
-        ))
+        issues.append(
+            ReviewDecisionIssue(
+                ReviewDecisionIssueKind.SIGNATURE_MISMATCH,
+                decision.id,
+                "signature 与按记录字段重算的不一致——记录可能被篡改",
+            )
+        )
     if (
         decision.decision is ReviewDecisionKind.APPROVED
         and current_version is not None
@@ -235,11 +248,14 @@ def validate_review_decision(
             or decision.content_digest != current_content_digest
         )
     ):
-        issues.append(ReviewDecisionIssue(
-            ReviewDecisionIssueKind.APPROVAL_STALE, decision.id,
-            f"APPROVED 绑定 v{decision.entity_version} 但当前 v{current_version}"
-            "（内容/版本已变，旧审批失效）",
-        ))
+        issues.append(
+            ReviewDecisionIssue(
+                ReviewDecisionIssueKind.APPROVAL_STALE,
+                decision.id,
+                f"APPROVED 绑定 v{decision.entity_version} 但当前 v{current_version}"
+                "（内容/版本已变，旧审批失效）",
+            )
+        )
     return issues
 
 
@@ -250,6 +266,7 @@ def is_valid_review_decision(
     current_content_digest: str | None = None,
 ) -> bool:
     return not validate_review_decision(
-        decision, current_version=current_version,
+        decision,
+        current_version=current_version,
         current_content_digest=current_content_digest,
     )

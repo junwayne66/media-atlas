@@ -107,7 +107,8 @@ class UnconfiguredMediaAnalyzerProvider:
 
     def analyze(self, request: MediaAnalysisRequest) -> MediaAnalysisResult:
         return MediaAnalysisResult(
-            status=MediaAnalyzerStatus.UNCONFIGURED, provider=self.name,
+            status=MediaAnalyzerStatus.UNCONFIGURED,
+            provider=self.name,
             error_code=MediaAnalyzerErrorCode.UNCONFIGURED,
             detail="媒体分析器未接入（缺 ebur128/opencv/OCR）；请人工审片或稍后重试",
         )
@@ -142,7 +143,8 @@ class FakeMediaAnalyzerProvider:
 
     def analyze(self, request: MediaAnalysisRequest) -> MediaAnalysisResult:
         return MediaAnalysisResult(
-            status=MediaAnalyzerStatus.OK, provider=self.name,
+            status=MediaAnalyzerStatus.OK,
+            provider=self.name,
             frame_samples=list(self._frames),
             audio_windows=list(self._audio),
             captions=list(self._captions),

@@ -120,8 +120,11 @@ class CalibrationProposal(ContractModel):
                 raise ValueError("非 EXPLORE 决策的 exploration_fraction 必须为 0")
         # ranker_kind 一致
         kinds = {
-            self.ranker_kind, self.current.ranker_kind, self.candidate.ranker_kind,
-            self.current_eval.ranker_kind, self.candidate_eval.ranker_kind,
+            self.ranker_kind,
+            self.current.ranker_kind,
+            self.candidate.ranker_kind,
+            self.current_eval.ranker_kind,
+            self.candidate_eval.ranker_kind,
         }
         if len(kinds) != 1:
             raise ValueError("current/candidate/eval 的 ranker_kind 必须一致")

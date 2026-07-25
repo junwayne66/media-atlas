@@ -42,7 +42,9 @@ class DuckingPolicy(ContractModel):
     attack_ms: int = Field(default=20, ge=0)
     release_ms: int = Field(default=300, ge=0)
     reduction_db: float = Field(
-        default=-8.0, le=0.0, description="被压轨下探目标（-8dB 常见）",
+        default=-8.0,
+        le=0.0,
+        description="被压轨下探目标（-8dB 常见）",
     )
 
 
@@ -52,10 +54,12 @@ class AudioMixTrack(ContractModel):
     id: str = Field(min_length=1)
     kind: AudioMixTrackKind
     source_artifact_id: str | None = Field(
-        default=None, description="音频 artifact；VOICE_DUB 常来自 TTSManifest",
+        default=None,
+        description="音频 artifact；VOICE_DUB 常来自 TTSManifest",
     )
     tts_manifest_id: str | None = Field(
-        default=None, description="VOICE_DUB 关联 TTS Manifest（可选）",
+        default=None,
+        description="VOICE_DUB 关联 TTS Manifest（可选）",
     )
     start_ms: int = Field(ge=0)
     end_ms: int = Field(ge=0)
@@ -78,7 +82,8 @@ class LoudnessTarget(ContractModel):
     lufs: float = Field(default=-14.0, description="整体积分响度目标（LUFS）")
     lufs_tolerance: float = Field(default=2.0, ge=0.0, description="±LUFS 容差")
     true_peak_max_dbtp: float = Field(
-        default=-1.0, le=0.0,
+        default=-1.0,
+        le=0.0,
         description="True Peak 硬顶（dBTP）；QA TRUE_PEAK_CLIP 触发 BLOCKER",
     )
 
@@ -98,7 +103,8 @@ class AudioMixPlan(ContractModel):
     ducking: DuckingPolicy | None = None
     loudness_target: LoudnessTarget
     room_tone_artifact_id: str | None = Field(
-        default=None, description="配音段间的背景噪；空则允许绝对静音",
+        default=None,
+        description="配音段间的背景噪；空则允许绝对静音",
     )
     total_duration_ms: int = Field(gt=0)
     created_at: datetime
@@ -110,9 +116,7 @@ class AudioMixPlan(ContractModel):
             raise ValueError("tracks 内 id 重复")
         for t in self.tracks:
             if t.ducked_by and t.ducked_by not in ids:
-                raise ValueError(
-                    f"track {t.id!r} ducked_by {t.ducked_by!r} 不在 tracks 内"
-                )
+                raise ValueError(f"track {t.id!r} ducked_by {t.ducked_by!r} 不在 tracks 内")
             if t.ducked_by == t.id:
                 raise ValueError(f"track {t.id!r} 不能被自己 Ducking")
         return self

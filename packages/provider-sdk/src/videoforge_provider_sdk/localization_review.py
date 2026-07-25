@@ -102,15 +102,18 @@ class FakeLocalizationConsistencyProvider:
         findings: list[LocalizationQAFinding] = []
         for entity in req.source_entities:
             if entity and entity.lower() not in target_lower:
-                findings.append(LocalizationQAFinding(
-                    sentence_id=req.sentence_id,
-                    check=LocalizationQACheck.PROPER_NOUN_CONSISTENCY,
-                    severity=QASeverity.MAJOR,
-                    detail=f"专名 {entity!r} 未在译文中出现（可能漏译/误译，须人工核）",
-                    evidence={"entity": entity},
-                ))
+                findings.append(
+                    LocalizationQAFinding(
+                        sentence_id=req.sentence_id,
+                        check=LocalizationQACheck.PROPER_NOUN_CONSISTENCY,
+                        severity=QASeverity.MAJOR,
+                        detail=f"专名 {entity!r} 未在译文中出现（可能漏译/误译，须人工核）",
+                        evidence={"entity": entity},
+                    )
+                )
         return ConsistencyCheckResult(
-            status=ConsistencyStatus.OK, findings=findings,
+            status=ConsistencyStatus.OK,
+            findings=findings,
             warnings=["Fake 一致性：仅浅层专名包含检查，未做深层语义/Claim 核对"],
         )
 

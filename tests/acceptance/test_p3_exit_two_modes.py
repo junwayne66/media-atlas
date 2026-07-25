@@ -69,46 +69,71 @@ def _fake_transcript(sample_id: str, language: str, duration_ms: int) -> Transcr
     seg_dur = duration_ms // 6
     segs = [
         TranscriptSegment(
-            id=f"{sample_id}-seg-{i}", start_ms=i * seg_dur, end_ms=(i + 1) * seg_dur,
-            language=language, text=f"第{i}句 sample={sample_id} content", confidence=0.9,
+            id=f"{sample_id}-seg-{i}",
+            start_ms=i * seg_dur,
+            end_ms=(i + 1) * seg_dur,
+            language=language,
+            text=f"第{i}句 sample={sample_id} content",
+            confidence=0.9,
         )
         for i in range(6)
     ]
     return Transcript(
-        id=f"tr-{sample_id}", language=language, duration_ms=duration_ms,
-        segments=segs, models=TranscriptModels(asr_provider="fake"), created_at=_T0,
+        id=f"tr-{sample_id}",
+        language=language,
+        duration_ms=duration_ms,
+        segments=segs,
+        models=TranscriptModels(asr_provider="fake"),
+        created_at=_T0,
     )
 
 
 def _build_structure_rewrite(sample) -> dict:
     """STRUCTURE_REWRITE 模式：Blueprint → ClaimTable → Brief → BeatTemplate → Script。"""
     opp = CreativeOpportunity(
-        id=f"opp-{sample.id}", blueprint_id=sample.blueprint.id,
-        rationale="p3 exit sample", target_platform="douyin",
-        target_language=sample.language, created_at=_T0,
+        id=f"opp-{sample.id}",
+        blueprint_id=sample.blueprint.id,
+        rationale="p3 exit sample",
+        target_platform="douyin",
+        target_language=sample.language,
+        created_at=_T0,
     )
     table = build_claim_table(sample.blueprint, table_id=f"ct-{sample.id}", created_at=_T0)
     # 只选 usable 的 claim 作 must_cover（DISPUTED 不入）
     usable_ids = tuple(e.claim_id for e in table.entries if e.usable_in_rewrite)
     brief = build_creative_brief(
-        opp, brief_id=f"b-{sample.id}", created_at=_T0, objective="verify",
-        audience="acceptance", angle="p3 exit",
+        opp,
+        brief_id=f"b-{sample.id}",
+        created_at=_T0,
+        objective="verify",
+        audience="acceptance",
+        angle="p3 exit",
         duration_target_ms=sample.duration_target_ms,
-        creation_mode=CreationMode.STRUCTURE_REWRITE, claim_table=table,
+        creation_mode=CreationMode.STRUCTURE_REWRITE,
+        claim_table=table,
         must_cover_claim_ids=usable_ids,
     )
     template = build_beat_template(
-        sample.blueprint, template_id=f"tpl-{sample.id}", created_at=_T0,
+        sample.blueprint,
+        template_id=f"tpl-{sample.id}",
+        created_at=_T0,
         duration_target_ms=sample.duration_target_ms,
     )
     rewrite_req = RewriteRequest(
-        script_id=f"sc-{sample.id}", created_at=_T0, language=sample.language,
-        beat_template=template, claim_table=table, brief=brief,
+        script_id=f"sc-{sample.id}",
+        created_at=_T0,
+        language=sample.language,
+        beat_template=template,
+        claim_table=table,
+        brief=brief,
     )
     result = FakeStructureRewriteProvider().rewrite(rewrite_req)
     return {
-        "brief": brief, "claim_table": table, "template": template,
-        "script": result.script, "opp": opp,
+        "brief": brief,
+        "claim_table": table,
+        "template": template,
+        "script": result.script,
+        "opp": opp,
     }
 
 
@@ -118,17 +143,27 @@ def _build_source_reedit(sample) -> dict:
     max_ms = min(60000, sample.blueprint.duration_ms)
     windows = build_candidate_windows(tr, min_ms=5000, max_ms=max_ms)
     specs = [
-        HighlightWindowSpec(start_ms=w.start_ms, end_ms=w.end_ms, text=w.text,
-                             index_in_video=i, total_windows=len(windows))
+        HighlightWindowSpec(
+            start_ms=w.start_ms,
+            end_ms=w.end_ms,
+            text=w.text,
+            index_in_video=i,
+            total_windows=len(windows),
+        )
         for i, w in enumerate(windows)
     ]
     feats = FakeHighlightFeatureProvider().score(
         HighlightFeatureRequest(windows=specs, video_duration_ms=sample.blueprint.duration_ms)
     )
     hl = rank_highlights(
-        windows, feats.features, weights=_WEIGHTS, top_n=3,
-        id_prefix=f"hl-{sample.id}", created_at=_T0,
-        source_transcript_id=tr.id, feature_provider="fake",
+        windows,
+        feats.features,
+        weights=_WEIGHTS,
+        top_n=3,
+        id_prefix=f"hl-{sample.id}",
+        created_at=_T0,
+        source_transcript_id=tr.id,
+        feature_provider="fake",
     )
     return {"transcript": tr, "highlight_set": hl, "windows": windows}
 
@@ -136,37 +171,65 @@ def _build_source_reedit(sample) -> dict:
 def _build_asset_plan_and_timeline(sample) -> tuple:
     """基础 AssetPlan + CreativeTimeline（两模式共用）。"""
     slot = AssetPlanSlot(
-        slot_id="slot-0", start_ms=0, end_ms=min(5000, sample.duration_target_ms),
-        role=AssetRole.B_ROLL, query="p3 exit b-roll",
+        slot_id="slot-0",
+        start_ms=0,
+        end_ms=min(5000, sample.duration_target_ms),
+        role=AssetRole.B_ROLL,
+        query="p3 exit b-roll",
         composition=CompositionSpec(aspect_ratio="9:16", safe_area="center"),
         allowed_sources=[AssetSource.OWN_LIBRARY, AssetSource.PLACEHOLDER],
         fallback=AssetRole.INFO_CARD,
     )
     cand = AssetCandidate(
-        asset_id=f"lib-{sample.id}", source=AssetSource.OWN_LIBRARY,
+        asset_id=f"lib-{sample.id}",
+        source=AssetSource.OWN_LIBRARY,
         license=AssetLicense(type=AssetLicenseType.OWNED, holder="videoforge"),
-        query="p3 exit b-roll", semantic=0.8, composition=0.7, resolution=0.7,
-        motion=0.5, color=0.5, brand_ok=1.0,
+        query="p3 exit b-roll",
+        semantic=0.8,
+        composition=0.7,
+        resolution=0.7,
+        motion=0.5,
+        color=0.5,
+        brand_ok=1.0,
     )
     plan = resolve_asset_plan(
-        [slot], {AssetSource.OWN_LIBRARY: [cand]},
-        plan_id=f"ap-{sample.id}", created_at=_T0,
+        [slot],
+        {AssetSource.OWN_LIBRARY: [cand]},
+        plan_id=f"ap-{sample.id}",
+        created_at=_T0,
     )
 
     rate = 30
+
     def rt(v: int) -> RationalTime:
         return RationalTime(value=v, rate=rate)
+
     dur_frames = int(round(sample.duration_target_ms / 1000 * rate))
-    v1 = Track(id="v1", kind=TrackKind.V1_PRIMARY_VIDEO, segments=[
-        Segment(id="v1-s0", time_range=RationalTimeRange(start=rt(0), duration=rt(dur_frames)),
-                 source_ref=f"art-{sample.blueprint.id}", semantic_role="HOOK"),
-    ])
-    a0 = Track(id="a0", kind=TrackKind.A0_ORIGINAL, segments=[
-        Segment(id="a0-s0", time_range=RationalTimeRange(start=rt(0), duration=rt(dur_frames))),
-    ])
+    v1 = Track(
+        id="v1",
+        kind=TrackKind.V1_PRIMARY_VIDEO,
+        segments=[
+            Segment(
+                id="v1-s0",
+                time_range=RationalTimeRange(start=rt(0), duration=rt(dur_frames)),
+                source_ref=f"art-{sample.blueprint.id}",
+                semantic_role="HOOK",
+            ),
+        ],
+    )
+    a0 = Track(
+        id="a0",
+        kind=TrackKind.A0_ORIGINAL,
+        segments=[
+            Segment(id="a0-s0", time_range=RationalTimeRange(start=rt(0), duration=rt(dur_frames))),
+        ],
+    )
     timeline = CreativeTimeline(
-        id=f"tl-{sample.id}", rate=rate, duration=rt(dur_frames),
-        tracks=[v1, a0], created_at=_T0,
+        id=f"tl-{sample.id}",
+        rate=rate,
+        duration=rt(dur_frames),
+        tracks=[v1, a0],
+        created_at=_T0,
     )
     return plan, timeline
 
@@ -181,30 +244,44 @@ def _run_qa(timeline: CreativeTimeline) -> tuple:
     tl_ms = int(timeline.duration.value / timeline.duration.rate * 1000)
     # 每 500ms 一个视频帧：亮度 = 128（远高于黑帧阈值），phash 递增（无重复/冻结）
     video_frames = [
-        VideoFrameSample(at_ms=t, mean_luma=128.0,
-                          phash=f"{i:016x}0000000000000000")
+        VideoFrameSample(at_ms=t, mean_luma=128.0, phash=f"{i:016x}0000000000000000")
         for i, t in enumerate(range(0, tl_ms, 500))
     ]
     # 一个 3s 字幕，居中安全区内（left=20/right=80/top=80/bottom=95，均在 5-95 内、不重叠）
     captions = [
-        CaptionBoundingBox(caption_id="cap-0", at_ms=1000, duration_ms=3000,
-                             left_pct=20.0, top_pct=80.0,
-                             right_pct=80.0, bottom_pct=95.0),
+        CaptionBoundingBox(
+            caption_id="cap-0",
+            at_ms=1000,
+            duration_ms=3000,
+            left_pct=20.0,
+            top_pct=80.0,
+            right_pct=80.0,
+            bottom_pct=95.0,
+        ),
     ]
     input_data = MediaSampleInput(
         video_frames=video_frames,
-        audio_windows=[AudioWindowSample(
-            at_ms=0, duration_ms=tl_ms,
-            lufs=-14.0, true_peak_dbtp=-3.0, has_voice=False, tail_amplitude=0.001,
-        )],
+        audio_windows=[
+            AudioWindowSample(
+                at_ms=0,
+                duration_ms=tl_ms,
+                lufs=-14.0,
+                true_peak_dbtp=-3.0,
+                has_voice=False,
+                tail_amplitude=0.001,
+            )
+        ],
         captions=captions,
         broll_duration_ms=tl_ms,  # broll ratio = 1.0 ≥ 0.15
         total_video_duration_ms=tl_ms,
         measured_duration_ms=tl_ms,  # 与 timeline 匹配 → 无 duration 差
     )
     report = aggregate_qa_report(
-        input_data, report_id=f"qa-{timeline.id}", timeline_id=timeline.id,
-        timeline_duration_ms=tl_ms, created_at=_T0,
+        input_data,
+        report_id=f"qa-{timeline.id}",
+        timeline_id=timeline.id,
+        timeline_duration_ms=tl_ms,
+        created_at=_T0,
     )
     return report, validate_publish_gate(report.findings)
 
@@ -218,7 +295,9 @@ def test_all_samples_produce_both_mode_packages() -> None:
         assert rewrite["script"] is not None, f"{sample.id}: rewrite Fake 未产脚本"
         # 计入的 must_cover 与 usable 一致，脚本应过 validate_script
         assert is_valid_script(
-            rewrite["script"], claim_table=rewrite["claim_table"], brief=rewrite["brief"],
+            rewrite["script"],
+            claim_table=rewrite["claim_table"],
+            brief=rewrite["brief"],
         ), f"{sample.id}: STRUCTURE_REWRITE 脚本 validate_script 未过"
 
         # SOURCE_REEDIT
@@ -262,41 +341,58 @@ def test_disputed_claims_never_forced_into_scripts() -> None:
     观察 script 是否真的避开 DISPUTED。这是安全属性的真实证明。
     """
     from videoforge_contracts import ClaimSourceStatus
+
     disputed_samples = [
-        s for s in SAMPLES
+        s
+        for s in SAMPLES
         if any(c.source_status is ClaimSourceStatus.DISPUTED for c in s.blueprint.claims)
     ]
     assert disputed_samples, "验收样本应含 DISPUTED claim 覆盖"
     for sample in disputed_samples:
         opp = CreativeOpportunity(
-            id=f"opp-{sample.id}", blueprint_id=sample.blueprint.id,
-            rationale="disputed probe", target_platform="douyin",
-            target_language=sample.language, created_at=_T0,
+            id=f"opp-{sample.id}",
+            blueprint_id=sample.blueprint.id,
+            rationale="disputed probe",
+            target_platform="douyin",
+            target_language=sample.language,
+            created_at=_T0,
         )
-        table = build_claim_table(sample.blueprint,
-                                     table_id=f"ct-{sample.id}", created_at=_T0)
+        table = build_claim_table(sample.blueprint, table_id=f"ct-{sample.id}", created_at=_T0)
         # 关键：**故意**把 DISPUTED claim 塞进 must_cover（生产不会做，但 Fake 契约必须扛）
         disputed_ids = tuple(
-            c.id for c in sample.blueprint.claims
-            if c.source_status is ClaimSourceStatus.DISPUTED
+            c.id for c in sample.blueprint.claims if c.source_status is ClaimSourceStatus.DISPUTED
         )
         assert disputed_ids
         brief = build_creative_brief(
-            opp, brief_id=f"b-{sample.id}", created_at=_T0, objective="verify",
-            audience="acceptance", angle="disputed probe",
+            opp,
+            brief_id=f"b-{sample.id}",
+            created_at=_T0,
+            objective="verify",
+            audience="acceptance",
+            angle="disputed probe",
             duration_target_ms=sample.duration_target_ms,
-            creation_mode=CreationMode.STRUCTURE_REWRITE, claim_table=table,
+            creation_mode=CreationMode.STRUCTURE_REWRITE,
+            claim_table=table,
             must_cover_claim_ids=disputed_ids,
         )
         template = build_beat_template(
-            sample.blueprint, template_id=f"tpl-{sample.id}", created_at=_T0,
+            sample.blueprint,
+            template_id=f"tpl-{sample.id}",
+            created_at=_T0,
             duration_target_ms=sample.duration_target_ms,
         )
-        result = FakeStructureRewriteProvider().rewrite(RewriteRequest(
-            script_id=f"sc-{sample.id}", created_at=_T0, language=sample.language,
-            beat_template=template, claim_table=table, brief=brief,
-        ))
+        result = FakeStructureRewriteProvider().rewrite(
+            RewriteRequest(
+                script_id=f"sc-{sample.id}",
+                created_at=_T0,
+                language=sample.language,
+                beat_template=template,
+                claim_table=table,
+                brief=brief,
+            )
+        )
         assert result.script is not None, f"{sample.id}: Fake 未产脚本"
         cited = {cid for s in result.script.sentences for cid in s.claim_ids}
-        assert not (cited & set(disputed_ids)), \
+        assert not (cited & set(disputed_ids)), (
             f"{sample.id}: Fake 引用了 DISPUTED cited={cited & set(disputed_ids)}"
+        )

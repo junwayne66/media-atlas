@@ -17,15 +17,20 @@ from videoforge_provider_sdk import (
 
 def _req(target: str, entities: tuple[str, ...]) -> ConsistencyCheckRequest:
     return ConsistencyCheckRequest(
-        sentence_id="s", source="Apple M5 chip", target=target,
-        source_lang="en-US", target_lang="zh-CN", source_entities=entities,
+        sentence_id="s",
+        source="Apple M5 chip",
+        target=target,
+        source_lang="en-US",
+        target_lang="zh-CN",
+        source_entities=entities,
     )
 
 
 def test_providers_satisfy_protocol():
     assert isinstance(FakeLocalizationConsistencyProvider(), LocalizationConsistencyProvider)
     assert isinstance(
-        UnconfiguredLocalizationConsistencyProvider(), LocalizationConsistencyProvider,
+        UnconfiguredLocalizationConsistencyProvider(),
+        LocalizationConsistencyProvider,
     )
 
 
@@ -67,9 +72,7 @@ def test_fake_is_deterministic_and_deep_copies():
     req = _req("M5 芯片", ("Apple", "M5"))
     a = p.check(req)
     b = p.check(req)
-    assert [f.evidence["entity"] for f in a.findings] == [
-        f.evidence["entity"] for f in b.findings
-    ]
+    assert [f.evidence["entity"] for f in a.findings] == [f.evidence["entity"] for f in b.findings]
     assert req.target == "M5 芯片"  # 输入未被改动
 
 
@@ -82,7 +85,11 @@ def test_module_has_zero_heavy_imports():
         elif isinstance(node, ast.ImportFrom) and node.module:
             imported.add(node.module.split(".")[0])
     allowed = {
-        "__future__", "copy", "dataclasses", "enum", "typing",
+        "__future__",
+        "copy",
+        "dataclasses",
+        "enum",
+        "typing",
         "videoforge_contracts",
     }
     assert imported <= allowed, f"引入非白名单模块: {imported - allowed}"

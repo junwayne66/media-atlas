@@ -35,20 +35,35 @@ def _rt(v: int) -> RationalTime:
 
 
 def _timeline() -> CreativeTimeline:
-    v1 = Track(id="v1", kind=TrackKind.V1_PRIMARY_VIDEO, segments=[
-        Segment(id="v0", time_range=RationalTimeRange(start=_rt(0), duration=_rt(150)),
-                source_ref="asset-a", semantic_role="HOOK",
-                script_sentence_id="s-0", speaker_id="host",
-                provenance_ref="ra-1"),
-    ])
-    a0 = Track(id="a0", kind=TrackKind.A0_ORIGINAL, segments=[
-        Segment(id="a0-0", time_range=RationalTimeRange(start=_rt(0), duration=_rt(150))),
-    ])
-    return CreativeTimeline(id="tl-e2e", rate=30, duration=_rt(150),
-                             tracks=[v1, a0], created_at=_T0)
+    v1 = Track(
+        id="v1",
+        kind=TrackKind.V1_PRIMARY_VIDEO,
+        segments=[
+            Segment(
+                id="v0",
+                time_range=RationalTimeRange(start=_rt(0), duration=_rt(150)),
+                source_ref="asset-a",
+                semantic_role="HOOK",
+                script_sentence_id="s-0",
+                speaker_id="host",
+                provenance_ref="ra-1",
+            ),
+        ],
+    )
+    a0 = Track(
+        id="a0",
+        kind=TrackKind.A0_ORIGINAL,
+        segments=[
+            Segment(id="a0-0", time_range=RationalTimeRange(start=_rt(0), duration=_rt(150))),
+        ],
+    )
+    return CreativeTimeline(
+        id="tl-e2e", rate=30, duration=_rt(150), tracks=[v1, a0], created_at=_T0
+    )
 
 
 # —— OTIO 写文件 + 与 VF-306 dict 语义一致 ——
+
 
 def test_write_otio_file_produces_valid_json_and_roundtrips(tmp_path: Path) -> None:
     out = tmp_path / "timeline.otio"
@@ -69,8 +84,7 @@ def test_write_otio_file_produces_valid_json_and_roundtrips(tmp_path: Path) -> N
 def test_write_otio_file_rejects_dotdot_traversal(tmp_path: Path) -> None:
     # `..` traversal 越出白名单，UnsafeInputPath（不降级为 FAILED，安全违规硬抛）
     with pytest.raises(UnsafeInputPath):
-        write_otio_file(_timeline(), f"{tmp_path}/../../etc/passwd",
-                          allowed_roots=(str(tmp_path),))
+        write_otio_file(_timeline(), f"{tmp_path}/../../etc/passwd", allowed_roots=(str(tmp_path),))
 
 
 def test_write_otio_file_rejects_outside_whitelist(tmp_path: Path) -> None:
@@ -80,8 +94,10 @@ def test_write_otio_file_rejects_outside_whitelist(tmp_path: Path) -> None:
 
 # —— FCPXML ——
 
+
 def test_write_fcpxml_file_produces_parseable_xml(tmp_path: Path) -> None:
     import xml.etree.ElementTree as ET
+
     out = tmp_path / "timeline.fcpxml"
     entry = write_fcpxml_file(_timeline(), str(out), allowed_roots=(str(tmp_path),))
     assert entry.status is ExporterStatus.OK
@@ -96,6 +112,7 @@ def test_write_fcpxml_file_extension_fields_in_note(tmp_path: Path) -> None:
     out = tmp_path / "timeline.fcpxml"
     write_fcpxml_file(_timeline(), str(out), allowed_roots=(str(tmp_path),))
     import xml.etree.ElementTree as ET
+
     root = ET.parse(str(out)).getroot()
     notes = [json.loads(n.text) for n in root.findall(".//note") if n.text]
     v1_note = next(n for n in notes if n["source_ref"] == "asset-a")
@@ -109,22 +126,43 @@ def test_write_fcpxml_note_carries_all_nine_extension_fields(tmp_path: Path) -> 
     import xml.etree.ElementTree as ET
 
     from videoforge_contracts import LocalizationPolicy, SegmentEffect
-    v1 = Track(id="v1", kind=TrackKind.V1_PRIMARY_VIDEO, segments=[
-        Segment(id="v0", time_range=RationalTimeRange(start=_rt(0), duration=_rt(150)),
-                source_ref="asset-a", semantic_role="HOOK", script_sentence_id="s-0",
-                speaker_id="host", provenance_ref="ra-1", template_slot="slot-3",
+
+    v1 = Track(
+        id="v1",
+        kind=TrackKind.V1_PRIMARY_VIDEO,
+        segments=[
+            Segment(
+                id="v0",
+                time_range=RationalTimeRange(start=_rt(0), duration=_rt(150)),
+                source_ref="asset-a",
+                semantic_role="HOOK",
+                script_sentence_id="s-0",
+                speaker_id="host",
+                provenance_ref="ra-1",
+                template_slot="slot-3",
                 effects=[SegmentEffect(kind="fade_in", params={"duration_ms": "300"})],
                 crop_path="crop-9x16-track1",
-                localization=LocalizationPolicy(language="zh-CN", strategy="dub")),
-    ])
+                localization=LocalizationPolicy(language="zh-CN", strategy="dub"),
+            ),
+        ],
+    )
     tl = CreativeTimeline(id="tl", rate=30, duration=_rt(150), tracks=[v1], created_at=_T0)
     out = tmp_path / "timeline.fcpxml"
     write_fcpxml_file(tl, str(out), allowed_roots=(str(tmp_path),))
     root = ET.parse(str(out)).getroot()
     note = json.loads(root.find(".//note").text)
     # 全 9 字段 + track_kind
-    for key in ("source_ref", "semantic_role", "script_sentence_id", "speaker_id",
-                  "provenance_ref", "template_slot", "effects", "crop_path", "localization"):
+    for key in (
+        "source_ref",
+        "semantic_role",
+        "script_sentence_id",
+        "speaker_id",
+        "provenance_ref",
+        "template_slot",
+        "effects",
+        "crop_path",
+        "localization",
+    ):
         assert key in note, f"FCPXML note 缺 {key}"
     assert note["effects"][0]["kind"] == "fade_in"
     assert note["crop_path"] == "crop-9x16-track1"
@@ -141,6 +179,7 @@ def test_output_path_metachars_rejected_before_write(tmp_path: Path) -> None:
 
 
 # —— JianYing / CapCut fallback ——
+
 
 def test_write_jianying_package_produces_partial_with_readme(tmp_path: Path) -> None:
     out_dir = tmp_path / "jianying-package"
@@ -163,6 +202,7 @@ def test_write_capcut_package_experimental_fallback(tmp_path: Path) -> None:
 
 # —— export_all 单失败不阻断 ——
 
+
 def test_export_all_runs_multiple_exporters_independently(tmp_path: Path) -> None:
     plan = {
         ExporterKind.OTIO_FILE: str(tmp_path / "tl.otio"),
@@ -170,8 +210,11 @@ def test_export_all_runs_multiple_exporters_independently(tmp_path: Path) -> Non
         ExporterKind.JIANYING: str(tmp_path / "jianying/"),
     }
     report = export_all(
-        _timeline(), plan, allowed_roots=(str(tmp_path),),
-        report_id="rep-0", created_at=_T0,
+        _timeline(),
+        plan,
+        allowed_roots=(str(tmp_path),),
+        report_id="rep-0",
+        created_at=_T0,
     )
     assert len(report.entries) == 3
     kinds = {e.kind for e in report.entries}
@@ -185,8 +228,11 @@ def test_export_all_single_bad_path_does_not_block_others(tmp_path: Path) -> Non
         ExporterKind.FCPXML: "/etc/passwd",
     }
     report = export_all(
-        _timeline(), plan, allowed_roots=(str(tmp_path),),
-        report_id="rep-0", created_at=_T0,
+        _timeline(),
+        plan,
+        allowed_roots=(str(tmp_path),),
+        report_id="rep-0",
+        created_at=_T0,
     )
     by_kind = {e.kind: e for e in report.entries}
     assert by_kind[ExporterKind.OTIO_FILE].status is ExporterStatus.OK  # 未被拖累
@@ -195,6 +241,7 @@ def test_export_all_single_bad_path_does_not_block_others(tmp_path: Path) -> Non
 
 
 def test_export_all_empty_plan_yields_empty_report(tmp_path: Path) -> None:
-    report = export_all(_timeline(), {}, allowed_roots=(str(tmp_path),),
-                          report_id="rep-0", created_at=_T0)
+    report = export_all(
+        _timeline(), {}, allowed_roots=(str(tmp_path),), report_id="rep-0", created_at=_T0
+    )
     assert report.entries == []

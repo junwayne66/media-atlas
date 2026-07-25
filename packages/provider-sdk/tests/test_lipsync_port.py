@@ -18,7 +18,9 @@ from videoforge_provider_sdk import (
 
 def _req() -> LipSyncRequest:
     return LipSyncRequest(
-        segment_id="s", start_ms=0, end_ms=3000,
+        segment_id="s",
+        start_ms=0,
+        end_ms=3000,
         source_video_ref="artifact://video/src.mp4",
         dub_audio_ref="artifact://audio/dub.wav",
         face_bbox=(0.3, 0.2, 0.2, 0.3),
@@ -27,8 +29,11 @@ def _req() -> LipSyncRequest:
 
 def _fail_qa() -> LipSyncQAReport:
     return LipSyncQAReport(
-        boundary_score=0.4, skin_tone_score=0.5, motion_score=0.4,
-        identity_score=0.6, passed=False,
+        boundary_score=0.4,
+        skin_tone_score=0.5,
+        motion_score=0.4,
+        identity_score=0.6,
+        passed=False,
     )
 
 
@@ -69,17 +74,27 @@ def test_provider_ok_but_failed_qa_drives_domain_downgrade():
     # provider→domain 非阻塞：合成"成功"但 QA 不过 → domain 自动降级，绝不停在 GPU
     result = FakeLipSyncProvider(qa=_fail_qa()).synthesize(_req())
     feat = LipSyncSegmentFeatures(
-        face_count=1, face_height_ratio=0.3, occlusion_ratio=0.05,
-        speaker_probability=0.9, head_turn_deg=10.0, duration_ms=3000,
+        face_count=1,
+        face_height_ratio=0.3,
+        occlusion_ratio=0.05,
+        speaker_probability=0.9,
+        head_turn_deg=10.0,
+        duration_ms=3000,
         dub_aligned=True,
     )
     decision = decide_lipsync(
-        segment_id="s", start_ms=0, end_ms=3000, features=feat,
+        segment_id="s",
+        start_ms=0,
+        end_ms=3000,
+        features=feat,
         availability=LipSyncAvailability(can_broll_cover=True),
-        criteria=LipSyncEligibilityCriteria(), mode=LipSyncMode.AUTO_ELIGIBLE,
-        qa=result.qa, synthesized_artifact_id=result.synthesized_artifact_id,
+        criteria=LipSyncEligibilityCriteria(),
+        mode=LipSyncMode.AUTO_ELIGIBLE,
+        qa=result.qa,
+        synthesized_artifact_id=result.synthesized_artifact_id,
     )
     from videoforge_contracts import LipSyncMethod
+
     assert decision.method is LipSyncMethod.BROLL_COVER
     assert decision.needs_review
 
@@ -103,9 +118,11 @@ def test_fake_module_has_zero_gpu_imports():
         elif isinstance(node, ast.ImportFrom) and node.module:
             imported.add(node.module.split(".")[0])
     allowed = {
-        "__future__", "copy", "dataclasses", "enum", "typing",
+        "__future__",
+        "copy",
+        "dataclasses",
+        "enum",
+        "typing",
         "videoforge_contracts",
     }
-    assert imported <= allowed, (
-        f"lipsync provider 引入了非白名单模块: {imported - allowed}"
-    )
+    assert imported <= allowed, f"lipsync provider 引入了非白名单模块: {imported - allowed}"

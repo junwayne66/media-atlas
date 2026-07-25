@@ -60,14 +60,16 @@ class CleanPlateProvider(Protocol):
 class UnconfiguredCleanPlateProvider:
     """诚实占位：没有 Clean Plate pipeline，绝不产出。"""
 
-    def __init__(self, *, name: str = "cleanplate.unconfigured",
-                  execution_location: str = "local") -> None:
+    def __init__(
+        self, *, name: str = "cleanplate.unconfigured", execution_location: str = "local"
+    ) -> None:
         self.name = name
         self.execution_location = execution_location
 
     def generate(self, request: CleanPlateRequest) -> CleanPlateResult:
         return CleanPlateResult(
-            status=CleanPlateStatus.UNCONFIGURED, request_id=request.id,
+            status=CleanPlateStatus.UNCONFIGURED,
+            request_id=request.id,
             provider=self.name,
             error_code=CleanPlateErrorCode.PIPELINE_UNAVAILABLE,
             error_detail=(
@@ -78,7 +80,8 @@ class UnconfiguredCleanPlateProvider:
 
     def health_check(self) -> CleanPlateResult:
         return CleanPlateResult(
-            status=CleanPlateStatus.UNCONFIGURED, request_id="",
+            status=CleanPlateStatus.UNCONFIGURED,
+            request_id="",
             error_code=CleanPlateErrorCode.PIPELINE_UNAVAILABLE,
         )
 
@@ -91,8 +94,7 @@ class FakeCleanPlateProvider:
     - deep-copy request 输入，无内部状态。
     """
 
-    def __init__(self, *, name: str = "cleanplate.fake",
-                  execution_location: str = "local") -> None:
+    def __init__(self, *, name: str = "cleanplate.fake", execution_location: str = "local") -> None:
         self.name = name
         self.execution_location = execution_location
         self._counter = 0
@@ -100,15 +102,19 @@ class FakeCleanPlateProvider:
     def generate(self, request: CleanPlateRequest) -> CleanPlateResult:
         req = deepcopy(request)
         from videoforge_contracts import CleanPlateMethod
+
         if req.method is CleanPlateMethod.SKIP:
             return CleanPlateResult(
-                status=CleanPlateStatus.OK, request_id=req.id,
-                clean_plate_artifact_id=None, provider=self.name,
+                status=CleanPlateStatus.OK,
+                request_id=req.id,
+                clean_plate_artifact_id=None,
+                provider=self.name,
                 warnings=["SKIP method 未产出 Clean Plate（预期，如 REPLACE_OVERLAY 使用）"],
             )
         self._counter += 1
         return CleanPlateResult(
-            status=CleanPlateStatus.OK, request_id=req.id,
+            status=CleanPlateStatus.OK,
+            request_id=req.id,
             clean_plate_artifact_id=f"fake-cp-{req.id}-{self._counter}",
             provider=self.name,
             warnings=["Fake Clean Plate：非真实图像，仅供下游 pipeline 开发"],
@@ -167,22 +173,25 @@ class TextRedrawProvider(Protocol):
 
 
 class UnconfiguredTextRedrawProvider:
-    def __init__(self, *, name: str = "textredraw.unconfigured",
-                  execution_location: str = "local") -> None:
+    def __init__(
+        self, *, name: str = "textredraw.unconfigured", execution_location: str = "local"
+    ) -> None:
         self.name = name
         self.execution_location = execution_location
 
     def redraw(self, request: TextRedrawRequest) -> TextRedrawResult:
         return TextRedrawResult(
             status=TextRedrawStatus.UNCONFIGURED,
-            decision_ref=request.decision.source_track_id, provider=self.name,
+            decision_ref=request.decision.source_track_id,
+            provider=self.name,
             error_code=TextRedrawErrorCode.RENDERER_UNAVAILABLE,
             error_detail=f"provider {self.name!r} 未配置真实文字重绘",
         )
 
     def health_check(self) -> TextRedrawResult:
         return TextRedrawResult(
-            status=TextRedrawStatus.UNCONFIGURED, decision_ref="",
+            status=TextRedrawStatus.UNCONFIGURED,
+            decision_ref="",
             error_code=TextRedrawErrorCode.RENDERER_UNAVAILABLE,
         )
 
@@ -195,8 +204,7 @@ class FakeTextRedrawProvider:
     - deep-copy 输入。
     """
 
-    def __init__(self, *, name: str = "textredraw.fake",
-                  execution_location: str = "local") -> None:
+    def __init__(self, *, name: str = "textredraw.fake", execution_location: str = "local") -> None:
         self.name = name
         self.execution_location = execution_location
 
@@ -206,14 +214,16 @@ class FakeTextRedrawProvider:
         if not decision.translated_text:
             return TextRedrawResult(
                 status=TextRedrawStatus.FAILED,
-                decision_ref=decision.source_track_id, provider=self.name,
+                decision_ref=decision.source_track_id,
+                provider=self.name,
                 error_code=TextRedrawErrorCode.UNKNOWN,
                 error_detail="decision.translated_text 为空，无法重绘",
             )
         if not req.clean_plate_artifact_id:
             return TextRedrawResult(
                 status=TextRedrawStatus.FAILED,
-                decision_ref=decision.source_track_id, provider=self.name,
+                decision_ref=decision.source_track_id,
+                provider=self.name,
                 error_code=TextRedrawErrorCode.CLEAN_PLATE_MISSING,
                 error_detail="REDRAW 缺 clean_plate_artifact_id",
             )
@@ -222,15 +232,15 @@ class FakeTextRedrawProvider:
         if ratio > req.max_expansion_ratio:
             return TextRedrawResult(
                 status=TextRedrawStatus.LAYOUT_OVERFLOW,
-                decision_ref=decision.source_track_id, provider=self.name,
+                decision_ref=decision.source_track_id,
+                provider=self.name,
                 expansion_ratio=ratio,
-                error_detail=(
-                    f"目标语言扩张 {ratio:.2f}× 超阈值 {req.max_expansion_ratio:.2f}"
-                ),
+                error_detail=(f"目标语言扩张 {ratio:.2f}× 超阈值 {req.max_expansion_ratio:.2f}"),
             )
         return TextRedrawResult(
             status=TextRedrawStatus.OK,
-            decision_ref=decision.source_track_id, provider=self.name,
+            decision_ref=decision.source_track_id,
+            provider=self.name,
             rendered_artifact_id=f"fake-redraw-{decision.source_track_id}",
             expansion_ratio=ratio,
             warnings=["Fake 排字：非真实字体/布局，仅供 pipeline 开发"],
@@ -238,7 +248,8 @@ class FakeTextRedrawProvider:
 
     def health_check(self) -> TextRedrawResult:
         return TextRedrawResult(
-            status=TextRedrawStatus.OK, decision_ref="",
+            status=TextRedrawStatus.OK,
+            decision_ref="",
         )
 
 

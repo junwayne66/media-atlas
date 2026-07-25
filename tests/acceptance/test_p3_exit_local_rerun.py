@@ -86,16 +86,22 @@ def test_config_change_forces_recompute_but_not_input_change() -> None:
     """换 ASR 语言（config 变）→ ASR cache_key 变；同一 config 二次调用 → cache_key 稳。"""
     audio = "f" * 64
     zh_key = activity_cache_key(
-        input_digest=audio, provider="analysis.asr.whisper",
-        tool_version="v3-large", config={"language": "zh-CN", "vad": True},
+        input_digest=audio,
+        provider="analysis.asr.whisper",
+        tool_version="v3-large",
+        config={"language": "zh-CN", "vad": True},
     )
     en_key = activity_cache_key(
-        input_digest=audio, provider="analysis.asr.whisper",
-        tool_version="v3-large", config={"language": "en-US", "vad": True},
+        input_digest=audio,
+        provider="analysis.asr.whisper",
+        tool_version="v3-large",
+        config={"language": "en-US", "vad": True},
     )
     zh_key_again = activity_cache_key(
-        input_digest=audio, provider="analysis.asr.whisper",
-        tool_version="v3-large", config={"language": "zh-CN", "vad": True},
+        input_digest=audio,
+        provider="analysis.asr.whisper",
+        tool_version="v3-large",
+        config={"language": "zh-CN", "vad": True},
     )
     assert zh_key != en_key, "换语言 cache_key 未变 —— 会错命中"
     assert zh_key == zh_key_again, "同 config 二次 cache_key 不稳 —— 无法复用"
@@ -105,11 +111,15 @@ def test_tool_version_upgrade_invalidates_cache() -> None:
     """升级 ASR 模型（tool_version 变）→ cache_key 变，触发全量重跑（41 §11 契约）。"""
     audio = "9" * 64
     v3 = activity_cache_key(
-        input_digest=audio, provider="analysis.asr.whisper",
-        tool_version="v3-large", config={"language": "zh-CN"},
+        input_digest=audio,
+        provider="analysis.asr.whisper",
+        tool_version="v3-large",
+        config={"language": "zh-CN"},
     )
     v4 = activity_cache_key(
-        input_digest=audio, provider="analysis.asr.whisper",
-        tool_version="v4-large", config={"language": "zh-CN"},
+        input_digest=audio,
+        provider="analysis.asr.whisper",
+        tool_version="v4-large",
+        config={"language": "zh-CN"},
     )
     assert v3 != v4, "换工具版本 cache_key 未变 —— 版本升级会静默复用旧结果"

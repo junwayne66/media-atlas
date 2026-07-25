@@ -47,23 +47,40 @@ def _rt(v: int, rate: int = 30) -> RationalTime:
 def _timeline_with_three_cuts() -> CreativeTimeline:
     """3 段视频 + 3 段音频的时间轴 —— 覆盖多切点 concat 场景。"""
     v_segs = [
-        Segment(id="v0", time_range=RationalTimeRange(start=_rt(0), duration=_rt(90)),
-                 source_ref="a", semantic_role="HOOK"),
-        Segment(id="v1", time_range=RationalTimeRange(start=_rt(90), duration=_rt(150)),
-                 source_ref="b", semantic_role="EVIDENCE"),
-        Segment(id="v2", time_range=RationalTimeRange(start=_rt(240), duration=_rt(120)),
-                 source_ref="a", semantic_role="CTA"),
+        Segment(
+            id="v0",
+            time_range=RationalTimeRange(start=_rt(0), duration=_rt(90)),
+            source_ref="a",
+            semantic_role="HOOK",
+        ),
+        Segment(
+            id="v1",
+            time_range=RationalTimeRange(start=_rt(90), duration=_rt(150)),
+            source_ref="b",
+            semantic_role="EVIDENCE",
+        ),
+        Segment(
+            id="v2",
+            time_range=RationalTimeRange(start=_rt(240), duration=_rt(120)),
+            source_ref="a",
+            semantic_role="CTA",
+        ),
     ]
     a_segs = [
-        Segment(id="a0", time_range=RationalTimeRange(start=_rt(0), duration=_rt(90)),
-                 source_ref="a"),
-        Segment(id="a1", time_range=RationalTimeRange(start=_rt(90), duration=_rt(150)),
-                 source_ref="b"),
-        Segment(id="a2", time_range=RationalTimeRange(start=_rt(240), duration=_rt(120)),
-                 source_ref="a"),
+        Segment(
+            id="a0", time_range=RationalTimeRange(start=_rt(0), duration=_rt(90)), source_ref="a"
+        ),
+        Segment(
+            id="a1", time_range=RationalTimeRange(start=_rt(90), duration=_rt(150)), source_ref="b"
+        ),
+        Segment(
+            id="a2", time_range=RationalTimeRange(start=_rt(240), duration=_rt(120)), source_ref="a"
+        ),
     ]
     return CreativeTimeline(
-        id="tl-cuts", rate=30, duration=_rt(360),
+        id="tl-cuts",
+        rate=30,
+        duration=_rt(360),
         tracks=[
             Track(id="v1t", kind=TrackKind.V1_PRIMARY_VIDEO, segments=v_segs),
             Track(id="a0t", kind=TrackKind.A0_ORIGINAL, segments=a_segs),
@@ -83,30 +100,39 @@ def _extract_trim_cuts(graph) -> list[tuple[str, str, str]]:
 
 # —— §12 第 4 条：PROXY vs FINAL 切点差 <1 帧（等于 0 帧）——
 
+
 def test_proxy_and_final_share_identical_cut_points(tmp_path: Path) -> None:
     tl = _timeline_with_three_cuts()
-    resolved = {"a": (str(tmp_path / "a.mp4"), "0" * 64),
-                 "b": (str(tmp_path / "b.mp4"), "1" * 64)}
+    resolved = {"a": (str(tmp_path / "a.mp4"), "0" * 64), "b": (str(tmp_path / "b.mp4"), "1" * 64)}
     # 两 stage 用同一 output_path 会互相覆盖 —— 只关心 filter_graph 切点
     proxy_graph = compile_timeline(
-        tl, resolved,
-        CompileConfig(output_path=str(tmp_path / "proxy.mp4"),
-                       allowed_input_roots=(str(tmp_path),),
-                       stage=RenderStage.PROXY, target=RenderTargetKind.MP4_H264),
+        tl,
+        resolved,
+        CompileConfig(
+            output_path=str(tmp_path / "proxy.mp4"),
+            allowed_input_roots=(str(tmp_path),),
+            stage=RenderStage.PROXY,
+            target=RenderTargetKind.MP4_H264,
+        ),
         tool_version="ffmpeg-8.1.2",
     )
     final_graph = compile_timeline(
-        tl, resolved,
-        CompileConfig(output_path=str(tmp_path / "final.mp4"),
-                       allowed_input_roots=(str(tmp_path),),
-                       stage=RenderStage.FINAL, target=RenderTargetKind.MP4_H264),
+        tl,
+        resolved,
+        CompileConfig(
+            output_path=str(tmp_path / "final.mp4"),
+            allowed_input_roots=(str(tmp_path),),
+            stage=RenderStage.FINAL,
+            target=RenderTargetKind.MP4_H264,
+        ),
         tool_version="ffmpeg-8.1.2",
     )
 
     proxy_cuts = _extract_trim_cuts(proxy_graph)
     final_cuts = _extract_trim_cuts(final_graph)
-    assert proxy_cuts == final_cuts, \
+    assert proxy_cuts == final_cuts, (
         f"PROXY 与 FINAL 切点不一致 —— 差绝非 <1 帧\nPROXY={proxy_cuts}\nFINAL={final_cuts}"
+    )
     # 至少 3 视频 + 3 音频 trim 节点
     assert len(proxy_cuts) >= 6, f"未生成足够的 trim 节点，实际 {len(proxy_cuts)}"
 
@@ -114,36 +140,46 @@ def test_proxy_and_final_share_identical_cut_points(tmp_path: Path) -> None:
 def test_proxy_and_final_only_differ_in_codec_flags(tmp_path: Path) -> None:
     """两 stage 的 args 差异应仅位于 codec/preset 段 —— 输入 -i、-map 段完全一致。"""
     tl = _timeline_with_three_cuts()
-    resolved = {"a": (str(tmp_path / "a.mp4"), "0" * 64),
-                 "b": (str(tmp_path / "b.mp4"), "1" * 64)}
+    resolved = {"a": (str(tmp_path / "a.mp4"), "0" * 64), "b": (str(tmp_path / "b.mp4"), "1" * 64)}
     proxy_args = compile_timeline(
-        tl, resolved,
-        CompileConfig(output_path=str(tmp_path / "proxy.mp4"),
-                       allowed_input_roots=(str(tmp_path),), stage=RenderStage.PROXY),
+        tl,
+        resolved,
+        CompileConfig(
+            output_path=str(tmp_path / "proxy.mp4"),
+            allowed_input_roots=(str(tmp_path),),
+            stage=RenderStage.PROXY,
+        ),
         tool_version="ffmpeg-8.1.2",
     ).args
     final_args = compile_timeline(
-        tl, resolved,
-        CompileConfig(output_path=str(tmp_path / "final.mp4"),
-                       allowed_input_roots=(str(tmp_path),), stage=RenderStage.FINAL),
+        tl,
+        resolved,
+        CompileConfig(
+            output_path=str(tmp_path / "final.mp4"),
+            allowed_input_roots=(str(tmp_path),),
+            stage=RenderStage.FINAL,
+        ),
         tool_version="ffmpeg-8.1.2",
     ).args
+
     # 提取 -i 到 -map 段（输入映射，与 stage 无关）
     def _input_map_slice(args: list[str]) -> list[str]:
         keep: list[str] = []
         i = 0
         while i < len(args):
             if args[i] == "-i" and i + 1 < len(args):
-                keep.extend(args[i:i + 2])
+                keep.extend(args[i : i + 2])
                 i += 2
             elif args[i] == "-map" and i + 1 < len(args):
-                keep.extend(args[i:i + 2])
+                keep.extend(args[i : i + 2])
                 i += 2
             else:
                 i += 1
         return keep
-    assert _input_map_slice(proxy_args) == _input_map_slice(final_args), \
+
+    assert _input_map_slice(proxy_args) == _input_map_slice(final_args), (
         "输入映射段 PROXY/FINAL 不一致 —— 切点/映射被 stage 意外影响"
+    )
     # crf 应不同（PROXY 快编 vs FINAL 品质）
     assert "-crf" in proxy_args and "-crf" in final_args
     proxy_crf = proxy_args[proxy_args.index("-crf") + 1]
@@ -152,6 +188,7 @@ def test_proxy_and_final_only_differ_in_codec_flags(tmp_path: Path) -> None:
 
 
 # —— §12 第 6 条：OTIO 结构可被外部导入（grep 级）——
+
 
 def test_otio_file_has_expected_structure_for_davinci_import(tmp_path: Path) -> None:
     """OTIO 文件应含 DaVinci 识别的必要字段：OTIO_SCHEMA/tracks/global_start_time/duration。"""
@@ -187,6 +224,7 @@ def test_otio_file_has_expected_structure_for_davinci_import(tmp_path: Path) -> 
 
 # —— §12 第 7 条：剪映/CapCut 失败标记不破坏 Project 批量导出 ——
 
+
 def test_jianying_capcut_return_partial_but_do_not_break_batch(tmp_path: Path) -> None:
     tl = _timeline_with_three_cuts()
     plan = {
@@ -195,8 +233,9 @@ def test_jianying_capcut_return_partial_but_do_not_break_batch(tmp_path: Path) -
         ExporterKind.JIANYING: str(tmp_path / "jy/"),
         ExporterKind.CAPCUT: str(tmp_path / "cc/"),
     }
-    report = export_all(tl, plan, allowed_roots=(str(tmp_path),),
-                          report_id="rep-p3exit", created_at=_T0)
+    report = export_all(
+        tl, plan, allowed_roots=(str(tmp_path),), report_id="rep-p3exit", created_at=_T0
+    )
     by_kind = {e.kind: e for e in report.entries}
     # OTIO/FCPXML 正常
     assert by_kind[ExporterKind.OTIO_FILE].status is ExporterStatus.OK
@@ -216,8 +255,9 @@ def test_export_all_single_hard_failure_isolates_but_batch_continues(tmp_path: P
         ExporterKind.FCPXML: "/etc/passwd",  # 硬失败：越白名单
         ExporterKind.JIANYING: str(tmp_path / "jy/"),
     }
-    report = export_all(tl, plan, allowed_roots=(str(tmp_path),),
-                          report_id="rep-fail", created_at=_T0)
+    report = export_all(
+        tl, plan, allowed_roots=(str(tmp_path),), report_id="rep-fail", created_at=_T0
+    )
     by_kind = {e.kind: e for e in report.entries}
     assert by_kind[ExporterKind.OTIO_FILE].status is ExporterStatus.OK  # 未受连累
     assert by_kind[ExporterKind.FCPXML].status is ExporterStatus.FAILED
@@ -227,6 +267,7 @@ def test_export_all_single_hard_failure_isolates_but_batch_continues(tmp_path: P
 
 
 # —— 冒烟：单独调用每个 exporter 都成功产文件（并留下"发布链路以 MP4 为准"提示）——
+
 
 def test_all_four_exporters_produce_expected_artifacts(tmp_path: Path) -> None:
     tl = _timeline_with_three_cuts()

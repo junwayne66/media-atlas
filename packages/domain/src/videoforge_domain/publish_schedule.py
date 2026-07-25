@@ -77,6 +77,9 @@ def compute_copy_idempotency_key(
         raise ValueError("copy_index 必须 ≥ 0")
     window = scheduled_window if copy_index == 0 else f"{scheduled_window}#copy{copy_index}"
     return compute_idempotency_key(
-        account_id=account_id, platform=platform, render_digest=render_digest,
-        metadata_digest=metadata_digest, scheduled_window=window,
+        account_id=account_id,
+        platform=platform,
+        render_digest=render_digest,
+        metadata_digest=metadata_digest,
+        scheduled_window=window,
     )

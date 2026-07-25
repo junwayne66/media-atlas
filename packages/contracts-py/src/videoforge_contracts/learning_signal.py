@@ -77,7 +77,8 @@ class LearningSignalResult(ContractModel):
             raise ValueError("association_only 必须为 True（§11：关联非因果，绝不作因果建议）")
         # 样本不足绝不给出方向性结论。
         if not self.enough_samples and self.direction not in (
-            SignalDirection.INSUFFICIENT, SignalDirection.NONE
+            SignalDirection.INSUFFICIENT,
+            SignalDirection.NONE,
         ):
             raise ValueError("样本不足时 direction 只能是 INSUFFICIENT/NONE")
         return self

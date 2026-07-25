@@ -33,24 +33,44 @@ def _frame(at: int, luma: float, ph: str) -> VideoFrameSample:
     return VideoFrameSample(at_ms=at, mean_luma=luma, phash=ph)
 
 
-def _audio(at: int, dur: int, lufs: float = -14, tp: float = -3.0,
-           voice: bool = False, tail: float = 0.01) -> AudioWindowSample:
-    return AudioWindowSample(at_ms=at, duration_ms=dur, lufs=lufs, true_peak_dbtp=tp,
-                                has_voice=voice, tail_amplitude=tail)
+def _audio(
+    at: int, dur: int, lufs: float = -14, tp: float = -3.0, voice: bool = False, tail: float = 0.01
+) -> AudioWindowSample:
+    return AudioWindowSample(
+        at_ms=at,
+        duration_ms=dur,
+        lufs=lufs,
+        true_peak_dbtp=tp,
+        has_voice=voice,
+        tail_amplitude=tail,
+    )
 
 
-def _caption(cid: str, at: int, dur: int, left: float = 10, top: float = 80,
-             right: float = 90, bottom: float = 92) -> CaptionBoundingBox:
-    return CaptionBoundingBox(caption_id=cid, at_ms=at, duration_ms=dur,
-                                left_pct=left, top_pct=top,
-                                right_pct=right, bottom_pct=bottom)
+def _caption(
+    cid: str,
+    at: int,
+    dur: int,
+    left: float = 10,
+    top: float = 80,
+    right: float = 90,
+    bottom: float = 92,
+) -> CaptionBoundingBox:
+    return CaptionBoundingBox(
+        caption_id=cid,
+        at_ms=at,
+        duration_ms=dur,
+        left_pct=left,
+        top_pct=top,
+        right_pct=right,
+        bottom_pct=bottom,
+    )
 
 
 # —— 视频规则 ——
 
+
 def test_detect_black_frames_flags_dark_run() -> None:
-    frames = [_frame(0, 100, "a"), _frame(100, 5, "b"), _frame(200, 3, "c"),
-              _frame(300, 90, "d")]
+    frames = [_frame(0, 100, "a"), _frame(100, 5, "b"), _frame(200, 3, "c"), _frame(300, 90, "d")]
     findings = detect_black_frames(frames)
     assert len(findings) == 1
     f = findings[0]
@@ -87,6 +107,7 @@ def test_detect_duplicate_frames_flags_adjacent() -> None:
 
 # —— 音频规则 ——
 
+
 def test_check_loudness_flags_out_of_range() -> None:
     # 目标 -14 ±2 → -20 越下界
     findings = check_loudness([_audio(0, 45000, lufs=-20, tp=-3)])
@@ -106,8 +127,7 @@ def test_check_loudness_within_range_passes() -> None:
 
 def test_detect_voice_tail_cut_flags_end_voice() -> None:
     # 末窗有人声且尾部电平 >0.05
-    windows = [_audio(0, 40000, voice=False, tail=0.0),
-                _audio(40000, 5000, voice=True, tail=0.4)]
+    windows = [_audio(0, 40000, voice=False, tail=0.0), _audio(40000, 5000, voice=True, tail=0.4)]
     findings = detect_voice_tail_cut(windows)
     assert findings and findings[0].kind is QAFindingKind.VOICE_TAIL_CUT
     assert findings[0].severity is QASeverity.BLOCKER
@@ -120,6 +140,7 @@ def test_detect_voice_tail_cut_ignores_silence_end() -> None:
 
 
 # —— 字幕规则 ——
+
 
 def test_check_caption_safe_area_flags_out() -> None:
     # bottom 96 > safe_max 95 → 越界
@@ -145,6 +166,7 @@ def test_check_caption_overlap_touching_ok() -> None:
 
 # —— 构图 / 时长 ——
 
+
 def test_check_broll_ratio_low_flagged() -> None:
     findings = check_broll_ratio(broll_duration_ms=1000, total_video_duration_ms=45000)
     assert findings and findings[0].kind is QAFindingKind.BROLL_RATIO_LOW
@@ -167,25 +189,39 @@ def test_check_duration_match_within_tolerance_passes() -> None:
 
 # —— 发布门 ——
 
+
 def test_publish_gate_blocks_on_any_blocker() -> None:
     from videoforge_contracts import QAFinding
-    findings = [QAFinding(id="f", kind=QAFindingKind.BLACK_FRAME,
-                            severity=QASeverity.BLOCKER, at_ms=0)]
+
+    findings = [
+        QAFinding(id="f", kind=QAFindingKind.BLACK_FRAME, severity=QASeverity.BLOCKER, at_ms=0)
+    ]
     assert validate_publish_gate(findings) is PublishGate.BLOCK
 
 
 def test_publish_gate_blocks_on_too_many_majors() -> None:
     from videoforge_contracts import QAFinding
-    findings = [QAFinding(id=f"f-{i}", kind=QAFindingKind.LOUDNESS_OUT_OF_RANGE,
-                            severity=QASeverity.MAJOR, at_ms=i * 1000)
-                for i in range(4)]  # 4 > 默认 3
+
+    findings = [
+        QAFinding(
+            id=f"f-{i}",
+            kind=QAFindingKind.LOUDNESS_OUT_OF_RANGE,
+            severity=QASeverity.MAJOR,
+            at_ms=i * 1000,
+        )
+        for i in range(4)
+    ]  # 4 > 默认 3
     assert validate_publish_gate(findings) is PublishGate.BLOCK
 
 
 def test_publish_gate_passes_on_minor_only() -> None:
     from videoforge_contracts import QAFinding
-    findings = [QAFinding(id="f", kind=QAFindingKind.CAPTION_OFF_SAFE_AREA,
-                            severity=QASeverity.MINOR, at_ms=0)]
+
+    findings = [
+        QAFinding(
+            id="f", kind=QAFindingKind.CAPTION_OFF_SAFE_AREA, severity=QASeverity.MINOR, at_ms=0
+        )
+    ]
     assert validate_publish_gate(findings) is PublishGate.PASS
 
 
@@ -195,29 +231,36 @@ def test_publish_gate_passes_on_empty() -> None:
 
 # —— 聚合 aggregate_qa_report ——
 
+
 def test_aggregate_clean_report_passes() -> None:
     input_data = MediaSampleInput(
         video_frames=[_frame(i * 33, 128, f"h{i}") for i in range(10)],
         audio_windows=[_audio(0, 45000, lufs=-14, tp=-3, voice=False, tail=0.001)],
         captions=[_caption("c0", 0, 1500)],
-        broll_duration_ms=10000, total_video_duration_ms=45000,
+        broll_duration_ms=10000,
+        total_video_duration_ms=45000,
         measured_duration_ms=45000,
     )
-    report = aggregate_qa_report(input_data, report_id="r", timeline_id="tl",
-                                    timeline_duration_ms=45000, created_at=_T0)
+    report = aggregate_qa_report(
+        input_data, report_id="r", timeline_id="tl", timeline_duration_ms=45000, created_at=_T0
+    )
     assert report.pass_or_block is True
     assert report.findings == []
 
 
 def test_aggregate_black_frame_blocks() -> None:
     input_data = MediaSampleInput(
-        video_frames=[_frame(0, 100, "a"), _frame(100, 2, "b"),  # 黑帧
-                        _frame(200, 100, "c")],
+        video_frames=[
+            _frame(0, 100, "a"),
+            _frame(100, 2, "b"),  # 黑帧
+            _frame(200, 100, "c"),
+        ],
         audio_windows=[_audio(0, 45000, voice=False, tail=0.001)],
         measured_duration_ms=45000,
     )
-    report = aggregate_qa_report(input_data, report_id="r", timeline_id="tl",
-                                    timeline_duration_ms=45000, created_at=_T0)
+    report = aggregate_qa_report(
+        input_data, report_id="r", timeline_id="tl", timeline_duration_ms=45000, created_at=_T0
+    )
     assert report.pass_or_block is False
     assert any(f.kind is QAFindingKind.BLACK_FRAME for f in report.findings)
 
@@ -228,15 +271,15 @@ def test_duplicate_caption_ids_do_not_crash_aggregation() -> None:
         video_frames=[_frame(i * 33, 128, f"h{i}") for i in range(10)],
         audio_windows=[_audio(0, 45000, voice=False, tail=0.001)],
         # 两条都越安全区（bottom=96），且 caption_id 相同
-        captions=[_caption("dup", 0, 1500, bottom=96),
-                    _caption("dup", 2000, 1500, bottom=96)],
-        broll_duration_ms=10000, total_video_duration_ms=45000,
+        captions=[_caption("dup", 0, 1500, bottom=96), _caption("dup", 2000, 1500, bottom=96)],
+        broll_duration_ms=10000,
+        total_video_duration_ms=45000,
         measured_duration_ms=45000,
     )
-    report = aggregate_qa_report(input_data, report_id="r", timeline_id="tl",
-                                    timeline_duration_ms=45000, created_at=_T0)
-    safe_findings = [f for f in report.findings
-                        if f.kind is QAFindingKind.CAPTION_OFF_SAFE_AREA]
+    report = aggregate_qa_report(
+        input_data, report_id="r", timeline_id="tl", timeline_duration_ms=45000, created_at=_T0
+    )
+    safe_findings = [f for f in report.findings if f.kind is QAFindingKind.CAPTION_OFF_SAFE_AREA]
     assert len(safe_findings) == 2  # 两条 finding；id 加 enumerate 索引保唯一
     assert len({f.id for f in safe_findings}) == 2
 
@@ -246,12 +289,18 @@ def test_contract_rejects_pass_true_with_blocker() -> None:
     from pydantic import ValidationError
 
     from videoforge_contracts import QAFinding, QAReport
+
     with pytest.raises(ValidationError, match="pass_or_block"):
         QAReport(
-            id="r", timeline_id="tl",
-            findings=[QAFinding(id="f", kind=QAFindingKind.BLACK_FRAME,
-                                    severity=QASeverity.BLOCKER, at_ms=0)],
-            timeline_duration_ms=45000, measured_duration_ms=45000,
+            id="r",
+            timeline_id="tl",
+            findings=[
+                QAFinding(
+                    id="f", kind=QAFindingKind.BLACK_FRAME, severity=QASeverity.BLOCKER, at_ms=0
+                )
+            ],
+            timeline_duration_ms=45000,
+            measured_duration_ms=45000,
             pass_or_block=True,  # 与 BLOCKER 冲突
             created_at=_T0,
         )
@@ -259,12 +308,17 @@ def test_contract_rejects_pass_true_with_blocker() -> None:
 
 def test_contract_accepts_pass_false_with_blocker() -> None:
     from videoforge_contracts import QAFinding, QAReport
+
     report = QAReport(
-        id="r", timeline_id="tl",
-        findings=[QAFinding(id="f", kind=QAFindingKind.BLACK_FRAME,
-                                severity=QASeverity.BLOCKER, at_ms=0)],
-        timeline_duration_ms=45000, measured_duration_ms=45000,
-        pass_or_block=False, created_at=_T0,
+        id="r",
+        timeline_id="tl",
+        findings=[
+            QAFinding(id="f", kind=QAFindingKind.BLACK_FRAME, severity=QASeverity.BLOCKER, at_ms=0)
+        ],
+        timeline_duration_ms=45000,
+        measured_duration_ms=45000,
+        pass_or_block=False,
+        created_at=_T0,
     )
     assert report.pass_or_block is False
 

@@ -47,7 +47,9 @@ class VoiceStyle(ContractModel):
     """合成风格 hints（provider 可用则用，不强制）。"""
 
     pace: float | None = Field(
-        default=None, gt=0.0, le=3.0,
+        default=None,
+        gt=0.0,
+        le=3.0,
         description="语速倍数；建议 0.92-1.08（§8 时长拟合）",
     )
     emotion: str | None = Field(
@@ -55,10 +57,16 @@ class VoiceStyle(ContractModel):
         description="neutral / cheerful / serious / excited 等标签",
     )
     energy: float | None = Field(
-        default=None, ge=0.0, le=1.0, description="能量/音量强度提示",
+        default=None,
+        ge=0.0,
+        le=1.0,
+        description="能量/音量强度提示",
     )
     pitch_semitones: float | None = Field(
-        default=None, ge=-12.0, le=12.0, description="音调偏移（半音）",
+        default=None,
+        ge=-12.0,
+        le=12.0,
+        description="音调偏移（半音）",
     )
 
 
@@ -78,7 +86,8 @@ class VoiceProfile(ContractModel):
     license_status: VoiceLicenseStatus = VoiceLicenseStatus.UNCONFIRMED
     provider_tier: TTSProviderTier = TTSProviderTier.CLOUD_HIGH_QUALITY
     provider_voice_id: str | None = Field(
-        default=None, description="provider 侧的具体 voice id（云端/自托管返回值）",
+        default=None,
+        description="provider 侧的具体 voice id（云端/自托管返回值）",
     )
     sample_source_ref: str | None = Field(
         default=None,
@@ -96,13 +105,9 @@ class VoiceProfile(ContractModel):
     def _check_clone_consent(self) -> "VoiceProfile":
         if self.voice_kind is VoiceKind.CLONED:
             if not self.sample_source_ref:
-                raise ValueError(
-                    "voice_kind=CLONED 必须携带 sample_source_ref（§7 硬红线）"
-                )
+                raise ValueError("voice_kind=CLONED 必须携带 sample_source_ref（§7 硬红线）")
             if not self.consent_ref:
-                raise ValueError(
-                    "voice_kind=CLONED 必须携带 consent_ref（§7 硬红线）"
-                )
+                raise ValueError("voice_kind=CLONED 必须携带 consent_ref（§7 硬红线）")
         return self
 
 
@@ -179,7 +184,9 @@ class TTSManifest(ContractModel):
     duration_ms: int | None = Field(default=None, ge=0)
     word_timings: list[TTSWordTiming] = Field(default_factory=list)
     speed_used: float | None = Field(
-        default=None, gt=0.0, description="实际使用的语速倍数（time fit 后）",
+        default=None,
+        gt=0.0,
+        description="实际使用的语速倍数（time fit 后）",
     )
     seed: int | None = None
     created_at: datetime

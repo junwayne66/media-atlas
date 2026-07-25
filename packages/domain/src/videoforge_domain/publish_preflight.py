@@ -56,10 +56,10 @@ class PreflightIssue:
     detail: str
 
 
-def _f(check: PreflightCheck, sev: ReviewSeverity, detail: str,
-       **evidence: object) -> PreflightFinding:
-    return PreflightFinding(check=check, severity=sev, detail=detail,
-                             evidence=dict(evidence))
+def _f(
+    check: PreflightCheck, sev: ReviewSeverity, detail: str, **evidence: object
+) -> PreflightFinding:
+    return PreflightFinding(check=check, severity=sev, detail=detail, evidence=dict(evidence))
 
 
 def run_preflight(
@@ -76,115 +76,174 @@ def run_preflight(
 
     # 平台一致
     if spec.platform is not capability.platform:
-        findings.append(_f(
-            PreflightCheck.METHOD_UNAVAILABLE, ReviewSeverity.FATAL,
-            f"规则集平台 {spec.platform.value} 与连接器 {capability.platform.value} 不一致",
-        ))
+        findings.append(
+            _f(
+                PreflightCheck.METHOD_UNAVAILABLE,
+                ReviewSeverity.FATAL,
+                f"规则集平台 {spec.platform.value} 与连接器 {capability.platform.value} 不一致",
+            )
+        )
 
     # --- 媒体 ---
-    if not (spec.min_width <= probe.width <= spec.max_width
-            and spec.min_height <= probe.height <= spec.max_height):
-        findings.append(_f(
-            PreflightCheck.RESOLUTION, ReviewSeverity.ERROR,
-            f"分辨率 {probe.width}x{probe.height} 超出 "
-            f"[{spec.min_width}x{spec.min_height}, {spec.max_width}x{spec.max_height}]",
-        ))
+    if not (
+        spec.min_width <= probe.width <= spec.max_width
+        and spec.min_height <= probe.height <= spec.max_height
+    ):
+        findings.append(
+            _f(
+                PreflightCheck.RESOLUTION,
+                ReviewSeverity.ERROR,
+                f"分辨率 {probe.width}x{probe.height} 超出 "
+                f"[{spec.min_width}x{spec.min_height}, {spec.max_width}x{spec.max_height}]",
+            )
+        )
     if probe.aspect_ratio not in spec.allowed_aspect_ratios:
-        findings.append(_f(
-            PreflightCheck.ASPECT_RATIO, ReviewSeverity.ERROR,
-            f"宽高比 {probe.aspect_ratio} 不在允许集 {spec.allowed_aspect_ratios}",
-        ))
+        findings.append(
+            _f(
+                PreflightCheck.ASPECT_RATIO,
+                ReviewSeverity.ERROR,
+                f"宽高比 {probe.aspect_ratio} 不在允许集 {spec.allowed_aspect_ratios}",
+            )
+        )
     if probe.video_codec not in spec.allowed_video_codecs:
-        findings.append(_f(
-            PreflightCheck.VIDEO_CODEC, ReviewSeverity.ERROR,
-            f"视频编码 {probe.video_codec} 不被允许",
-        ))
+        findings.append(
+            _f(
+                PreflightCheck.VIDEO_CODEC,
+                ReviewSeverity.ERROR,
+                f"视频编码 {probe.video_codec} 不被允许",
+            )
+        )
     if probe.audio_codec not in spec.allowed_audio_codecs:
-        findings.append(_f(
-            PreflightCheck.AUDIO_CODEC, ReviewSeverity.ERROR,
-            f"音频编码 {probe.audio_codec} 不被允许",
-        ))
+        findings.append(
+            _f(
+                PreflightCheck.AUDIO_CODEC,
+                ReviewSeverity.ERROR,
+                f"音频编码 {probe.audio_codec} 不被允许",
+            )
+        )
     if probe.container not in spec.allowed_containers:
-        findings.append(_f(
-            PreflightCheck.CONTAINER, ReviewSeverity.ERROR,
-            f"容器 {probe.container} 不被允许",
-        ))
+        findings.append(
+            _f(
+                PreflightCheck.CONTAINER,
+                ReviewSeverity.ERROR,
+                f"容器 {probe.container} 不被允许",
+            )
+        )
     size_cap = spec.max_file_size_bytes
     if capability.max_file_size_bytes is not None:
         size_cap = min(size_cap, capability.max_file_size_bytes)
     if probe.file_size_bytes > size_cap:
-        findings.append(_f(
-            PreflightCheck.FILE_SIZE, ReviewSeverity.ERROR,
-            f"文件 {probe.file_size_bytes}B 超上限 {size_cap}B",
-        ))
+        findings.append(
+            _f(
+                PreflightCheck.FILE_SIZE,
+                ReviewSeverity.ERROR,
+                f"文件 {probe.file_size_bytes}B 超上限 {size_cap}B",
+            )
+        )
     if not (spec.min_duration_ms <= probe.duration_ms <= spec.max_duration_ms):
-        findings.append(_f(
-            PreflightCheck.DURATION, ReviewSeverity.ERROR,
-            f"时长 {probe.duration_ms}ms 超出 "
-            f"[{spec.min_duration_ms}, {spec.max_duration_ms}]",
-        ))
+        findings.append(
+            _f(
+                PreflightCheck.DURATION,
+                ReviewSeverity.ERROR,
+                f"时长 {probe.duration_ms}ms 超出 [{spec.min_duration_ms}, {spec.max_duration_ms}]",
+            )
+        )
 
     # --- 元数据（§9）---
     if len(metadata.title) > spec.title_max_len:
-        findings.append(_f(
-            PreflightCheck.TITLE_LENGTH, ReviewSeverity.ERROR,
-            f"标题 {len(metadata.title)} 字符超上限 {spec.title_max_len}",
-        ))
+        findings.append(
+            _f(
+                PreflightCheck.TITLE_LENGTH,
+                ReviewSeverity.ERROR,
+                f"标题 {len(metadata.title)} 字符超上限 {spec.title_max_len}",
+            )
+        )
     hit = [c for c in spec.banned_title_chars if c in metadata.title]
     if hit:
-        findings.append(_f(
-            PreflightCheck.TITLE_BANNED_CHARS, ReviewSeverity.ERROR,
-            f"标题含禁用字符 {hit}",
-        ))
+        findings.append(
+            _f(
+                PreflightCheck.TITLE_BANNED_CHARS,
+                ReviewSeverity.ERROR,
+                f"标题含禁用字符 {hit}",
+            )
+        )
     if len(metadata.description) > spec.description_max_len:
-        findings.append(_f(
-            PreflightCheck.DESCRIPTION_LENGTH, ReviewSeverity.ERROR,
-            f"描述 {len(metadata.description)} 字符超上限 {spec.description_max_len}",
-        ))
+        findings.append(
+            _f(
+                PreflightCheck.DESCRIPTION_LENGTH,
+                ReviewSeverity.ERROR,
+                f"描述 {len(metadata.description)} 字符超上限 {spec.description_max_len}",
+            )
+        )
     if len(metadata.tags) > spec.max_tags:
-        findings.append(_f(
-            PreflightCheck.TAG_COUNT, ReviewSeverity.ERROR,
-            f"标签 {len(metadata.tags)} 个超上限 {spec.max_tags}",
-        ))
+        findings.append(
+            _f(
+                PreflightCheck.TAG_COUNT,
+                ReviewSeverity.ERROR,
+                f"标签 {len(metadata.tags)} 个超上限 {spec.max_tags}",
+            )
+        )
     long_tags = [t for t in metadata.tags if len(t) > spec.tag_max_len]
     if long_tags:
-        findings.append(_f(
-            PreflightCheck.TAG_LENGTH, ReviewSeverity.ERROR,
-            f"标签超长（>{spec.tag_max_len}）：{long_tags}",
-        ))
+        findings.append(
+            _f(
+                PreflightCheck.TAG_LENGTH,
+                ReviewSeverity.ERROR,
+                f"标签超长（>{spec.tag_max_len}）：{long_tags}",
+            )
+        )
 
     # --- 连接器能力 / 授权 / 审核 / 账号 ---
     if not capability.available:
-        findings.append(_f(
-            PreflightCheck.METHOD_UNAVAILABLE, ReviewSeverity.ERROR,
-            f"发布方法 {capability.method.value} 当前不可用",
-        ))
+        findings.append(
+            _f(
+                PreflightCheck.METHOD_UNAVAILABLE,
+                ReviewSeverity.ERROR,
+                f"发布方法 {capability.method.value} 当前不可用",
+            )
+        )
     if capability.auth_status is not AuthStatus.AUTHORIZED:
-        findings.append(_f(
-            PreflightCheck.AUTH_STATUS, ReviewSeverity.ERROR,
-            f"授权状态 {capability.auth_status.value}（需 AUTHORIZED 才能发布）",
-        ))
+        findings.append(
+            _f(
+                PreflightCheck.AUTH_STATUS,
+                ReviewSeverity.ERROR,
+                f"授权状态 {capability.auth_status.value}（需 AUTHORIZED 才能发布）",
+            )
+        )
     if capability.client_review_status is not ClientReviewStatus.APPROVED:
-        findings.append(_f(
-            PreflightCheck.REVIEW_STATUS, ReviewSeverity.WARNING,
-            f"客户端审核 {capability.client_review_status.value}"
-            "：发布可受可见性限制（§3.1），须知情",
-        ))
+        findings.append(
+            _f(
+                PreflightCheck.REVIEW_STATUS,
+                ReviewSeverity.WARNING,
+                f"客户端审核 {capability.client_review_status.value}"
+                "：发布可受可见性限制（§3.1），须知情",
+            )
+        )
     if capability.account_status is AccountStatus.SUSPENDED:
-        findings.append(_f(
-            PreflightCheck.ACCOUNT_STATUS, ReviewSeverity.FATAL,
-            "账号已封禁，不可发布",
-        ))
+        findings.append(
+            _f(
+                PreflightCheck.ACCOUNT_STATUS,
+                ReviewSeverity.FATAL,
+                "账号已封禁，不可发布",
+            )
+        )
     elif capability.account_status is not AccountStatus.ACTIVE:
-        findings.append(_f(
-            PreflightCheck.ACCOUNT_STATUS, ReviewSeverity.WARNING,
-            f"账号状态 {capability.account_status.value}（非 ACTIVE），须确认",
-        ))
+        findings.append(
+            _f(
+                PreflightCheck.ACCOUNT_STATUS,
+                ReviewSeverity.WARNING,
+                f"账号状态 {capability.account_status.value}（非 ACTIVE），须确认",
+            )
+        )
 
     publishable = publish_preflight_gate(findings)
     return PreflightReport(
-        id=id, platform=spec.platform, method=capability.method,
-        findings=findings, publishable=publishable, created_at=created_at,
+        id=id,
+        platform=spec.platform,
+        method=capability.method,
+        findings=findings,
+        publishable=publishable,
+        created_at=created_at,
     )
 
 
@@ -224,15 +283,21 @@ def validate_preflight_report(report: PreflightReport) -> list[PreflightIssue]:
     issues: list[PreflightIssue] = []
     has_blocker = any(f.severity in _BLOCKING for f in report.findings)
     if report.publishable and has_blocker:
-        issues.append(PreflightIssue(
-            PreflightIssueKind.PUBLISHABLE_WITH_BLOCKER, report.id,
-            "publishable=True 却含 ERROR/FATAL 发现",
-        ))
+        issues.append(
+            PreflightIssue(
+                PreflightIssueKind.PUBLISHABLE_WITH_BLOCKER,
+                report.id,
+                "publishable=True 却含 ERROR/FATAL 发现",
+            )
+        )
     if report.publishable != (not has_blocker):
-        issues.append(PreflightIssue(
-            PreflightIssueKind.PUBLISHABLE_MISMATCH, report.id,
-            "publishable 与按 findings 重算的门不一致",
-        ))
+        issues.append(
+            PreflightIssue(
+                PreflightIssueKind.PUBLISHABLE_MISMATCH,
+                report.id,
+                "publishable 与按 findings 重算的门不一致",
+            )
+        )
     return issues
 
 

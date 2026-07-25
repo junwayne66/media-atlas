@@ -74,12 +74,13 @@ class SubtitleTemplate(ContractModel):
     language: str = Field(min_length=1, description="模板绑定的字幕语言，如 zh-CN / en-US")
     max_chars_per_line: int = Field(gt=0)
     max_lines_per_cue: int = Field(default=2, ge=1, le=2)
-    cjk_chars_per_sec: float | None = Field(default=None, gt=0.0,
-                                                description="中文阅读速度上限，字/秒")
-    en_chars_per_sec: float | None = Field(default=None, gt=0.0,
-                                              description="英文 CPS 上限")
-    en_words_per_sec: float | None = Field(default=None, gt=0.0,
-                                              description="英文 WPM/60 上限，可选")
+    cjk_chars_per_sec: float | None = Field(
+        default=None, gt=0.0, description="中文阅读速度上限，字/秒"
+    )
+    en_chars_per_sec: float | None = Field(default=None, gt=0.0, description="英文 CPS 上限")
+    en_words_per_sec: float | None = Field(
+        default=None, gt=0.0, description="英文 WPM/60 上限，可选"
+    )
     min_cue_duration_ms: int = Field(default=800, ge=0)
     max_cue_duration_ms: int = Field(default=6000, ge=0)
     safe_area: SafeAreaSpec = Field(default_factory=SafeAreaSpec)
@@ -90,9 +91,11 @@ class SubtitleTemplate(ContractModel):
     @model_validator(mode="after")
     def _check_reading_speed_configured(self) -> "SubtitleTemplate":
         # 至少配一个语言的阅读速度上限，否则模板毫无意义
-        if (self.cjk_chars_per_sec is None
-                and self.en_chars_per_sec is None
-                and self.en_words_per_sec is None):
+        if (
+            self.cjk_chars_per_sec is None
+            and self.en_chars_per_sec is None
+            and self.en_words_per_sec is None
+        ):
             raise ValueError(
                 "SubtitleTemplate 必须至少配一个阅读速度：cjk_chars_per_sec / "
                 "en_chars_per_sec / en_words_per_sec"
@@ -144,7 +147,8 @@ class SubtitleCue(ContractModel):
     end_ms: int = Field(ge=0)
     lines: list[SubtitleLine] = Field(min_length=1)
     source_ref_kind: str | None = Field(
-        default=None, description="源引用类型：transcript_segment / localized_sentence",
+        default=None,
+        description="源引用类型：transcript_segment / localized_sentence",
     )
     source_ref_id: str | None = None
     safe_area_hint: SafeAreaSpec | None = Field(
@@ -173,6 +177,7 @@ class SubtitleTrack(ContractModel):
     source_transcript_id: str | None = None
     source_localization_variant_id: str | None = None
     alignment_provider: str | None = Field(
-        default=None, description="产生词级时间的 provider 名（ASR / TTS forced align）",
+        default=None,
+        description="产生词级时间的 provider 名（ASR / TTS forced align）",
     )
     created_at: datetime

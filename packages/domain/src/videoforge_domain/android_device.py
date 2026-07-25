@@ -88,11 +88,15 @@ def check_device_readiness(
 
 
 def is_device_ready(
-    state: DeviceState, *, expected_account_id: str,
+    state: DeviceState,
+    *,
+    expected_account_id: str,
     criteria: DeviceReadinessCriteria | None = None,
 ) -> bool:
     return check_device_readiness(
-        state, expected_account_id=expected_account_id, criteria=criteria,
+        state,
+        expected_account_id=expected_account_id,
+        criteria=criteria,
     ).ready
 
 

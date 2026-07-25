@@ -218,7 +218,8 @@ def validate_asset_plan(
         if not r.is_fallback and r.source not in slot.allowed_sources:
             issues.append(
                 AssetPlanIssue(
-                    AssetPlanIssueKind.SOURCE_NOT_ALLOWED, r.slot_id,
+                    AssetPlanIssueKind.SOURCE_NOT_ALLOWED,
+                    r.slot_id,
                     f"来源 {r.source.value} 未在 slot.allowed_sources",
                 )
             )
@@ -226,7 +227,8 @@ def validate_asset_plan(
         if r.usage_start_ms < slot.start_ms or r.usage_end_ms > slot.end_ms:
             issues.append(
                 AssetPlanIssue(
-                    AssetPlanIssueKind.USAGE_OUT_OF_SLOT, r.slot_id,
+                    AssetPlanIssueKind.USAGE_OUT_OF_SLOT,
+                    r.slot_id,
                     f"使用区间 [{r.usage_start_ms},{r.usage_end_ms}] 超出 slot "
                     f"[{slot.start_ms},{slot.end_ms}]",
                 )
@@ -235,7 +237,8 @@ def validate_asset_plan(
         if r.license.valid_until is not None and now is not None and r.license.valid_until < now:
             issues.append(
                 AssetPlanIssue(
-                    AssetPlanIssueKind.LICENSE_INSUFFICIENT, r.slot_id,
+                    AssetPlanIssueKind.LICENSE_INSUFFICIENT,
+                    r.slot_id,
                     f"许可 {r.license.type.value} 已于 {r.license.valid_until.isoformat()} 过期",
                 )
             )
@@ -248,7 +251,8 @@ def validate_asset_plan(
         if n > max_reuse:
             issues.append(
                 AssetPlanIssue(
-                    AssetPlanIssueKind.REUSE_EXCEEDED, asset_id,
+                    AssetPlanIssueKind.REUSE_EXCEEDED,
+                    asset_id,
                     f"复用 {n} 次 > 上限 {max_reuse}",
                 )
             )

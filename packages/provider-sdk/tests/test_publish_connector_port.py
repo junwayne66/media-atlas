@@ -19,10 +19,10 @@ from videoforge_provider_sdk import (
 
 
 def test_providers_satisfy_protocol():
+    assert isinstance(FakePublishConnector(platform=PublishPlatform.TIKTOK), PublishConnector)
     assert isinstance(
-        FakePublishConnector(platform=PublishPlatform.TIKTOK), PublishConnector)
-    assert isinstance(
-        UnconfiguredPublishConnector(platform=PublishPlatform.TIKTOK), PublishConnector)
+        UnconfiguredPublishConnector(platform=PublishPlatform.TIKTOK), PublishConnector
+    )
 
 
 def test_unconfigured_reports_unavailable_and_unauthorized():
@@ -34,7 +34,8 @@ def test_unconfigured_reports_unavailable_and_unauthorized():
 
 def test_fake_reports_injected_capabilities():
     conn = FakePublishConnector(
-        platform=PublishPlatform.DOUYIN, method=PublishMethod.OFFICIAL_SHARE_SDK,
+        platform=PublishPlatform.DOUYIN,
+        method=PublishMethod.OFFICIAL_SHARE_SDK,
         auth_status=AuthStatus.PENDING_REVIEW,
         client_review_status=ClientReviewStatus.UNDER_REVIEW,
         account_status=AccountStatus.RESTRICTED,

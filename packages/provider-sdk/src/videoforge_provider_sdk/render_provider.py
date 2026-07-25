@@ -84,7 +84,9 @@ class UnconfiguredRemotionRenderProvider:
             else RenderProviderStatus.UNCONFIGURED
         )
         return RenderProviderResult(
-            status=status, provider=self.name, error_code=code,
+            status=status,
+            provider=self.name,
+            error_code=code,
             detail=(
                 "Remotion 商业许可评审未通过，未接入运行时；请人工手动渲染或稍后重试"
                 if self._license_pending
@@ -95,8 +97,8 @@ class UnconfiguredRemotionRenderProvider:
     def health_check(self) -> RenderProviderResult:
         return RenderProviderResult(
             status=RenderProviderStatus.LICENSE_PENDING
-                    if self._license_pending
-                    else RenderProviderStatus.UNCONFIGURED,
+            if self._license_pending
+            else RenderProviderStatus.UNCONFIGURED,
             provider=self.name,
         )
 
@@ -130,13 +132,17 @@ class FakeRemotionRenderProvider:
     def render(self, request: RemotionRenderRequest) -> RenderProviderResult:
         self._render_count += 1
         manifest = RemotionRenderManifest(
-            id=f"m-{request.id}", request=request,
+            id=f"m-{request.id}",
+            request=request,
             input_digests={},
             output_digest=self._recorded_digests.get(request.id),
-            tool_version=self.tool_version, created_at=datetime.fromtimestamp(0),
+            tool_version=self.tool_version,
+            created_at=datetime.fromtimestamp(0),
         )
         return RenderProviderResult(
-            status=RenderProviderStatus.OK, provider=self.name, manifest=manifest,
+            status=RenderProviderStatus.OK,
+            provider=self.name,
+            manifest=manifest,
         )
 
     @property

@@ -12,8 +12,13 @@ from videoforge_domain import (
 
 def _state(**over) -> DeviceState:
     base = dict(
-        device_id="d1", battery_pct=80, storage_free_mb=2000, network_online=True,
-        unlocked=True, app_version="30.1", foreground_account_id="acct_9",
+        device_id="d1",
+        battery_pct=80,
+        storage_free_mb=2000,
+        network_online=True,
+        unlocked=True,
+        app_version="30.1",
+        foreground_account_id="acct_9",
     )
     base.update(over)
     return DeviceState(**base)
@@ -21,10 +26,12 @@ def _state(**over) -> DeviceState:
 
 def _readiness(state, **kw):
     return check_device_readiness(
-        state, expected_account_id=kw.pop("expected_account_id", "acct_9"), **kw)
+        state, expected_account_id=kw.pop("expected_account_id", "acct_9"), **kw
+    )
 
 
 # --- §7.2 就绪门 ----------------------------------------------------------
+
 
 def test_all_good_is_ready():
     r = _readiness(_state())
@@ -54,20 +61,26 @@ def test_each_check_fails():
 def test_app_version_gate():
     crit = DeviceReadinessCriteria(allowed_app_versions=("30.1", "30.2"))
     assert _readiness(_state(app_version="29.0"), criteria=crit).failed_checks == (
-        DeviceCheck.APP_VERSION_UNSUPPORTED,)
+        DeviceCheck.APP_VERSION_UNSUPPORTED,
+    )
     # 允许列表内 → 不报
-    assert DeviceCheck.APP_VERSION_UNSUPPORTED not in _readiness(
-        _state(app_version="30.2"), criteria=crit).failed_checks
+    assert (
+        DeviceCheck.APP_VERSION_UNSUPPORTED
+        not in _readiness(_state(app_version="30.2"), criteria=crit).failed_checks
+    )
     # 无列表 → 不检查版本
     assert _readiness(_state(app_version="whatever")).ready
 
 
 def test_multiple_failures_collected():
-    r = _readiness(_state(battery_pct=1, unlocked=False, network_online=False,
-                           foreground_account_id="x"))
+    r = _readiness(
+        _state(battery_pct=1, unlocked=False, network_online=False, foreground_account_id="x")
+    )
     assert set(r.failed_checks) == {
-        DeviceCheck.BATTERY_LOW, DeviceCheck.DEVICE_LOCKED,
-        DeviceCheck.NETWORK_OFFLINE, DeviceCheck.WRONG_FOREGROUND_ACCOUNT,
+        DeviceCheck.BATTERY_LOW,
+        DeviceCheck.DEVICE_LOCKED,
+        DeviceCheck.NETWORK_OFFLINE,
+        DeviceCheck.WRONG_FOREGROUND_ACCOUNT,
     }
 
 
@@ -78,6 +91,7 @@ def test_custom_criteria_thresholds():
 
 
 # --- §7.2 单设备单 Job ---------------------------------------------------
+
 
 def test_single_job_per_device():
     assert can_dispatch_to_device("d1", [])

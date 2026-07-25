@@ -200,8 +200,12 @@ def rank_highlights(
         raise ValueError(f"windows({len(windows)}) 与 features({len(features)}) 数量不一致")
 
     scored = [
-        _Scored(w, f, highlight_score(f, weights),
-                derive_highlight_reasons(f, threshold=reason_threshold))
+        _Scored(
+            w,
+            f,
+            highlight_score(f, weights),
+            derive_highlight_reasons(f, threshold=reason_threshold),
+        )
         for w, f in zip(windows, features, strict=True)
     ]
     # 确定性排序：分数降序，其次起点/时长/片段 id（平票时 MMR 与去重取此序首个）

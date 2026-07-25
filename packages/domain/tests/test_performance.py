@@ -28,8 +28,11 @@ _PUB = datetime(2026, 7, 25, 12, 0, tzinfo=UTC)
 
 def _schedule(planned=None, captured=()) -> SnapshotSchedule:
     return SnapshotSchedule(
-        id="sc1", platform=PublishPlatform.TIKTOK, platform_post_id="p1",
-        account_id="a1", published_at=_PUB,
+        id="sc1",
+        platform=PublishPlatform.TIKTOK,
+        platform_post_id="p1",
+        account_id="a1",
+        published_at=_PUB,
         planned_ages_hours=list(planned or DEFAULT_SNAPSHOT_AGES_HOURS),
         captured_ages_hours=list(captured),
     )
@@ -37,14 +40,20 @@ def _schedule(planned=None, captured=()) -> SnapshotSchedule:
 
 def _snap(**over) -> PerformanceSnapshot:
     base = dict(
-        id="s1", platform=PublishPlatform.TIKTOK, platform_post_id="p1",
-        account_id="a1", observed_at=_PUB, age_hours=24.0, source_confidence=1.0,
+        id="s1",
+        platform=PublishPlatform.TIKTOK,
+        platform_post_id="p1",
+        account_id="a1",
+        observed_at=_PUB,
+        age_hours=24.0,
+        source_confidence=1.0,
     )
     base.update(over)
     return PerformanceSnapshot(**base)
 
 
 # --- 快照计划 ---------------------------------------------------------------
+
 
 def test_default_ages_match_doc():
     # §10 建议：1/3/6/24/72h/7d(=168h)
@@ -109,6 +118,7 @@ def test_record_capture_rejects_unplanned_age():
 
 # --- 限流 -------------------------------------------------------------------
 
+
 def test_can_fetch_now_boundaries():
     assert can_fetch_now(None, _PUB, 60) is True  # 从未调用
     assert can_fetch_now(_PUB, _PUB + timedelta(seconds=59), 60) is False
@@ -123,6 +133,7 @@ def test_next_allowed_fetch_time():
 
 # --- null 语义（派生指标）--------------------------------------------------
 
+
 def test_relative_to_baseline_null_never_zero():
     assert relative_to_baseline(200.0, 100.0) == 2.0
     assert relative_to_baseline(None, 100.0) is None  # value 未知 → None，不当 0
@@ -132,9 +143,9 @@ def test_relative_to_baseline_null_never_zero():
 
 # --- 完整性护栏（null-aware）------------------------------------------------
 
+
 def test_clean_snapshot_no_issues():
-    s = _snap(views=1000, likes=50, comments=10, impressions=2000,
-               completion_rate=0.5)
+    s = _snap(views=1000, likes=50, comments=10, impressions=2000, completion_rate=0.5)
     assert validate_performance_snapshot(s) == []
     assert is_valid_performance_snapshot(s)
 
@@ -165,9 +176,13 @@ def test_views_exceed_impressions():
 def test_completion_rate_with_zero_views_is_contradiction_but_null_views_ok():
     # views=0 明确 + 有完成率 → 矛盾
     bad = _snap(views=0, completion_rate=0.5)
-    assert any(i.kind is PerformanceIssueKind.COMPLETION_RATE_WITHOUT_VIEWS
-               for i in validate_performance_snapshot(bad))
+    assert any(
+        i.kind is PerformanceIssueKind.COMPLETION_RATE_WITHOUT_VIEWS
+        for i in validate_performance_snapshot(bad)
+    )
     # views=None（未知）+ 有完成率 → 不触发（null≠0）
     ok = _snap(completion_rate=0.5)
-    assert not any(i.kind is PerformanceIssueKind.COMPLETION_RATE_WITHOUT_VIEWS
-                   for i in validate_performance_snapshot(ok))
+    assert not any(
+        i.kind is PerformanceIssueKind.COMPLETION_RATE_WITHOUT_VIEWS
+        for i in validate_performance_snapshot(ok)
+    )

@@ -44,6 +44,7 @@ class _StubCookieResolver:
 
 # —— 默认后端：不触网、不静默 ——
 
+
 def test_default_connector_is_unconfigured(tmp_path) -> None:
     conn = YtDlpDownloadConnector()  # 默认 runner=Unconfigured
     result = conn.download(_req(tmp_path))
@@ -70,6 +71,7 @@ def test_descriptor_pins_the_runner_version() -> None:
 
 
 # —— argv 构造：注入安全 ——
+
 
 def test_build_argv_is_injection_safe(tmp_path) -> None:
     conn = YtDlpDownloadConnector()
@@ -117,6 +119,7 @@ def test_build_argv_rejects_unexpanded_short_link(tmp_path) -> None:
 
 # —— 下载成功：manifest 可重放 + 脱敏 ——
 
+
 def test_download_produces_replayable_manifest(tmp_path) -> None:
     runner = FixtureYtDlpRunner()
     conn = YtDlpDownloadConnector(runner=runner)
@@ -160,6 +163,7 @@ def test_download_is_idempotent_same_hash_on_rerun(tmp_path) -> None:
 
 
 # —— Cookie handle：不透明、不入明文 ——
+
 
 def test_cookie_handle_resolved_to_file_never_plaintext(tmp_path) -> None:
     cookie_file = tmp_path / "cookies.txt"

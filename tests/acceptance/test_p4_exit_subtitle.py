@@ -24,23 +24,39 @@ _SAFE = SafeAreaSpec()  # 默认覆盖抖音/TikTok 底部 UI（5/95/5/90 pct）
 def _tpl(lang: str) -> SubtitleTemplate:
     if lang.startswith("zh"):
         return SubtitleTemplate(
-            id="t-zh", language="zh-CN", max_chars_per_line=16, max_lines_per_cue=2,
-            cjk_chars_per_sec=8.0, min_cue_duration_ms=500, max_cue_duration_ms=6000,
-            safe_area=_SAFE, created_at=_T0,
+            id="t-zh",
+            language="zh-CN",
+            max_chars_per_line=16,
+            max_lines_per_cue=2,
+            cjk_chars_per_sec=8.0,
+            min_cue_duration_ms=500,
+            max_cue_duration_ms=6000,
+            safe_area=_SAFE,
+            created_at=_T0,
         )
     return SubtitleTemplate(
-        id="t-en", language="en-US", max_chars_per_line=42, max_lines_per_cue=2,
-        en_chars_per_sec=17.0, en_words_per_sec=3.5,
-        min_cue_duration_ms=500, max_cue_duration_ms=6000,
-        safe_area=_SAFE, created_at=_T0,
+        id="t-en",
+        language="en-US",
+        max_chars_per_line=42,
+        max_lines_per_cue=2,
+        en_chars_per_sec=17.0,
+        en_words_per_sec=3.5,
+        min_cue_duration_ms=500,
+        max_cue_duration_ms=6000,
+        safe_area=_SAFE,
+        created_at=_T0,
     )
 
 
 def _cue_for(s):
     tpl = _tpl(s.target_lang)
     return pack_lines_into_cue(
-        s.target, start_ms=0, end_ms=s.duration_ms, language=s.target_lang,
-        cue_id=s.sentence_id, template=tpl,
+        s.target,
+        start_ms=0,
+        end_ms=s.duration_ms,
+        language=s.target_lang,
+        cue_id=s.sentence_id,
+        template=tpl,
     ), tpl
 
 
@@ -50,8 +66,11 @@ def test_all_subtitles_pass_reading_speed_and_layout():
         for s in smp.sentences:
             cue, tpl = _cue_for(s)
             track = SubtitleTrack(
-                id=f"tr-{s.sentence_id}", language=s.target_lang, template_id=tpl.id,
-                cues=[cue], created_at=_T0,
+                id=f"tr-{s.sentence_id}",
+                language=s.target_lang,
+                template_id=tpl.id,
+                cues=[cue],
+                created_at=_T0,
             )
             for issue in validate_subtitle_track(track, template=tpl):
                 violations.append((s.sentence_id, issue.kind.value))
@@ -63,11 +82,18 @@ def test_reading_speed_check_is_not_vacuous():
     s = SAMPLES[0].sentences[0]
     tpl = _tpl(s.target_lang)
     fast_cue = pack_lines_into_cue(
-        s.target, start_ms=0, end_ms=600, language=s.target_lang,
-        cue_id=s.sentence_id, template=tpl,
+        s.target,
+        start_ms=0,
+        end_ms=600,
+        language=s.target_lang,
+        cue_id=s.sentence_id,
+        template=tpl,
     )
     track = SubtitleTrack(
-        id="tr", language=s.target_lang, template_id=tpl.id, cues=[fast_cue],
+        id="tr",
+        language=s.target_lang,
+        template_id=tpl.id,
+        cues=[fast_cue],
         created_at=_T0,
     )
     kinds = {i.kind for i in validate_subtitle_track(track, template=tpl)}
