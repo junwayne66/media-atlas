@@ -1,0 +1,75 @@
+{
+  "account_id": "demo-account",
+  "posts": [
+    {
+      "platform_post_id": "demo-post-a",
+      "snapshots": [
+        {
+          "age_hours": 1.0,
+          "views": 1200,
+          "likes": 90,
+          "comments": 12,
+          "shares": 5,
+          "saves": null,
+          "follows": null,
+          "impressions": 4000,
+          "watch_time_ms": 900000,
+          "avg_watch_time_ms": 7500,
+          "completion_rate": 0.42,
+          "click_through_rate": null,
+          "source_confidence": 1.0
+        },
+        {
+          "age_hours": 24.0,
+          "views": 15800,
+          "likes": 1120,
+          "comments": 140,
+          "shares": 66,
+          "saves": null,
+          "follows": 31,
+          "impressions": null,
+          "watch_time_ms": null,
+          "avg_watch_time_ms": 8100,
+          "completion_rate": 0.45,
+          "click_through_rate": null,
+          "source_confidence": 1.0
+        }
+      ]
+    },
+    {
+      "platform_post_id": "demo-post-b",
+      "snapshots": [
+        {
+          "age_hours": 1.0,
+          "views": 640,
+          "likes": 33,
+          "comments": null,
+          "shares": null,
+          "saves": null,
+          "follows": null,
+          "impressions": null,
+          "watch_time_ms": null,
+          "avg_watch_time_ms": null,
+          "completion_rate": null,
+          "click_through_rate": null,
+          "source_confidence": 0.6
+        },
+        {
+          "age_hours": 24.0,
+          "views": 7300,
+          "likes": 402,
+          "comments": 51,
+          "shares": 18,
+          "saves": null,
+          "follows": null,
+          "impressions": null,
+          "watch_time_ms": null,
+          "avg_watch_time_ms": 6200,
+          "completion_rate": 0.31,
+          "click_through_rate": null,
+          "source_confidence": 0.6
+        }
+      ]
+    }
+  ]
+}
