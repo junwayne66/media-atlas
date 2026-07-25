@@ -12,11 +12,14 @@ export type CreationMode = "STRUCTURE_REWRITE" | "SOURCE_REEDIT";
 export type DurationMs = number | null;
 export type HasMusic = boolean | null;
 export type HookKind = string | null;
+export type HumanSelected = boolean | null;
 export type Language = string | null;
 export type ManualEditCount = number | null;
+export type PublishDelayHours = number | null;
 export type PublishHour = number | null;
 export type PublishWeekday = number | null;
 export type QaWarningCount = number | null;
+export type RejectedThenRevised = boolean | null;
 /**
  * 合同 schema 版本；Reader 需兼容当前与前一版本
  */
@@ -24,6 +27,7 @@ export type SchemaVersion = string;
 export type SubtitleStyle = string | null;
 export type TemplateId = string | null;
 export type TrendClusterId = string | null;
+export type TrendHotnessAtPublish = number | null;
 export type VoiceRef = string | null;
 export type Id = string;
 export type PublishPlatform = "TIKTOK" | "DOUYIN";
@@ -84,15 +88,19 @@ export interface PerformanceFeatures {
   duration_ms?: DurationMs;
   has_music?: HasMusic;
   hook_kind?: HookKind;
+  human_selected?: HumanSelected;
   language?: Language;
   manual_edit_count?: ManualEditCount;
+  publish_delay_hours?: PublishDelayHours;
   publish_hour?: PublishHour;
   publish_weekday?: PublishWeekday;
   qa_warning_count?: QaWarningCount;
+  rejected_then_revised?: RejectedThenRevised;
   schema_version?: SchemaVersion;
   subtitle_style?: SubtitleStyle;
   template_id?: TemplateId;
   trend_cluster_id?: TrendClusterId;
+  trend_hotness_at_publish?: TrendHotnessAtPublish;
   voice_ref?: VoiceRef;
 }
 /**

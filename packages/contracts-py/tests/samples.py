@@ -67,6 +67,8 @@ from videoforge_contracts import (
     HighlightLabel,
     HighlightReason,
     HighlightSet,
+    LearningReport,
+    LearningSignalResult,
     LipSyncEligibilityCriteria,
     LipSyncIneligibleReason,
     LipSyncMethod,
@@ -140,6 +142,9 @@ from videoforge_contracts import (
     ScriptVersion,
     Segment,
     SentenceReviewDecision,
+    SignalBucketStat,
+    SignalDirection,
+    SignalKind,
     SnapshotSchedule,
     StorageRef,
     SubtitleCue,
@@ -1404,6 +1409,39 @@ def make_performance_snapshot() -> PerformanceSnapshot:
     )
 
 
+def make_learning_signal_result() -> LearningSignalResult:
+    return LearningSignalResult(
+        signal=SignalKind.QA_WARNING_COUNT,
+        metric=MetricField.VIEWS,
+        age_hours=24.0,
+        correlation=-0.42,
+        direction=SignalDirection.NEGATIVE,
+        sample_count=18,
+        enough_samples=True,
+        buckets=[
+            SignalBucketStat(label="低", sample_count=6, median_relative=1.3,
+                              enough_samples=False),
+            SignalBucketStat(label="中", sample_count=6, median_relative=1.0,
+                              enough_samples=False),
+            SignalBucketStat(label="高", sample_count=6, median_relative=0.7,
+                              enough_samples=False),
+        ],
+        note="QA_WARNING_COUNT 越高，相对表现越低的**相关**（Spearman=-0.42, n=18）——关联非因果",
+    )
+
+
+def make_learning_report() -> LearningReport:
+    return LearningReport(
+        account_id="01J2ZK3AC9V6XW8YQ4R5T6U7AC01",
+        platform=PublishPlatform.TIKTOK,
+        generated_at=datetime(2026, 7, 26, 13, 0, tzinfo=UTC),
+        age_hours=24.0,
+        metric=MetricField.VIEWS,
+        min_samples=8,
+        signals=[make_learning_signal_result()],
+    )
+
+
 def make_video_performance_record() -> VideoPerformanceRecord:
     return VideoPerformanceRecord(
         id="01J2ZK3AC9V6XW8YQ4R5T6U7VR01",
@@ -1540,6 +1578,8 @@ SAMPLES: dict[str, ContractModel] = {
     "video-performance-record": make_video_performance_record(),
     "account-baseline": make_account_baseline(),
     "performance-dashboard": make_performance_dashboard(),
+    "learning-signal-result": make_learning_signal_result(),
+    "learning-report": make_learning_report(),
     "reedit-plan": make_reedit_plan(),
     "asset-plan": make_asset_plan(),
     "creative-timeline": make_creative_timeline(),

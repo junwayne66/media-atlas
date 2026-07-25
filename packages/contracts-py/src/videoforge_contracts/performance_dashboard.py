@@ -50,6 +50,11 @@ class PerformanceFeatures(ContractModel):
     qa_warning_count: int | None = Field(default=None, ge=0)
     manual_edit_count: int | None = Field(default=None, ge=0)
     trend_cluster_id: str | None = None
+    # 过程信号（§11 学习信号，VF-603 分析用；均 Optional 向后兼容）：
+    human_selected: bool | None = None  # 是否人工选中（vs 自动通过）
+    rejected_then_revised: bool | None = None  # 是否经历 驳回→修改 回路
+    trend_hotness_at_publish: float | None = Field(default=None, ge=0)  # 发布时热度
+    publish_delay_hours: float | None = Field(default=None, ge=0)  # 热点发现→发布延迟
 
 
 class VideoPerformanceRecord(ContractModel):
