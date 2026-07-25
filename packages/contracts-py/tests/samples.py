@@ -80,6 +80,9 @@ from videoforge_contracts import (
     LocalizedSentence,
     LoudnessTarget,
     MediaProbe,
+    MetricField,
+    MetricsConnectorCapability,
+    PerformanceSnapshot,
     PlatformAccount,
     PlatformPublishSpec,
     PreflightCheck,
@@ -131,6 +134,7 @@ from videoforge_contracts import (
     ScriptVersion,
     Segment,
     SentenceReviewDecision,
+    SnapshotSchedule,
     StorageRef,
     SubtitleCue,
     SubtitleLine,
@@ -1374,6 +1378,50 @@ def make_exporter_report() -> ExporterReport:
     )
 
 
+def make_performance_snapshot() -> PerformanceSnapshot:
+    # 演示 null 语义：平台只给了 views/likes/comments，其余（shares/saves/impressions…）保持 null。
+    return PerformanceSnapshot(
+        id="01J2ZK3AC9V6XW8YQ4R5T6U7PS01",
+        platform=PublishPlatform.TIKTOK,
+        platform_post_id="7412345678901234567",
+        account_id="01J2ZK3AC9V6XW8YQ4R5T6U7AC01",
+        observed_at=datetime(2026, 7, 26, 12, 0, tzinfo=UTC),
+        age_hours=24.0,
+        views=12000,
+        watch_time_ms=180_000_000,
+        avg_watch_time_ms=15_000,
+        completion_rate=0.42,
+        likes=800,
+        comments=45,
+        source_confidence=1.0,
+    )
+
+
+def make_snapshot_schedule() -> SnapshotSchedule:
+    return SnapshotSchedule(
+        id="01J2ZK3AC9V6XW8YQ4R5T6U7SC01",
+        platform=PublishPlatform.TIKTOK,
+        platform_post_id="7412345678901234567",
+        account_id="01J2ZK3AC9V6XW8YQ4R5T6U7AC01",
+        published_at=datetime(2026, 7, 25, 12, 0, tzinfo=UTC),
+        planned_ages_hours=[1.0, 3.0, 6.0, 24.0, 72.0, 168.0],
+        captured_ages_hours=[1.0, 3.0],
+    )
+
+
+def make_metrics_connector_capability() -> MetricsConnectorCapability:
+    return MetricsConnectorCapability(
+        platform=PublishPlatform.TIKTOK,
+        available=True,
+        auth_status=AuthStatus.AUTHORIZED,
+        provided_fields=[
+            MetricField.VIEWS, MetricField.LIKES, MetricField.COMMENTS,
+            MetricField.SHARES, MetricField.COMPLETION_RATE,
+        ],
+        min_seconds_between_calls=30,
+    )
+
+
 SAMPLES: dict[str, ContractModel] = {
     "project": make_project(),
     "artifact": make_artifact(),
@@ -1415,6 +1463,9 @@ SAMPLES: dict[str, ContractModel] = {
     "publish-connector-capability": make_publish_connector_capability(),
     "preflight-report": make_preflight_report(),
     "publish-job": make_publish_job(),
+    "performance-snapshot": make_performance_snapshot(),
+    "snapshot-schedule": make_snapshot_schedule(),
+    "metrics-connector-capability": make_metrics_connector_capability(),
     "reedit-plan": make_reedit_plan(),
     "asset-plan": make_asset_plan(),
     "creative-timeline": make_creative_timeline(),

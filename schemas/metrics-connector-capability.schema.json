@@ -1,0 +1,96 @@
+{
+  "$defs": {
+    "AuthStatus": {
+      "enum": [
+        "AUTHORIZED",
+        "PENDING_REVIEW",
+        "UNAUTHORIZED",
+        "EXPIRED"
+      ],
+      "title": "AuthStatus",
+      "type": "string"
+    },
+    "MetricField": {
+      "description": "§10 指标字段名——用于连接器上报\"我这个数据源能提供哪些字段\"。",
+      "enum": [
+        "VIEWS",
+        "WATCH_TIME",
+        "AVG_WATCH_TIME",
+        "COMPLETION_RATE",
+        "LIKES",
+        "COMMENTS",
+        "SHARES",
+        "SAVES",
+        "FOLLOWS",
+        "IMPRESSIONS",
+        "CLICK_THROUGH_RATE"
+      ],
+      "title": "MetricField",
+      "type": "string"
+    },
+    "PublishPlatform": {
+      "enum": [
+        "TIKTOK",
+        "DOUYIN"
+      ],
+      "title": "PublishPlatform",
+      "type": "string"
+    }
+  },
+  "$id": "https://videoforge.dev/schemas/metrics-connector-capability.schema.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "description": "指标连接器上报的能力 + 授权 + 限流（§3 \"Connector 返回能力，不由 UI 猜\" 的效果反馈版）。\n\n`provided_fields` 声明该数据源能提供哪些指标——让快照里的 null 是\"源本就不提供\"的有据缺失，\n而非漏抓。`min_seconds_between_calls` 是平台限流下的最小调用间隔，domain 据此排程。",
+  "properties": {
+    "auth_status": {
+      "$ref": "#/$defs/AuthStatus"
+    },
+    "available": {
+      "description": "该数据源当前是否可用",
+      "title": "Available",
+      "type": "boolean"
+    },
+    "min_seconds_between_calls": {
+      "default": 0,
+      "description": "限流：最小调用间隔（秒）",
+      "minimum": 0,
+      "title": "Min Seconds Between Calls",
+      "type": "integer"
+    },
+    "notes": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Notes"
+    },
+    "platform": {
+      "$ref": "#/$defs/PublishPlatform"
+    },
+    "provided_fields": {
+      "items": {
+        "$ref": "#/$defs/MetricField"
+      },
+      "title": "Provided Fields",
+      "type": "array"
+    },
+    "schema_version": {
+      "default": "1",
+      "description": "合同 schema 版本；Reader 需兼容当前与前一版本",
+      "title": "Schema Version",
+      "type": "string"
+    }
+  },
+  "required": [
+    "platform",
+    "available",
+    "auth_status"
+  ],
+  "title": "MetricsConnectorCapability",
+  "type": "object"
+}
