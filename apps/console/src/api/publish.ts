@@ -1,68 +1,31 @@
-/** M-W8 发布：/v1/publish-jobs 全族 + 日历（apps/api publish.py）。执行器全部为 Fake，UI 必须明示。 */
+/**
+ * M-W8 发布：/v1/publish-jobs 全族 + 日历（apps/api publish.py）。执行器全部为 Fake，UI 必须明示。
+ *
+ * `PublishJob` / `PublishAttempt` / `PreflightReport` / `PreflightFinding` 及其枚举取自合同包
+ * （type-only，运行时零依赖）；`PublishJobView` / `SubmitResponse` 等是 publish.py 自有的
+ * 端点包装形状（不是注册合同），保留本地声明。
+ */
+import type {
+  PreflightReport,
+  PublishJob,
+  PublishMethod,
+  PublishPlatform,
+  PublishState,
+} from "@videoforge/contracts";
+
 import { api } from "./client";
 
-export type PublishPlatform = "TIKTOK" | "DOUYIN";
-export type PublishMethod =
-  | "OFFICIAL_API"
-  | "OFFICIAL_SHARE_SDK"
-  | "BROWSER_AUTOMATION"
-  | "ANDROID_DEVICE"
-  | "MANUAL_EXPORT";
-export type PublishState =
-  | "PENDING"
-  | "PREFLIGHT_BLOCKED"
-  | "AWAITING_AUTH"
-  | "UPLOADING"
-  | "SUBMITTED"
-  | "VERIFYING"
-  | "SUCCEEDED"
-  | "SUCCEEDED_RECONCILED"
-  | "FAILED"
-  | "WAITING_FOR_HUMAN";
-export type ReviewSeverity = "INFO" | "WARNING" | "ERROR" | "FATAL";
-
-export interface PublishAttempt {
-  attempt: number;
-  request_digest: string;
-  external_upload_token: string | null;
-  external_post_token: string | null;
-  detail: string | null;
-  at: string;
-}
-
-export interface PublishJob {
-  id: string;
-  idempotency_key: string;
-  account_id: string;
-  platform: PublishPlatform;
-  method: PublishMethod;
-  render_digest: string;
-  metadata_digest: string;
-  scheduled_window: string;
-  state: PublishState;
-  external_post_id: string | null;
-  external_url: string | null;
-  content_fingerprint: string | null;
-  attempts: PublishAttempt[];
-  created_at: string;
-  updated_at: string;
-}
-
-export interface PreflightFinding {
-  check: string;
-  severity: ReviewSeverity;
-  detail: string;
-  evidence: Record<string, unknown>;
-}
-
-export interface PreflightReport {
-  id: string;
-  platform: PublishPlatform;
-  method: PublishMethod;
-  findings: PreflightFinding[];
-  publishable: boolean;
-  created_at: string;
-}
+export type {
+  PreflightCheck,
+  PreflightFinding,
+  PreflightReport,
+  PublishAttempt,
+  PublishJob,
+  PublishMethod,
+  PublishPlatform,
+  PublishState,
+  ReviewSeverity,
+} from "@videoforge/contracts";
 
 export interface PublishJobView {
   job: PublishJob;
@@ -217,5 +180,5 @@ const SUBMITTABLE_STATES: PublishState[] = ["PENDING", "PREFLIGHT_BLOCKED", "UPL
 
 export function canSubmit(job: PublishJob): boolean {
   if (!SUBMITTABLE_STATES.includes(job.state)) return false;
-  return !job.attempts.some((a) => a.external_post_token);
+  return !(job.attempts ?? []).some((a) => a.external_post_token);
 }

@@ -143,14 +143,17 @@ const rows = computed(() => {
     rank: i + 1,
     title: c.title,
     // reason_codes 是热度判定证据，直接展示（可解释性）
-    reasons: c.reason_codes.join(" · "),
+    reasons: (c.reason_codes ?? []).join(" · "),
     category: c.vertical ?? "—",
-    members: c.member_item_ids.length,
+    members: (c.member_item_ids ?? []).length,
     // 遗留：后端暂无 snapshot 序列查询端点，sparkline 无真实数据来源 → 渲染 `—`，绝不画假柱子
-    trendHint: `后端暂无 snapshot 序列端点，趋势小图待接入（已关联 ${c.snapshot_ids.length} 条快照）`,
+    trendHint: `后端暂无 snapshot 序列端点，趋势小图待接入（已关联 ${(c.snapshot_ids ?? []).length} 条快照）`,
     // null ≠ 0：热度未算出就是 `—`
-    heatScore: c.hot_score === null ? "—" : String(Math.round(c.hot_score * 100)),
-    status: STAGE_BADGE[c.stage] ?? { variant: "neutral" as const, label: c.stage },
+    heatScore: c.hot_score == null ? "—" : String(Math.round(c.hot_score * 100)),
+    status: (c.stage ? STAGE_BADGE[c.stage] : undefined) ?? {
+      variant: "neutral" as const,
+      label: c.stage ?? "—",
+    },
   }));
 });
 

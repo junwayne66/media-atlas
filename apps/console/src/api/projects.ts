@@ -1,39 +1,14 @@
-/** M-W3 项目工作台 + M-W4 分析链（apps/api projects.py）。 */
+/**
+ * M-W3 项目工作台 + M-W4 分析链（apps/api projects.py）。
+ *
+ * `Project` 取自合同包；`AnalysisRunView` / `AnalysisStageView` 是 projects.py 自有的
+ * 编排视图（不是注册合同），保留本地声明。
+ */
+import type { Project, ProjectStatus } from "@videoforge/contracts";
+
 import { api } from "./client";
-import type { CreationMode } from "./trends";
 
-export type ProjectStatus =
-  | "DRAFT"
-  | "INGESTING"
-  | "ANALYZING"
-  | "PLANNING"
-  | "EDITING"
-  | "LOCALIZING"
-  | "QC"
-  | "REVIEW"
-  | "APPROVED"
-  | "PUBLISHING"
-  | "WAITING_FOR_HUMAN"
-  | "PUBLISHED"
-  | "MEASURING"
-  | "COMPLETED"
-  | "FAILED";
-
-export interface Project {
-  id: string;
-  title: string;
-  vertical: string;
-  source_language: string;
-  target_languages: string[];
-  creation_mode: CreationMode;
-  version: number;
-  status: ProjectStatus;
-  execution_policy: string;
-  trend_cluster_id: string | null;
-  source_asset_ids: string[];
-  created_at: string;
-  updated_at: string;
-}
+export type { Project, ProjectStatus };
 
 export interface AnalysisStageView {
   stage: string;

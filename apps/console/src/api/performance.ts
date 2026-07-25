@@ -1,120 +1,52 @@
-/** M-W9 效果看板：/v1/performance 只读族（apps/api performance.py）。null 指标恒为 null，绝不当 0。 */
+/**
+ * M-W9 效果看板：/v1/performance 只读族（apps/api performance.py）。null 指标恒为 null，绝不当 0。
+ *
+ * `PerformanceSnapshot` / `PerformanceDashboard` / `AccountBaseline(Entry)` /
+ * `PerformanceGroupStat` / `LearningReport` / `LearningSignalResult` / `SignalBucketStat`
+ * 及枚举 `MetricField` / `GroupDimension` / `SignalDirection` 全部取自合同包（type-only，
+ * 运行时零依赖）；`DashboardResponse` / `LearningResponse` / `CaptureResponse` 是
+ * performance.py 自有的端点包装，保留本地声明。
+ */
+import type {
+  AccountBaseline,
+  GroupDimension,
+  LearningReport,
+  MetricField,
+  PerformanceDashboard,
+  PerformanceGroupStat,
+  PerformanceSnapshot,
+  PublishPlatform,
+  SignalDirection,
+} from "@videoforge/contracts";
+
 import { api } from "./client";
-import type { PublishPlatform } from "./publish";
 
-export type MetricField =
-  | "VIEWS"
-  | "WATCH_TIME"
-  | "AVG_WATCH_TIME"
-  | "COMPLETION_RATE"
-  | "LIKES"
-  | "COMMENTS"
-  | "SHARES"
-  | "SAVES"
-  | "FOLLOWS"
-  | "IMPRESSIONS"
-  | "CLICK_THROUGH_RATE";
-
-export type GroupDimension =
-  | "TEMPLATE"
-  | "HOOK"
-  | "CREATION_MODE"
-  | "DURATION_BUCKET"
-  | "LANGUAGE"
-  | "PUBLISH_DAYPART";
-
-export type SignalDirection = "POSITIVE" | "NEGATIVE" | "NONE" | "INSUFFICIENT";
-
-export interface PerformanceSnapshot {
-  id: string;
-  platform: PublishPlatform;
-  platform_post_id: string;
-  account_id: string;
-  observed_at: string;
-  age_hours: number;
-  views: number | null;
-  watch_time_ms: number | null;
-  avg_watch_time_ms: number | null;
-  completion_rate: number | null;
-  likes: number | null;
-  comments: number | null;
-  shares: number | null;
-  saves: number | null;
-  follows: number | null;
-  impressions: number | null;
-  click_through_rate: number | null;
-  source_confidence: number;
-}
-
-export interface AccountBaselineEntry {
-  age_hours: number;
-  metric: MetricField;
-  median: number | null;
-  p25: number | null;
-  p75: number | null;
-  sample_count: number;
-}
-
-export interface PerformanceGroupStat {
-  dimension: GroupDimension;
-  value: string;
-  age_hours: number;
-  metric: MetricField;
-  sample_count: number;
-  median_relative: number | null;
-  p25_relative: number | null;
-  p75_relative: number | null;
-  /** false → 进"样本不足"折叠区，不参与排序（§0.2 红线 6）。 */
-  enough_samples: boolean;
-}
+export type {
+  AccountBaseline,
+  AccountBaselineEntry,
+  GroupDimension,
+  LearningReport,
+  LearningSignalResult,
+  MetricField,
+  PerformanceDashboard,
+  PerformanceGroupStat,
+  PerformanceSnapshot,
+  SignalBucketStat,
+  SignalDirection,
+  SignalKind,
+} from "@videoforge/contracts";
 
 export interface DashboardResponse {
-  dashboard: {
-    account_id: string;
-    platform: PublishPlatform;
-    age_hours: number;
-    metric: MetricField;
-    baseline: AccountBaselineEntry;
-    min_samples: number;
-    group_stats: PerformanceGroupStat[];
-  };
-  baseline: { account_id: string; platform: PublishPlatform; entries: AccountBaselineEntry[] };
+  dashboard: PerformanceDashboard;
+  baseline: AccountBaseline;
   ranked_groups: PerformanceGroupStat[];
   insufficient_groups: PerformanceGroupStat[];
   record_count: number;
   issues: string[];
 }
 
-export interface SignalBucketStat {
-  label: string;
-  sample_count: number;
-  median_relative: number | null;
-  enough_samples: boolean;
-}
-
-export interface LearningSignalResult {
-  signal: string;
-  metric: MetricField;
-  age_hours: number;
-  correlation: number | null;
-  direction: SignalDirection;
-  sample_count: number;
-  enough_samples: boolean;
-  buckets: SignalBucketStat[];
-  /** 后端恒 true——文案只能说"相关"，禁用"导致"（§0.2 红线 7）。 */
-  association_only: boolean;
-  note: string;
-}
-
 export interface LearningResponse {
-  report: {
-    account_id: string;
-    platform: PublishPlatform;
-    age_hours: number;
-    metric: MetricField;
-    min_samples: number;
-    signals: LearningSignalResult[];
-  };
+  report: LearningReport;
   record_count: number;
   issues: string[];
 }

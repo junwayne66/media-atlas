@@ -1,5 +1,14 @@
-/** M-W5 创作：brief / claim-table / scripts / timeline / render-manifests（apps/api creation.py）。 */
+/**
+ * M-W5 创作：brief / claim-table / scripts / timeline / render-manifests（apps/api creation.py）。
+ *
+ * `ScriptVersion` / `ScriptSentence` / `CreativeBrief` 取自合同包（type-only）；
+ * `DocumentView` / `ScriptGenerateResponse` 是 creation.py 自有的产物版本包装，保留本地声明。
+ */
+import type { ScriptVersion } from "@videoforge/contracts";
+
 import { api } from "./client";
+
+export type { BriefHook, CreativeBrief, ScriptSentence, ScriptVersion, VisualMix } from "@videoforge/contracts";
 
 /** 通用产物包装：payload 是对应合同对象的 JSON。 */
 export interface DocumentView {
@@ -14,47 +23,11 @@ export interface DocumentView {
   payload: Record<string, unknown>;
 }
 
-export interface ScriptSentence {
-  id: string;
-  beat_slot_id: string;
-  role: string;
-  text: string;
-  target_duration_ms: number;
-  claim_ids: string[];
-  language: string;
-  editable: boolean;
-}
-
-export interface ScriptVersion {
-  id: string;
-  version: number;
-  language: string;
-  sentences: ScriptSentence[];
-  total_duration_ms: number | null;
-  rewrite_provider: string | null;
-  created_at: string;
-}
-
 export interface ScriptGenerateResponse {
   script: ScriptVersion;
   doc_version: number;
   status: string;
   issues: string[];
-}
-
-export interface CreativeBrief {
-  id: string;
-  objective: string;
-  audience: string;
-  platform: string;
-  target_language: string;
-  duration_target_ms: number;
-  creation_mode: string;
-  angle: string;
-  hook: { type: string; promise: string } | null;
-  must_cover_claim_ids: string[];
-  avoid: string[];
-  cta: string | null;
 }
 
 export function listScripts(projectId: string, limit = 50): Promise<DocumentView[]> {

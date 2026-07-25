@@ -196,7 +196,7 @@ const listTitle = computed(() => {
 
 const projectAssets = computed(() =>
   (sources.data.value ?? []).filter(
-    (a) => a.project_ids.includes(selectedProjectId.value) && a.local_path,
+    (a) => (a.project_ids ?? []).includes(selectedProjectId.value) && a.local_path,
   ),
 );
 
@@ -226,7 +226,7 @@ function transcriptItems(t: Transcript): ListItem[] {
     key: seg.id,
     time: `${timecode(seg.start_ms)} → ${timecode(seg.end_ms)}`,
     desc: seg.text || "(空段)",
-    flagged: seg.low_confidence,
+    flagged: seg.low_confidence ?? false,
     title: `转写段 ${seg.id}`,
     badgeVariant: seg.low_confidence ? "warning" : "success",
     badgeLabel: seg.low_confidence ? "低置信" : `置信 ${seg.confidence.toFixed(2)}`,
@@ -253,13 +253,13 @@ function textTrackItems(s: TextTrackSet): ListItem[] {
     key: tr.id,
     time: `${timecode(tr.start_ms)} → ${timecode(tr.end_ms)}`,
     desc: tr.text || "(空)",
-    flagged: tr.low_confidence,
-    title: `${tr.kind} · ${tr.id}`,
+    flagged: tr.low_confidence ?? false,
+    title: `${tr.kind ?? "UNKNOWN"} · ${tr.id}`,
     badgeVariant: tr.low_confidence ? "warning" : "info",
-    badgeLabel: tr.low_confidence ? "低置信" : tr.kind,
+    badgeLabel: tr.low_confidence ? "低置信" : (tr.kind ?? "UNKNOWN"),
     sections: [
       { label: "投票文本", value: tr.text || "(空)" },
-      { label: "类型 / 运动", value: `${tr.kind} · ${tr.motion ?? "—"}` },
+      { label: "类型 / 运动", value: `${tr.kind ?? "UNKNOWN"} · ${tr.motion ?? "—"}` },
       { label: "置信度", value: tr.confidence.toFixed(3) },
       { label: "OCR 引擎", value: `${s.ocr_provider} ${s.ocr_version ?? ""}`.trim() },
     ],
@@ -280,8 +280,8 @@ function visualItems(v: VisualAnalysis): ListItem[] {
     sections: [
       { label: "描述", value: f.caption ?? "未分析（选中但 VLM 未产出 caption）" },
       { label: "采样理由", value: f.reasons.join(" · ") },
-      { label: "标签", value: f.labels.join(" · ") || "—" },
-      { label: "置信度", value: f.confidence === null ? "—" : f.confidence.toFixed(3) },
+      { label: "标签", value: (f.labels ?? []).join(" · ") || "—" },
+      { label: "置信度", value: f.confidence == null ? "—" : f.confidence.toFixed(3) },
       { label: "采样策略 / VLM", value: `${v.sampling_policy} · ${v.vlm_provider ?? "未接入"}` },
     ],
     markers: f.reasons.map((r) => ({ text: r, tone: "info" as const })),
@@ -291,7 +291,7 @@ function visualItems(v: VisualAnalysis): ListItem[] {
 function blueprintItems(b: VideoBlueprint): ListItem[] {
   const claimById = new Map((b.claims ?? []).map((c) => [c.id, c]));
   const beats: ListItem[] = (b.rhetorical_beats ?? []).map((beat) => {
-    const claims = beat.claim_ids.map((id) => claimById.get(id)).filter((c) => c !== undefined);
+    const claims = (beat.claim_ids ?? []).map((id) => claimById.get(id)).filter((c) => c !== undefined);
     const disputed = claims.some((c) => c.source_status === "DISPUTED");
     return {
       key: beat.id,
@@ -331,9 +331,9 @@ function blueprintItems(b: VideoBlueprint): ListItem[] {
     badgeVariant: "neutral",
     badgeLabel: vb.kind,
     sections: [
-      { label: "代表帧", value: vb.frame_time_ms === null ? "—" : timecode(vb.frame_time_ms) },
+      { label: "代表帧", value: vb.frame_time_ms == null ? "—" : timecode(vb.frame_time_ms) },
       { label: "融合引擎", value: b.fusion_provider ?? "未接入" },
-      { label: "覆盖率", value: b.coverage === null ? "—" : b.coverage.toFixed(3) },
+      { label: "覆盖率", value: b.coverage == null ? "—" : b.coverage.toFixed(3) },
     ],
     markers: [],
   }));

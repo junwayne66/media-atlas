@@ -1,41 +1,26 @@
-/** M-W2 素材库：/v1/sources 族（形状以 apps/api sources.py 响应模型为准）。 */
+/**
+ * M-W2 素材库：/v1/sources 族。
+ *
+ * `SourceAsset` 及其 acquisition 摘要取自合同包；`ResolveResponse` /
+ * `DuplicateGroupView` 是 sources.py 自有的端点形状（不是注册合同），保留本地声明。
+ */
+import type {
+  AcquisitionAttemptSummary,
+  AcquisitionSummary,
+  SourceAsset,
+  SourceAssetKind,
+  SourceDisposition,
+} from "@videoforge/contracts";
+
 import { api } from "./client";
 
-export type SourceAssetKind = "URL" | "LOCAL_FILE";
-export type SourceDisposition = "IMPORTED" | "MANUAL_FALLBACK" | "NEEDS_EXPANSION" | "UNRESOLVABLE";
-
-export interface AcquisitionAttemptSummary {
-  connector: string;
-  status: string;
-  error_code: string | null;
-}
-
-export interface AcquisitionSummary {
-  tool_name: string;
-  tool_version: string | null;
-  output_sha256: string | null;
-  attempts: AcquisitionAttemptSummary[];
-  manual_fallback: boolean;
-}
-
-export interface SourceAsset {
-  id: string;
-  version: number;
-  kind: SourceAssetKind;
-  original_input: string;
-  platform: string;
-  content_id: string | null;
-  canonical_url: string | null;
-  disposition: SourceDisposition;
-  reason: string;
-  error_code: string | null;
-  local_path: string | null;
-  file_sha256: string | null;
-  acquisition: AcquisitionSummary | null;
-  project_ids: string[];
-  created_at: string;
-  updated_at: string;
-}
+export type {
+  AcquisitionAttemptSummary,
+  AcquisitionSummary,
+  SourceAsset,
+  SourceAssetKind,
+  SourceDisposition,
+};
 
 export interface ResolveResponse {
   resolvable: boolean;

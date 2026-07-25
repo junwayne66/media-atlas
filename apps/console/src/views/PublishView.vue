@@ -191,11 +191,11 @@
                 />
                 <div v-else class="checklist">
                   <StateBlock
-                    v-if="selected.preflight_report.findings.length === 0"
+                    v-if="(selected.preflight_report.findings ?? []).length === 0"
                     kind="empty"
                     title="预检无 finding：16 项检查全部通过。"
                   />
-                  <div v-for="(f, i) in selected.preflight_report.findings" :key="i" class="check-item">
+                  <div v-for="(f, i) in selected.preflight_report.findings ?? []" :key="i" class="check-item">
                     <span class="check-icon" :class="`check-${severityClass(f.severity)}`">
                       <svg v-if="severityClass(f.severity) === 'pass'" width="12" height="12" viewBox="0 0 12 12" fill="none">
                         <path d="M2 6L5 9L10 3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" />
@@ -213,7 +213,7 @@
               <!-- attempts -->
               <div class="preflight-section">
                 <h4 class="detail-label">尝试记录（幂等对账证据）</h4>
-                <StateBlock v-if="selected.job.attempts.length === 0" kind="empty" title="尚无提交尝试。" />
+                <StateBlock v-if="(selected.job.attempts ?? []).length === 0" kind="empty" title="尚无提交尝试。" />
                 <table v-else class="attempt-table">
                   <thead>
                     <tr><th>#</th><th>request_digest</th><th>upload token</th><th>post token</th><th>时间</th></tr>
@@ -414,7 +414,7 @@ async function doPreflight(): Promise<void> {
       kind: res.report.publishable ? "ok" : "warn",
       text: res.report.publishable
         ? "预检通过：媒体/元数据/授权/账号全部满足平台规则。"
-        : `预检未通过（${res.report.findings.filter((f) => f.severity === "ERROR" || f.severity === "FATAL").length} 项阻断），任务已置 PREFLIGHT_BLOCKED。`,
+        : `预检未通过（${(res.report.findings ?? []).filter((f) => f.severity === "ERROR" || f.severity === "FATAL").length} 项阻断），任务已置 PREFLIGHT_BLOCKED。`,
     };
     await reload();
   } catch (err) {
