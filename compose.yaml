@@ -125,20 +125,6 @@ services:
     depends_on:
       - api
 
-  web:
-    build:
-      context: .
-      dockerfile: infra/docker/web.Dockerfile
-    environment:
-      VITE_API_PROXY_TARGET: http://api:8000
-    ports:
-      - "${WEB_PORT:-5173}:5173"
-    volumes:
-      - ./apps/web/src:/app/apps/web/src
-      - ./apps/web/index.html:/app/apps/web/index.html
-    depends_on:
-      - api
-
 volumes:
   pgdata:
   miniodata:

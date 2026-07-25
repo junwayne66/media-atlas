@@ -15,7 +15,7 @@ Design package for **VideoForge** (repo directory: `media-atlas`) — a self-hos
 ```bash
 uv sync && corepack pnpm install   # install deps (no global pnpm on this machine — use corepack pnpm)
 make dev          # build + start full stack (docker compose)
-make dev-infra    # infra containers only; then `make api` / `make web` for local hot-reload
+make dev-infra    # infra containers only; then `make api` / `make console` for local hot-reload
 make lint / make fmt / make test / make ci
 make smoke        # health-probe running stack (API :8000, Web :5173, Temporal :8233)
 make down         # stop containers (keeps volumes)

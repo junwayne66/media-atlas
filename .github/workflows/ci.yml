@@ -60,8 +60,8 @@ jobs:
           git add -A schemas packages/contracts-ts/src
           git diff --cached --exit-code schemas packages/contracts-ts/src
 
-      - name: Web build
-        run: pnpm --filter @videoforge/web build
+      - name: Console build
+        run: pnpm --filter @videoforge/console build
 
   compose-smoke:
     runs-on: ubuntu-latest
