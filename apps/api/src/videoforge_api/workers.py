@@ -16,11 +16,12 @@ from videoforge_contracts import ExecutionPolicy, TaskEnvelope
 from videoforge_persistence import (
     LeaseLostError,
     NotFoundError,
+    TaskStateError,
     WorkerRepository,
     WorkerTaskRepository,
     session_scope,
 )
-from videoforge_persistence.lease import DEFAULT_LEASE_TTL_S
+from videoforge_persistence.lease import DEFAULT_LEASE_TTL_S, DEFAULT_MAX_ATTEMPTS
 
 
 class RegisterRequest(BaseModel):
@@ -61,6 +62,13 @@ class EnqueueRequest(BaseModel):
     params: dict[str, Any] = Field(default_factory=dict)
     idempotency_key: str = Field(min_length=1)
     execution_policy: ExecutionPolicy = ExecutionPolicy.LOCAL_PREFERRED
+    max_attempts: int = Field(default=DEFAULT_MAX_ATTEMPTS, ge=1, le=50)
+
+
+class RequeueRequest(BaseModel):
+    """人工重试失败任务；max_attempts 省略则沿用原上限。"""
+
+    max_attempts: int | None = Field(default=None, ge=1, le=50)
 
 
 class WorkerGateway(Protocol):
@@ -77,6 +85,8 @@ class WorkerGateway(Protocol):
     def complete(self, task_id: str, request: CompleteRequest) -> bool: ...
 
     def fail(self, task_id: str, request: FailRequest) -> None: ...
+
+    def requeue(self, task_id: str, request: RequeueRequest) -> None: ...
 
     def task_status(self, task_id: str) -> dict[str, Any]: ...
 
@@ -111,6 +121,7 @@ class DbWorkerGateway:
                 params=request.params,
                 idempotency_key=request.idempotency_key,
                 execution_policy=request.execution_policy,
+                max_attempts=request.max_attempts,
             )
 
     def claim(self, request: ClaimRequest) -> TaskEnvelope | None:
@@ -139,6 +150,10 @@ class DbWorkerGateway:
     def fail(self, task_id: str, request: FailRequest) -> None:
         with session_scope(self._engine) as s:
             WorkerTaskRepository(s).fail(task_id, lease_id=request.lease_id, reason=request.reason)
+
+    def requeue(self, task_id: str, request: RequeueRequest) -> None:
+        with session_scope(self._engine) as s:
+            WorkerTaskRepository(s).requeue(task_id, max_attempts=request.max_attempts)
 
     def task_status(self, task_id: str) -> dict[str, Any]:
         with session_scope(self._engine) as s:
@@ -212,6 +227,17 @@ def fail_task(task_id: str, body: FailRequest, gateway: GatewayDep) -> None:
     except NotFoundError:
         raise HTTPException(status_code=404, detail=f"task 不存在: {task_id}") from None
     except LeaseLostError as exc:
+        raise HTTPException(status_code=409, detail=str(exc)) from None
+
+
+@router.post("/worker-tasks/{task_id}/requeue", status_code=204)
+def requeue_task(task_id: str, body: RequeueRequest, gateway: GatewayDep) -> None:
+    """人工「重试失败任务」：终态 FAILED → 重置尝试计数回 PENDING（未来 UI 用）。"""
+    try:
+        gateway.requeue(task_id, body)
+    except NotFoundError:
+        raise HTTPException(status_code=404, detail=f"task 不存在: {task_id}") from None
+    except TaskStateError as exc:
         raise HTTPException(status_code=409, detail=str(exc)) from None
 
 

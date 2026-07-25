@@ -5,6 +5,7 @@ import pytest
 from videoforge_persistence import (
     LeaseLostError,
     NotFoundError,
+    TaskStateError,
     WorkerRepository,
     WorkerTaskRepository,
 )
@@ -23,9 +24,17 @@ def _register(session, name: str) -> str:
     )
 
 
-def _enqueue(session, key: str = "k1", capability: str = "source.discover") -> str:
+def _enqueue(
+    session,
+    key: str = "k1",
+    capability: str = "source.discover",
+    max_attempts: int = 5,
+) -> str:
     return WorkerTaskRepository(session).enqueue(
-        capability=capability, params={"q": "ai"}, idempotency_key=key
+        capability=capability,
+        params={"q": "ai"},
+        idempotency_key=key,
+        max_attempts=max_attempts,
     )
 
 
@@ -178,6 +187,134 @@ def test_fail_releases_task_for_retry(session) -> None:
     retry = repo.claim(worker_id=w1, capabilities=["source.discover"])
     assert retry is not None
     assert retry.attempt == 2
+
+
+def test_permanently_failing_task_reaches_terminal_failed(session) -> None:
+    """P0 遗留：claim→fail 循环耗尽尝试后进入终态 FAILED，队列不再空转。"""
+    w1 = _register(session, "w1")
+    _enqueue(session, max_attempts=3)
+    session.flush()
+    repo = WorkerTaskRepository(session)
+
+    for expected_attempt in (1, 2, 3):
+        envelope = repo.claim(worker_id=w1, capabilities=["source.discover"], lease_ttl_s=60)
+        assert envelope is not None, f"第 {expected_attempt} 次应仍可领取"
+        assert envelope.attempt == expected_attempt
+        repo.fail(envelope.task_id, lease_id=envelope.lease_id, reason="能力永久失败")
+        session.flush()
+
+    status = repo.get_status(envelope.task_id)
+    assert status["status"] == "FAILED"
+    assert status["attempt"] == 3
+    assert status["output"]["terminal"] is True
+    assert status["output"]["last_error"] == "能力永久失败"
+    assert status["leased_by"] is None
+    # 终态不再被领取：队列不空转
+    assert repo.claim(worker_id=w1, capabilities=["source.discover"]) is None
+
+
+def test_expired_lease_path_also_exhausts_attempts(session) -> None:
+    """worker 挂死导致租约过期反复重领，同样消耗尝试并终态化（无需显式 fail）。"""
+    w1 = _register(session, "w1")
+    _enqueue(session, max_attempts=2)
+    session.flush()
+    repo = WorkerTaskRepository(session)
+
+    first = repo.claim(worker_id=w1, capabilities=["source.discover"], lease_ttl_s=0)
+    session.flush()
+    second = repo.claim(worker_id=w1, capabilities=["source.discover"], lease_ttl_s=0)
+    assert first is not None and second is not None and second.attempt == 2
+    session.flush()
+
+    # 第三次：尝试已耗尽 → 不发租约，就地终态
+    assert repo.claim(worker_id=w1, capabilities=["source.discover"]) is None
+    status = repo.get_status(first.task_id)
+    assert status["status"] == "FAILED"
+    assert status["output"]["attempts_exhausted"] is True
+    assert "attempts exhausted" in status["output"]["last_error"]
+
+
+def test_claim_skips_exhausted_task_and_serves_next(session) -> None:
+    """队头任务耗尽不该挡住后面的健康任务。"""
+    w1 = _register(session, "w1")
+    doomed = _enqueue(session, key="doomed", max_attempts=1)
+    session.flush()
+    healthy = _enqueue(session, key="healthy", max_attempts=5)
+    session.flush()
+    repo = WorkerTaskRepository(session)
+
+    first = repo.claim(worker_id=w1, capabilities=["source.discover"], lease_ttl_s=60)
+    assert first is not None and first.task_id == doomed
+    repo.fail(first.task_id, lease_id=first.lease_id, reason="炸了")
+    session.flush()
+    assert repo.get_status(doomed)["status"] == "FAILED"
+
+    nxt = repo.claim(worker_id=w1, capabilities=["source.discover"], lease_ttl_s=60)
+    assert nxt is not None and nxt.task_id == healthy
+
+
+def test_renew_and_complete_rejected_on_terminal_task(session) -> None:
+    """终态 FAILED 上的续租/提交一律拒绝（租约已释放）。"""
+    w1 = _register(session, "w1")
+    _enqueue(session, max_attempts=1)
+    session.flush()
+    repo = WorkerTaskRepository(session)
+    envelope = repo.claim(worker_id=w1, capabilities=["source.discover"], lease_ttl_s=60)
+    assert envelope is not None
+    repo.fail(envelope.task_id, lease_id=envelope.lease_id, reason="炸了")
+    session.flush()
+
+    with pytest.raises(LeaseLostError):
+        repo.renew(envelope.task_id, lease_id=envelope.lease_id)
+    with pytest.raises(LeaseLostError):
+        repo.complete(
+            envelope.task_id, lease_id=envelope.lease_id, output_digest="a" * 64, output={}
+        )
+    assert repo.get_status(envelope.task_id)["status"] == "FAILED"
+
+
+def test_requeue_recovers_failed_task(session) -> None:
+    """人工恢复：FAILED → PENDING 且尝试计数清零，可重新领取。"""
+    w1 = _register(session, "w1")
+    _enqueue(session, max_attempts=1)
+    session.flush()
+    repo = WorkerTaskRepository(session)
+    envelope = repo.claim(worker_id=w1, capabilities=["source.discover"], lease_ttl_s=60)
+    assert envelope is not None
+    repo.fail(envelope.task_id, lease_id=envelope.lease_id, reason="临时环境故障")
+    session.flush()
+
+    repo.requeue(envelope.task_id, max_attempts=2)
+    session.flush()
+    status = repo.get_status(envelope.task_id)
+    assert status["status"] == "PENDING"
+    assert status["attempt"] == 0
+    assert status["max_attempts"] == 2
+
+    retry = repo.claim(worker_id=w1, capabilities=["source.discover"], lease_ttl_s=60)
+    assert retry is not None
+    assert retry.task_id == envelope.task_id
+    assert retry.attempt == 1
+
+
+def test_requeue_only_from_failed(session) -> None:
+    w1 = _register(session, "w1")
+    task_id = _enqueue(session)
+    session.flush()
+    repo = WorkerTaskRepository(session)
+    with pytest.raises(TaskStateError, match="PENDING"):
+        repo.requeue(task_id)
+
+    envelope = repo.claim(worker_id=w1, capabilities=["source.discover"], lease_ttl_s=60)
+    assert envelope is not None
+    with pytest.raises(TaskStateError, match="LEASED"):
+        repo.requeue(task_id)
+
+    repo.complete(task_id, lease_id=envelope.lease_id, output_digest="a" * 64, output={})
+    with pytest.raises(TaskStateError, match="COMPLETED"):
+        repo.requeue(task_id)
+    with pytest.raises(NotFoundError):
+        repo.requeue("ghost")
 
 
 def test_worker_register_and_heartbeat(session) -> None:

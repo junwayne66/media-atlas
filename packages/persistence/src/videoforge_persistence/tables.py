@@ -186,8 +186,11 @@ class WorkerTaskRow(Base):
     capability: Mapped[str] = mapped_column(String(200), nullable=False)
     params: Mapped[dict] = mapped_column(JSONB, nullable=False, default=dict)
     execution_policy: Mapped[str] = mapped_column(String(40), nullable=False)
+    # status ∈ PENDING / LEASED / COMPLETED / FAILED（FAILED 为终态，不再可领）
     status: Mapped[str] = mapped_column(String(20), nullable=False, default="PENDING")
+    # attempt = 已消耗尝试数（每次 claim +1）；达到 max_attempts 即转终态 FAILED
     attempt: Mapped[int] = mapped_column(Integer, nullable=False, default=0)
+    max_attempts: Mapped[int] = mapped_column(Integer, nullable=False, default=5)
     lease_id: Mapped[str | None] = mapped_column(String(36))
     leased_by: Mapped[str | None] = mapped_column(ForeignKey("workers.id"))
     lease_expires_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
