@@ -126,7 +126,7 @@ API(本轮新增):`POST /v1/review-decisions`、`GET /v1/review-decisions?entity
 
 ## 8. M-W8 发布
 
-- 预检:`POST /v1/publish-jobs:preflight` 展示 PreflightReport(16 检查项分组:媒体/元数据/授权/账号;ERROR/FATAL 阻断,WARNING 提示"可见性受限");方法阶梯展示(官方 API → 分享 SDK → 浏览器 → 真机 → 手工导出,当前可用项高亮——**均为 Fake/未配置,UI 明示**)。
+- 预检:`POST /v1/publish-jobs/{job_id}/preflight` 展示 PreflightReport(16 检查项分组:媒体/元数据/授权/账号;ERROR/FATAL 阻断,WARNING 提示"可见性受限");方法阶梯展示(官方 API → 分享 SDK → 浏览器 → 真机 → 手工导出,当前可用项高亮——**均为 Fake/未配置,UI 明示**)。**请求体只传媒体探针**:元数据一律以建任务时入库的那份为准(它参与幂等键、建好后不可变),所以预检展示的输入与提交判定的输入永远是同一份;要换元数据就建新任务(键自然不同)。旧式带 `metadata` 的请求体会被 422 拒。
 - 发布 Job 列表/详情:状态机可视化(PENDING→UPLOADING→SUBMITTED→…);attempts 时间线(request_digest、external token——幂等对账证据);动作:submit(仅 UPLOADING 且未提交时可用)、reconcile(对账,绝不盲目重发)、manual-complete(WAITING_FOR_HUMAN → 人工回填 external_id)。**"重试"按钮的语义是对账而非重发**,文案必须写清。
 - 发布日历:publishing_window 配置(支持跨零点)、next_publish_time 预览、副本(copy_index)语义提示(副本=新 Job,同内容=去重)。
 - 挑战面板:所有 WAITING_FOR_HUMAN Job 聚合,展示挑战类型(登录/验证码/设备/内容警告)与人工处理指引。
@@ -176,7 +176,7 @@ API:workers 路由(已有 + requeue 新增);其余 P2。
 | 本地化工作台端点族 | * | 📋 计划 | M-W6 |
 | Provider 注册表/账号管理端点 | * | 📋 计划 | M-W10 |
 
-> ✅ 已有 = 后端已落库并有集成测试(引擎与发布执行均为 Fake,UI 需明示);📋 计划项先按 contracts-ts 合同类型 mock。两个实现细节 UI 需知:① `scripts:generate` 并发撞版本号时可能返回 409「产物版本冲突,请重试」——UI 做自动重试或提示;② 发布 Job 详情里的 `preflight_report` 列是展示用历史报告,提交时以服务端**实时重跑**的预检为准(被拦时历史列可能滞后,以 submit 的 409 响应为权威)。
+> ✅ 已有 = 后端已落库并有集成测试(引擎与发布执行均为 Fake,UI 需明示);📋 计划项先按 contracts-ts 合同类型 mock。两个实现细节 UI 需知:① `scripts:generate` 并发撞版本号时可能返回 409「产物版本冲突,请重试」——UI 做自动重试或提示;② 发布 Job 详情里的 `preflight_report` 列是展示用历史报告,提交时仍以服务端**实时重跑**的预检为准;submit 被拦时会**同步落库** PREFLIGHT_BLOCKED 状态 + 那份新的失败报告(列不再滞后),UI 直接读 `PublishJobView.preflight_report` 即可展示"为什么被拦"。
 
 ## 12. 分期建议
 

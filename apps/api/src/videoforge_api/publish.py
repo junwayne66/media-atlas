@@ -31,7 +31,7 @@ from datetime import UTC, datetime
 from typing import Annotated
 
 from fastapi import APIRouter, Depends, HTTPException, Query, Request, Response
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, ConfigDict, Field
 from sqlalchemy import Engine
 
 from videoforge_contracts import (
@@ -158,8 +158,21 @@ class PublishJobCreate(BaseModel):
 
 
 class PreflightRequest(BaseModel):
+    """预检请求：**只传媒体探针**；元数据一律以建任务时入库的 `publish_metadata` 为准。
+
+    为什么不收请求体元数据：
+
+    1. **元数据参与幂等键**（`metadata_digest_of` → `compute_copy_idempotency_key`），任务建好
+       之后就**不可变**。若允许 /preflight 传一份并回写，入库元数据就会与 `job.metadata_digest`
+       / 幂等键脱钩，破坏 §5「同内容绝不建第二个任务」的去重锚。换元数据 = 建新任务
+       （键自然不同），而不是就地改任务。
+    2. **`extra="forbid"`**：旧调用方仍带 `metadata` → 422 大声失败。宁可 422，也不静默改用
+       另一份输入——「预检端点展示的报告」与「submit 判定的输入」分叉，正是本字段被删掉的原因。
+    """
+
+    model_config = ConfigDict(extra="forbid")
+
     probe: PublishMediaProbe
-    metadata: PublishMetadata
 
 
 class PreflightResponse(BaseModel):
@@ -198,6 +211,10 @@ class PublishJobView(BaseModel):
     job: PublishJob
     row_version: int
     render_manifest_id: str | None = None
+    preflight_report: PreflightReport | None = Field(
+        default=None,
+        description="展示用历史报告（最近一次预检/被拦时落库）；提交判定始终以实时重跑为准",
+    )
     issues: list[str] = Field(default_factory=list)
 
 
@@ -206,6 +223,11 @@ def _view(stored: StoredPublishJob) -> PublishJobView:
         job=stored.job,
         row_version=stored.row_version,
         render_manifest_id=stored.render_manifest_id,
+        preflight_report=(
+            None
+            if stored.preflight_report is None
+            else PreflightReport.model_validate(stored.preflight_report)
+        ),
         issues=[f"{i.kind}:{i.ref}:{i.detail}" for i in validate_publish_job(stored.job)],
     )
 
@@ -304,12 +326,21 @@ class DbPublishGateway:
     # —— 预检 ——
 
     def preflight(self, job_id: str, request: PreflightRequest) -> PreflightResponse:
-        """跑预检并**持久化探针 + 报告**——submit 放行前会用同一探针重跑，预检不是一次性通行证。"""
+        """跑预检并**持久化探针 + 报告**——submit 放行前会用同一探针重跑，预检不是一次性通行证。
+
+        **元数据取自入库的 `publish_metadata`，不从请求体读**（`PreflightRequest` 已无该字段）：
+        这样本端点展示的报告与 submit 的判定输入是**同一份**，不会分叉。元数据参与幂等键、
+        建任务后不可变，要改就换新任务。
+        """
         with session_scope(self._engine) as s:
             repo = PublishJobRepository(s)
             stored = repo.get_for_update(job_id)
             job = stored.job
-            report = self._run_preflight(job.platform, request.probe, request.metadata)
+            if stored.publish_metadata is None:
+                # create() 恒写入元数据 → None 只可能是存储不一致，不静默用空元数据糊过去。
+                raise CannotPublish(f"job {job_id!r} 缺少入库元数据（存储不一致）——建任务时必写")
+            metadata = PublishMetadata.model_validate(stored.publish_metadata)
+            report = self._run_preflight(job.platform, request.probe, metadata)
             target = job
             if not report.publishable and job.state is PublishState.PENDING:
                 assert_transition(job.state, PublishState.PREFLIGHT_BLOCKED)
@@ -348,6 +379,12 @@ class DbPublishGateway:
         预检不是一次性通行证——授权可能已过期、账号可能已被封禁，所以每次提交都重算。
         不通过 → Job 置/保持 PREFLIGHT_BLOCKED 并抛 `PreflightBlocked`（executor 不被调用）。
 
+        **调用方契约（务必遵守）**：被拦时本函数已在**当前事务**里 staged 了
+        「PREFLIGHT_BLOCKED 状态 + 新的失败报告」，然后才抛 `PreflightBlocked`。调用方必须
+        **先吞下这个异常、让事务正常提交，再到 `session_scope` 块外抛出**；若让异常穿透
+        `session_scope`，rollback 会把拦截结果一并吞掉——Job 停在 PENDING、`preflight_report`
+        列还是上一份 `publishable=true` 的旧报告（这正是本次修复的缺陷成因）。
+
         遗留（本次不做）：VF-501 的审批门（ALWAYS / NEW_TEMPLATE_ONLY / AUTO 策略 +
         `is_approval_valid`）尚未接进这条路径——发布前"是否已人工批准且审批未失效"目前不校验。
         """
@@ -383,11 +420,23 @@ class DbPublishGateway:
     def submit(self, job_id: str) -> SubmitResponse:
         """提交发帖。**整段在行锁内**：取锁 → 读最新 → 预检门 → 幂等门 → executor → 写回。
 
+        **被拦时的两段式（同事务提交 + 块外抛错）**：`_enforce_preflight` 不通过时会先在
+        当前事务里 staged「PREFLIGHT_BLOCKED + 新失败报告」再抛异常。这里必须把
+        `PreflightBlocked` **接住**、让 `with` 正常退出（事务提交，拦截结果真正落库），
+        然后到块外重新抛出。否则 `session_scope` 的 rollback 会连拦截写入一起回滚，Job 停在
+        PENDING、`preflight_report` 列滞留旧的 `publishable=true`——展示误导 UI。
+        判定本身始终 fail-closed，与落不落库无关：每次 submit 都实时重跑预检。
+
+        注意**不要**改成"持锁期间另开一个连接/事务写同一行"：第二个连接的 UPDATE 会阻塞在
+        外层的 `FOR UPDATE` 行锁上，自己等死自己。单事务方案没有这个问题，且拦截写入与判定
+        在同一把行锁内原子完成。
+
         取舍（登记为遗留）：行锁横跨 `executor.submit()` 调用。Fake 执行器是瞬时的，没问题；
         接真实执行器（HTTP/浏览器/真机，秒级甚至分钟级）时应改成**「预留-提交」两段式**
         ——先在短事务里把 Job 原子地标成"提交中"并写入预留令牌（参照 VF-006 熔断器的
         single-probe reservation 先例），释放锁后再做外部调用，回来用令牌收尾。本次不实现。
         """
+        blocked: PreflightBlocked | None = None
         with session_scope(self._engine) as s:
             repo = PublishJobRepository(s)
             # 行锁：并发的第二方阻塞在这里，拿到锁时已能看到对方提交后的状态
@@ -401,49 +450,66 @@ class DbPublishGateway:
             if job.state in (PublishState.PENDING, PublishState.PREFLIGHT_BLOCKED):
                 # **预检门**：离开 PENDING/PREFLIGHT_BLOCKED 前强制重跑预检（同一能力源）。
                 # 不通过 → 置/保持 PREFLIGHT_BLOCKED + 409，executor 一次都不调用。
-                stored, job = self._enforce_preflight(repo, stored, job, now=now)
-            if job.state is not PublishState.UPLOADING:
-                # 非法起点（含终态、已提交态）由 domain 迁移表拒 → 409
-                assert_transition(job.state, PublishState.UPLOADING)
-                job = job.model_copy(update={"state": PublishState.UPLOADING, "updated_at": now})
-            if not can_submit(job):
-                # durable latch：attempts 里已有 external_post_token → 绝不再发
-                raise IllegalPublishTransition(
-                    f"job {job.id!r} 已提交过——拒绝重复发布（§5/§13 幂等）"
-                )
+                try:
+                    stored, job = self._enforce_preflight(repo, stored, job, now=now)
+                except PreflightBlocked as exc:
+                    # 拦截写入已 staged 在本事务；正常退出 with → 先提交，再到块外抛。
+                    blocked = exc
+            if blocked is None:
+                return self._submit_after_gate(repo, stored, job, executor, now=now)
+        assert blocked is not None  # 所有未被拦的路径都已在 with 内 return
+        raise blocked
 
-            result = executor.submit(job)  # 外部副作用：受行锁保护，同一 Job 不会并发进入
-            if result.status is PublishExecStatus.OK and result.external_post_token:
-                submitted = record_submission(
-                    job,
-                    external_post_token=result.external_post_token,
-                    request_digest=job.idempotency_key,
-                    now=now,
-                )
-                stored = repo.update(submitted, expected_row_version=stored.row_version)
-                return SubmitResponse(
-                    job=stored.job,
-                    executor_status=str(result.status),
-                    idempotent_replay=result.idempotent_replay,
-                    detail=result.detail,
-                )
+    def _submit_after_gate(
+        self,
+        repo: PublishJobRepository,
+        stored: StoredPublishJob,
+        job: PublishJob,
+        executor: PublishExecutor,
+        *,
+        now: datetime,
+    ) -> SubmitResponse:
+        """预检门放行后的提交本体（仍在 `submit` 的行锁事务内）：幂等门 → executor → 写回。"""
+        if job.state is not PublishState.UPLOADING:
+            # 非法起点（含终态、已提交态）由 domain 迁移表拒 → 409
+            assert_transition(job.state, PublishState.UPLOADING)
+            job = job.model_copy(update={"state": PublishState.UPLOADING, "updated_at": now})
+        if not can_submit(job):
+            # durable latch：attempts 里已有 external_post_token → 绝不再发
+            raise IllegalPublishTransition(f"job {job.id!r} 已提交过——拒绝重复发布（§5/§13 幂等）")
 
-            if result.status in (
-                PublishExecStatus.CHALLENGE,
-                PublishExecStatus.AUTH_REQUIRED,
-            ):
-                # 挑战/授权失败 → 人工，绝不绕过（§4.5/§13）
-                target = PublishState.WAITING_FOR_HUMAN
-            else:
-                target = PublishState.FAILED
-            assert_transition(job.state, target)
-            moved = job.model_copy(update={"state": target, "updated_at": now})
-            stored = repo.update(moved, expected_row_version=stored.row_version)
+        result = executor.submit(job)  # 外部副作用：受行锁保护，同一 Job 不会并发进入
+        if result.status is PublishExecStatus.OK and result.external_post_token:
+            submitted = record_submission(
+                job,
+                external_post_token=result.external_post_token,
+                request_digest=job.idempotency_key,
+                now=now,
+            )
+            stored = repo.update(submitted, expected_row_version=stored.row_version)
             return SubmitResponse(
                 job=stored.job,
                 executor_status=str(result.status),
+                idempotent_replay=result.idempotent_replay,
                 detail=result.detail,
             )
+
+        if result.status in (
+            PublishExecStatus.CHALLENGE,
+            PublishExecStatus.AUTH_REQUIRED,
+        ):
+            # 挑战/授权失败 → 人工，绝不绕过（§4.5/§13）
+            target = PublishState.WAITING_FOR_HUMAN
+        else:
+            target = PublishState.FAILED
+        assert_transition(job.state, target)
+        moved = job.model_copy(update={"state": target, "updated_at": now})
+        stored = repo.update(moved, expected_row_version=stored.row_version)
+        return SubmitResponse(
+            job=stored.job,
+            executor_status=str(result.status),
+            detail=result.detail,
+        )
 
     # —— 对账（绝不重发）——
 

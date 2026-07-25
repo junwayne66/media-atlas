@@ -131,7 +131,7 @@ def _publish_and_capture(engine: Engine, *, count: int, language: str, prefix: s
                 metadata=metadata,
             )
         )
-        publish_gw.preflight(job.id, PreflightRequest(probe=probe, metadata=metadata))
+        publish_gw.preflight(job.id, PreflightRequest(probe=probe))
         publish_gw.submit(job.id)
         done = publish_gw.reconcile(job.id)
         assert done.job.external_post_id
