@@ -1,0 +1,17 @@
+{
+  "account_id": "01J2ZK3AC9V6XW8YQ4R5T6U7AC01",
+  "entries": [
+    {
+      "age_hours": 24.0,
+      "median": 9000.0,
+      "metric": "VIEWS",
+      "p25": 4000.0,
+      "p75": 15000.0,
+      "sample_count": 20,
+      "schema_version": "1"
+    }
+  ],
+  "generated_at": "2026-07-26T13:00:00Z",
+  "platform": "TIKTOK",
+  "schema_version": "1"
+}

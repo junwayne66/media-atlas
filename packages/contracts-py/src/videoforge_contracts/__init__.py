@@ -120,6 +120,15 @@ from videoforge_contracts.performance import (
     PerformanceSnapshot,
     SnapshotSchedule,
 )
+from videoforge_contracts.performance_dashboard import (
+    AccountBaseline,
+    AccountBaselineEntry,
+    GroupDimension,
+    PerformanceDashboard,
+    PerformanceFeatures,
+    PerformanceGroupStat,
+    VideoPerformanceRecord,
+)
 from videoforge_contracts.problem import ProblemDetail
 from videoforge_contracts.project import Project
 from videoforge_contracts.provider import CostModel, ProviderDescriptor, ProviderHealth
@@ -281,6 +290,9 @@ CONTRACTS: dict[str, type[ContractModel]] = {
     "performance-snapshot": PerformanceSnapshot,
     "snapshot-schedule": SnapshotSchedule,
     "metrics-connector-capability": MetricsConnectorCapability,
+    "video-performance-record": VideoPerformanceRecord,
+    "account-baseline": AccountBaseline,
+    "performance-dashboard": PerformanceDashboard,
     "asset-plan": AssetPlan,
     "creative-timeline": CreativeTimeline,
     "render-manifest": RenderManifest,
@@ -460,6 +472,13 @@ __all__ = [
     "MetricsConnectorCapability",
     "PerformanceSnapshot",
     "SnapshotSchedule",
+    "AccountBaseline",
+    "AccountBaselineEntry",
+    "GroupDimension",
+    "PerformanceDashboard",
+    "PerformanceFeatures",
+    "PerformanceGroupStat",
+    "VideoPerformanceRecord",
     "SegmentEffect",
     "SegmentJudgment",
     "StorageBackend",
