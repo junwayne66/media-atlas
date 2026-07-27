@@ -1,1 +1,0 @@
-{"default":{"identifier":"default","description":"主窗口默认权限：仅核心 + 本应用命令","local":true,"windows":["main"],"permissions":["core:default"]}}
