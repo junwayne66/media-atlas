@@ -1,7 +1,6 @@
 /* ========================================
-   Media Atlas Design System — Design Tokens
-   Converted from Ardot design file variables
-   43 tokens: 16 Color (dual-mode) + 7 Spacing + 5 Radius + 9 FontSize
+   Media Atlas — Sci‑Fi Console
+   Design tokens migrated from the approved React prototype.
    ======================================== */
 
 :root {
@@ -34,40 +33,50 @@
 
   /* ---- Font Family ---- */
   --font-family-ui: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-  --font-family-mono: "Geist Mono", "JetBrains Mono", "SF Mono", "Fira Code", monospace;
+  --font-family-mono: "Share Tech Mono", "Geist Mono", "JetBrains Mono", "SF Mono", monospace;
 
   /* ---- Status Colors (same across modes) ---- */
-  --color-success: #3CCF4E;
-  --color-warning: #F5A623;
-  --color-error: #EF4444;
-  --color-info: #3B82F6;
-  --color-neutral: #71717A;
+  --color-success: #00FF88;
+  --color-warning: #FFD700;
+  --color-error: #FF3366;
+  --color-info: #00FFFF;
+  --color-neutral: #6666AA;
 
   /* ---- Accent Colors (same across modes) ---- */
-  --color-accent-primary: #3B82F6;
-  --color-accent-primary-hover: #4D8DF9;
+  --color-accent-primary: #00FFFF;
+  --color-accent-primary-hover: #66FFFF;
+
+  /* Prototype aliases used by the shell and shared components. */
+  --color-accent-magenta: #FF00FF;
+  --color-accent-purple: #9966FF;
+  --color-accent-gold: #FFD700;
+  --color-glass: rgba(5, 0, 16, 0.6);
+  --color-glass-strong: rgba(5, 0, 16, 0.8);
+  --glow-cyan-sm: 0 0 8px rgba(0, 255, 255, 0.3);
+  --glow-cyan: 0 0 12px rgba(0, 255, 255, 0.5);
+  --glow-green: 0 0 8px rgba(0, 255, 136, 0.5);
 }
 
 /* ===== Dark Mode (default) ===== */
 [data-theme="dark"] {
-  --color-bg-primary: #0A0A0B;        /* r:0.039 g:0.039 b:0.043 */
-  --color-bg-card: #111113;           /* r:0.067 g:0.067 b:0.075 */
-  --color-bg-elevated: #18181B;       /* r:0.094 g:0.094 b:0.106 */
-  --color-bg-hover: #1C1C1F;          /* r:0.110 g:0.110 b:0.122 */
-  --color-bg-sidebar: #0C0C0D;        /* r:0.047 g:0.047 b:0.051 */
+  --color-bg-primary: #000010;
+  --color-bg-card: rgba(5, 0, 16, 0.66);
+  --color-bg-elevated: #0A0A1F;
+  --color-bg-hover: #10102A;
+  --color-bg-sidebar: #050010;
 
-  --color-text-primary: #F6F6F8;      /* r:0.965 g:0.965 b:0.972 */
-  --color-text-secondary: #A1A1AD;    /* r:0.631 g:0.631 b:0.678 */
-  --color-text-tertiary: #73737D;     /* r:0.451 g:0.451 b:0.490 */
+  --color-text-primary: #E0E0FF;
+  --color-text-secondary: #B0B0D0;
+  --color-text-tertiary: #808090;
 
-  --color-border-subtle: #27272A;     /* r:0.153 g:0.153 b:0.165 */
-  --color-border-strong: #3F3F43;     /* r:0.247 g:0.247 b:0.263 */
+  --color-border-subtle: rgba(0, 255, 255, 0.15);
+  --color-border-strong: rgba(0, 255, 255, 0.3);
 
-  --color-status-success: #3CCF4E;    /* r:0.235 g:0.812 b:0.306 */
-  --color-status-warning: #F5A623;    /* r:0.961 g:0.651 b:0.137 */
-  --color-status-error: #EF4444;      /* r:0.937 g:0.302 b:0.302 */
-  --color-status-info: #58A1F7;       /* r:0.345 g:0.631 b:0.969 */
-  --color-status-neutral: #71717D;    /* r:0.451 g:0.451 b:0.490 */
+  --color-status-success: #00FF88;
+  --color-status-warning: #FFD700;
+  --color-status-error: #FF3366;
+  --color-status-info: #00FFFF;
+  --color-status-neutral: #6666AA;
 
   /* Layout constants */
   --sidebar-width: 220px;
@@ -137,7 +146,9 @@ body {
   font-family: var(--font-family-ui);
   font-size: var(--font-size-base);
   color: var(--color-text-primary);
-  background-color: var(--color-bg-primary);
+  background:
+    radial-gradient(ellipse at 50% 50%, rgba(0, 40, 60, 0.25), transparent 60%),
+    var(--color-bg-primary);
   line-height: 1.5;
   overflow: hidden;
 }
@@ -158,6 +169,33 @@ button {
   cursor: pointer;
   border: none;
   background: none;
+}
+
+button,
+a,
+input,
+textarea,
+select {
+  transition:
+    color 120ms ease,
+    background-color 120ms ease,
+    border-color 120ms ease,
+    box-shadow 120ms ease,
+    transform 120ms ease;
+}
+
+button:not(:disabled):active {
+  transform: translateY(1px);
+}
+
+button:disabled {
+  cursor: not-allowed;
+  opacity: 0.52;
+}
+
+::selection {
+  color: #001016;
+  background: var(--color-accent-primary);
 }
 
 input,

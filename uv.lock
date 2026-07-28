@@ -1404,7 +1404,9 @@ name = "videoforge-api"
 version = "0.0.1"
 source = { editable = "apps/api" }
 dependencies = [
+    { name = "argon2-cffi" },
     { name = "fastapi" },
+    { name = "pycryptodome" },
     { name = "pydantic" },
     { name = "pydantic-settings" },
     { name = "temporalio" },
@@ -1420,7 +1422,9 @@ dependencies = [
 
 [package.metadata]
 requires-dist = [
+    { name = "argon2-cffi", specifier = ">=25.1,<26" },
     { name = "fastapi", specifier = ">=0.115" },
+    { name = "pycryptodome", specifier = ">=3.23,<4" },
     { name = "pydantic", specifier = ">=2.10" },
     { name = "pydantic-settings", specifier = ">=2.7" },
     { name = "temporalio", specifier = ">=1.8" },
@@ -1526,6 +1530,7 @@ version = "0.1.0"
 source = { editable = "services/edge-agent" }
 dependencies = [
     { name = "httpx" },
+    { name = "videoforge-connector-douyin" },
     { name = "videoforge-contracts" },
     { name = "videoforge-provider-sdk" },
 ]
@@ -1533,6 +1538,7 @@ dependencies = [
 [package.metadata]
 requires-dist = [
     { name = "httpx", specifier = ">=0.28" },
+    { name = "videoforge-connector-douyin", editable = "connectors/sources/douyin" },
     { name = "videoforge-contracts", editable = "packages/contracts-py" },
     { name = "videoforge-provider-sdk", editable = "packages/provider-sdk" },
 ]

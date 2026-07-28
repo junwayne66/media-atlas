@@ -579,8 +579,8 @@ onMounted(async () => {
   font-size: var(--font-size-xs);
   font-weight: 500;
   color: var(--color-accent-primary);
-  background: rgba(59, 130, 246, 0.1);
-  border: 1px solid rgba(59, 130, 246, 0.3);
+  background: rgba(0, 255, 255, 0.08);
+  border: 1px solid rgba(0, 255, 255, 0.3);
   border-radius: var(--radius-sm);
   cursor: pointer;
 }
@@ -724,7 +724,7 @@ onMounted(async () => {
 }
 
 .marker-info {
-  background: rgba(59, 130, 246, 0.1);
+  background: rgba(0, 255, 255, 0.08);
   color: var(--color-status-info);
 }
 

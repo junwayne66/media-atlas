@@ -1,0 +1,127 @@
+/* Cross-page visual layer from the React sci-fi console prototype.
+   Business views keep their scoped layout and API state; this file supplies
+   the shared neon surfaces, controls, density and interaction treatment. */
+
+[data-theme="dark"] .content-area {
+  background:
+    linear-gradient(rgba(0, 255, 255, 0.012) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(0, 255, 255, 0.012) 1px, transparent 1px);
+  background-size: 32px 32px;
+}
+
+:where(
+  .dashboard-view,
+  .hotspots-view,
+  .library-view,
+  .blueprint-view,
+  .script-editor-view,
+  .localization-view,
+  .review-view,
+  .publish-view,
+  .stats-view,
+  .settings-view
+) {
+  padding: 16px !important;
+}
+
+[data-theme="dark"] :where(
+  .pipeline-card,
+  .todo-card,
+  .summary-card,
+  .trend-table,
+  .import-card,
+  .asset-table,
+  .dup-card,
+  .scene-panel,
+  .detail-panel,
+  .brief-panel,
+  .script-panel,
+  .sentence-card,
+  .subtitle-card,
+  .queue-panel,
+  .preflight-panel,
+  .job-panel,
+  .attempt-table,
+  .snapshot-card,
+  .chart-card,
+  .table-card,
+  .settings-card,
+  .vault-panel,
+  .provider-card,
+  .account-card,
+  .editor
+) {
+  background: var(--color-glass) !important;
+  border-color: var(--color-border-subtle) !important;
+  border-radius: var(--radius-xl) !important;
+  backdrop-filter: blur(28px);
+  box-shadow: 0 4px 24px rgba(0, 204, 255, 0.05);
+}
+
+[data-theme="dark"] :where(.panel-title, .section-title, .set-card-title) {
+  color: var(--color-accent-primary) !important;
+}
+
+[data-theme="dark"] .content-area :where(input, textarea, select) {
+  color-scheme: dark;
+}
+
+[data-theme="dark"] .content-area :where(input, textarea, select):focus {
+  border-color: var(--color-accent-primary) !important;
+  box-shadow: 0 0 0 1px rgba(0, 255, 255, 0.08), var(--glow-cyan-sm);
+  outline: none;
+}
+
+[data-theme="dark"] :where(.btn-primary, .btn.primary, .run-btn, .action-btn) {
+  color: #001016 !important;
+  background: var(--color-accent-primary) !important;
+  border-color: var(--color-accent-primary) !important;
+  font-weight: 600;
+}
+
+[data-theme="dark"] :where(.btn-secondary, .btn.secondary) {
+  color: var(--color-accent-primary) !important;
+  background: var(--color-bg-elevated) !important;
+  border-color: rgba(0, 255, 255, 0.2) !important;
+}
+
+[data-theme="dark"] :where(.btn-primary, .btn.primary, .btn-secondary, .btn.secondary, .run-btn, .action-btn):not(:disabled):hover {
+  box-shadow: var(--glow-cyan-sm);
+  transform: translateY(-1px);
+}
+
+[data-theme="dark"] :where(.filter-tab.active, .tab-item.active, .settings-tab.active) {
+  color: var(--color-accent-primary) !important;
+  border-color: rgba(0, 255, 255, 0.4) !important;
+  background: rgba(0, 255, 255, 0.08) !important;
+  box-shadow: inset 0 0 8px rgba(0, 255, 255, 0.1);
+}
+
+[data-theme="dark"] :where(.table-header, .trend-table thead) {
+  color: var(--color-accent-primary);
+  font-family: var(--font-family-mono);
+  letter-spacing: 0.04em;
+}
+
+[data-theme="dark"] :where(.project-title, .page-heading h1) {
+  color: var(--color-text-primary);
+  font-size: 20px !important;
+  font-weight: 700;
+}
+
+@media (max-width: 640px) {
+  :where(
+    .dashboard-view,
+    .hotspots-view,
+    .library-view,
+    .blueprint-view,
+    .script-editor-view,
+    .localization-view,
+    .review-view,
+    .publish-view,
+    .stats-view,
+    .settings-view
+  ) {
+    padding: 12px !important;
+  }
+}

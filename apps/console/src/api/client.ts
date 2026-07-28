@@ -151,6 +151,10 @@ export const api = {
   get: <T>(path: string, query?: Record<string, QueryValue>) => request<T>("GET", path, { query }),
   post: <T>(path: string, body?: unknown, query?: Record<string, QueryValue>) =>
     request<T>("POST", path, { body: body ?? {}, query }),
+  put: <T>(path: string, body?: unknown, query?: Record<string, QueryValue>) =>
+    request<T>("PUT", path, { body: body ?? {}, query }),
+  delete: <T>(path: string, query?: Record<string, QueryValue>) =>
+    request<T>("DELETE", path, { query }),
 };
 
 export const API_BASE = BASE;

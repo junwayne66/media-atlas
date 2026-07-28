@@ -429,7 +429,7 @@ onMounted(async () => {
 
 .stage-info .stage-icon {
   border-color: var(--color-status-info);
-  background: rgba(59, 130, 246, 0.1);
+  background: rgba(0, 255, 255, 0.08);
 }
 
 .stage-info .stage-icon img {

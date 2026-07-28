@@ -7,19 +7,22 @@
 
 ### 0.1 导航壳
 
-左侧固定侧边栏 + 顶部工具条:
+左侧固定侧边栏 + 顶部工具条。2026-07 的 Sci‑Fi Console 视觉实现已从设计原型迁移到 Vue 控制台；原型中的静态演示数据不进入产品代码，页面继续使用本表所列 REST API 与真实空/错/未配置状态。
 
 | 导航项 | 模块 | 优先级 |
 | --- | --- | --- |
+| 项目工作台 | M-W3 | P0 |
 | 热点池 | M-W1 | P0(已有,增强) |
 | 素材库 | M-W2 | P0 |
-| 项目 | M-W3 / M-W4 / M-W5 / M-W6 | P0(工作台)→ P1(编辑深化) |
-| 审核 | M-W7 | P1 |
+| 创作编辑 | M-W4 | P1 |
+| 脚本编辑 | M-W5 | P1 |
+| 本地化 | M-W6 | P1/P2 |
+| 审核中心 | M-W7 | P1 |
 | 发布 | M-W8 | P1 |
-| 效果 | M-W9 | P2 |
-| 设置 | M-W10 | P2 |
+| 效果看板 | M-W9 | P2 |
+| 系统与设置 | M-W10 | P2 |
 
-顶部工具条:API 健康徽章(`GET /healthz`)、全局搜索(P2)、暗色模式切换、当前账号(P2)。
+顶部工具条:API 健康徽章(`GET /healthz`)、暗色模式切换、当前本地账号占位；全局搜索仍为 P2。
 
 ### 0.2 全局交互红线(由后端合同派生,UI 必须遵守)
 
@@ -144,12 +147,16 @@ API(本轮新增):`/v1/performance/*` 只读端点族。
 
 ## 10. M-W10 系统与设置
 
-- Provider 注册表:连接器列表(能力、kill-switch、熔断器状态、统计)。
+- Provider 配置:LLM/ASR/VLM 的非敏感参数、启用状态与本地加密凭据状态；连接器运行时
+  kill-switch/熔断器统计仍待 Provider Registry 只读端点。
 - Worker 队列:workers 心跳、worker_tasks 状态(含终态 FAILED + 人工 requeue 按钮)。
-- 账号:PlatformAccount(**无任何明文凭据展示**——credential_ref 只显示 handle 摘要)、绑定方式、发布窗口。
+- 账号:PlatformAccount(**无任何明文凭据或完整 handle 展示**——UI 只看 `credential_configured`)、
+  绑定方式、发布窗口。SERVER_ENCRYPTED Token 进本地凭据库；浏览器 Cookie/Android 会话只登记
+  Desktop Keychain/Device handle，账号始终 `UNVERIFIED`，本模块不触发在线验证。
 - 第三方清单:third_party_manifest 只读展示(许可隔离级 L0–L4)。
 
-API:workers 路由(已有 + requeue 新增);其余 P2。
+API:workers 路由、`/v1/settings` 摘要、vault initialize/unlock/lock、Provider 与账号 CRUD 已有；
+Provider 运行时统计和 third_party_manifest 只读端点仍为 P2 后续。
 
 ## 11. API 端点映射总表
 
@@ -174,7 +181,8 @@ API:workers 路由(已有 + requeue 新增);其余 P2。
 | /v1/performance/snapshots:capture · snapshots · dashboard · learning-report | * | ✅ 已有 | M-W9 |
 | QA 报告端点(随 QA 工作流落地) | GET | 📋 计划 | M-W5 |
 | 本地化工作台端点族 | * | 📋 计划 | M-W6 |
-| Provider 注册表/账号管理端点 | * | 📋 计划 | M-W10 |
+| /v1/settings（vault + LLM/ASR/VLM + 账号绑定） | * | ✅ 已有 | M-W10 |
+| Provider 运行时统计 / third_party_manifest 只读端点 | GET | 📋 计划 | M-W10 |
 
 > ✅ 已有 = 后端已落库并有集成测试(引擎与发布执行均为 Fake,UI 需明示);📋 计划项先按 contracts-ts 合同类型 mock。两个实现细节 UI 需知:① `scripts:generate` 并发撞版本号时可能返回 409「产物版本冲突,请重试」——UI 做自动重试或提示;② 发布 Job 详情里的 `preflight_report` 列是展示用历史报告,提交时仍以服务端**实时重跑**的预检为准;submit 被拦时会**同步落库** PREFLIGHT_BLOCKED 状态 + 那份新的失败报告(列不再滞后),UI 直接读 `PublishJobView.preflight_report` 即可展示"为什么被拦"。
 

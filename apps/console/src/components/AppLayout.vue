@@ -1,58 +1,65 @@
 <template>
   <div class="app-layout">
-    <!-- Sidebar (220px) -->
     <aside class="sidebar">
       <div class="sidebar-header">
-        <div class="logo">
-          <img :src="logoSvg" alt="" />
-        </div>
+        <div class="logo-mark" aria-hidden="true"></div>
         <span class="brand">Media Atlas</span>
       </div>
 
-      <nav class="sidebar-nav">
+      <nav class="sidebar-nav" aria-label="主导航">
         <RouterLink
           v-for="item in navItems"
           :key="item.path"
           :to="item.path"
           class="nav-item"
           :class="{ active: isActive(item.path) }"
+          :aria-current="isActive(item.path) ? 'page' : undefined"
+          :title="item.label"
         >
-          <img :src="item.icon" alt="" class="nav-icon" />
+          <span class="nav-icon"><NavIcon :name="item.icon" /></span>
           <span class="nav-label">{{ item.label }}</span>
-          <span v-if="item.badge" class="nav-badge">{{ item.badge }}</span>
         </RouterLink>
       </nav>
+
+      <div class="sidebar-profile">
+        <div class="profile-avatar" aria-hidden="true">U</div>
+        <div class="profile-copy">
+          <span class="profile-name">Local User</span>
+          <span class="profile-mode">LOCAL CONSOLE</span>
+        </div>
+      </div>
     </aside>
 
-    <!-- Main Area -->
     <div class="main-area">
-      <!-- Top Bar (48px) -->
       <header class="top-bar">
         <div class="top-left">
           <slot name="breadcrumb">
-            <span class="bc-item">{{ activeNavLabel }}</span>
+            <span class="breadcrumb">{{ activeNavLabel }}</span>
           </slot>
         </div>
+
         <div class="top-right">
           <div class="api-health" :class="`api-health--${healthState}`" :title="healthTitle">
             <span class="api-dot"></span>
             <span class="api-text">{{ healthLabel }}</span>
           </div>
-          <div class="theme-toggle" @click="toggleTheme" title="切换主题 (Ctrl+Shift+L)">
-            <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
-              <path
-                d="M7 0.583C7 0.583 7 1.75 7 3.5M7 13.417C7 13.417 7 12.25 7 10.5M4.125 1.75C4.125 1.75 4.708 2.333 5.542 3.5M9.875 12.25C9.875 12.25 9.292 11.667 8.458 10.5M1.75 4.125C1.75 4.125 2.333 4.708 3.5 5.542M12.25 9.875C12.25 9.875 11.667 9.292 10.5 8.458M0.583 7C0.583 7 1.75 7 3.5 7M13.417 7C13.417 7 12.25 7 10.5 7"
-                stroke="currentColor"
-                stroke-width="1.2"
-                stroke-linecap="round"
-              />
+          <button
+            type="button"
+            class="icon-btn"
+            :aria-label="isDark ? '切换到浅色主题' : '切换到深色主题'"
+            :aria-pressed="isDark"
+            title="切换主题 (Ctrl+Shift+L)"
+            @click="toggleTheme"
+          >
+            <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" aria-hidden="true">
+              <circle cx="8" cy="8" r="3.25" />
+              <path d="M8 1.5v1.4M8 13.1v1.4M1.5 8h1.4M13.1 8h1.4M3.4 3.4l1 1M11.6 11.6l1 1M3.4 12.6l1-1M11.6 4.4l1-1" />
             </svg>
-          </div>
-          <div class="account">Z</div>
+          </button>
+          <button type="button" class="account-avatar" aria-label="本地账户"></button>
         </div>
       </header>
 
-      <!-- Content Area -->
       <main class="content-area">
         <slot />
       </main>
@@ -63,23 +70,64 @@
 <script setup lang="ts">
 import { computed, onMounted, onUnmounted, ref } from "vue";
 import { useRoute } from "vue-router";
-import { getHealth } from "@/api/health";
 import { errorText } from "@/api/client";
+import { getHealth } from "@/api/health";
+import NavIcon from "@/components/NavIcon.vue";
+import { useTheme } from "@/composables/useTheme";
+
+type NavIconName =
+  | "dashboard"
+  | "hotspots"
+  | "library"
+  | "blueprint"
+  | "script"
+  | "localization"
+  | "review"
+  | "publish"
+  | "stats"
+  | "settings";
+
+interface NavItem {
+  path: string;
+  label: string;
+  icon: NavIconName;
+}
+
+type HealthState = "checking" | "ok" | "down";
 
 const route = useRoute();
-const isDark = ref(true);
-
-// —— API 健康徽章（docs/modules/45 §0.1：GET /healthz）——
-type HealthState = "checking" | "ok" | "down";
+const { isDark, toggleTheme } = useTheme();
 const healthState = ref<HealthState>("checking");
 const healthTitle = ref("正在探测控制面 API…");
 let healthTimer: number | undefined;
 
+const navItems: NavItem[] = [
+  { path: "/dashboard", label: "项目工作台", icon: "dashboard" },
+  { path: "/hotspots", label: "热点池", icon: "hotspots" },
+  { path: "/library", label: "素材库", icon: "library" },
+  { path: "/blueprint", label: "创作编辑", icon: "blueprint" },
+  { path: "/script-editor", label: "脚本编辑", icon: "script" },
+  { path: "/localization", label: "本地化", icon: "localization" },
+  { path: "/review", label: "审核中心", icon: "review" },
+  { path: "/publish", label: "发布", icon: "publish" },
+  { path: "/stats", label: "效果看板", icon: "stats" },
+  { path: "/settings", label: "系统与设置", icon: "settings" },
+];
+
 const healthLabel = computed(() => {
-  if (healthState.value === "ok") return "API 正常";
-  if (healthState.value === "down") return "API 不可用";
-  return "API 探测中";
+  if (healthState.value === "ok") return "API ONLINE";
+  if (healthState.value === "down") return "API OFFLINE";
+  return "API CHECKING";
 });
+
+const activeNavLabel = computed(() => {
+  const item = navItems.find((candidate) => isActive(candidate.path));
+  return item?.label ?? String(route.meta.title ?? "项目工作台");
+});
+
+function isActive(path: string): boolean {
+  return route.path === path;
+}
 
 async function probeHealth(): Promise<void> {
   try {
@@ -100,38 +148,6 @@ onMounted(() => {
 onUnmounted(() => {
   if (healthTimer !== undefined) window.clearInterval(healthTimer);
 });
-
-const logoSvg = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 28 28'%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0' y1='0' x2='1' y2='1'%3E%3Cstop offset='0' stop-color='%233B82F6'/%3E%3Cstop offset='1' stop-color='%236F6FF2'/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width='28' height='28' rx='6' fill='url(%23g)'/%3E%3C/svg%3E";
-
-const navItems = [
-  { path: "/hotspots", label: "热点池", icon: iconUrl("2_70"), badge: "" },
-  { path: "/library", label: "素材库", icon: iconUrl("2_73"), badge: "" },
-  // badge 留空：没有真实计数来源前不摆假数字（§0.2 红线：不假装真数据）
-  { path: "/dashboard", label: "项目", icon: iconUrl("2_78"), badge: "" },
-  { path: "/review", label: "审核", icon: iconUrl("2_80"), badge: "" },
-  { path: "/publish", label: "发布", icon: iconUrl("2_82"), badge: "" },
-  { path: "/stats", label: "效果", icon: iconUrl("2_84"), badge: "" },
-  { path: "/settings", label: "设置", icon: iconUrl("2_86"), badge: "" },
-];
-
-function iconUrl(name: string): string {
-  return new URL(`../assets/svg/${name}.svg`, import.meta.url).href;
-}
-
-const isActive = (path: string) => {
-  if (path === "/dashboard" && (route.path === "/dashboard" || route.path === "/blueprint" || route.path === "/script-editor" || route.path === "/localization")) return true;
-  return route.path === path;
-};
-
-const activeNavLabel = computed(() => {
-  const item = navItems.find((i) => isActive(i.path));
-  return item ? item.label : route.meta.title || "项目";
-});
-
-function toggleTheme() {
-  isDark.value = !isDark.value;
-  document.documentElement.setAttribute("data-theme", isDark.value ? "dark" : "light");
-}
 </script>
 
 <style scoped>
@@ -140,15 +156,17 @@ function toggleTheme() {
   width: 100vw;
   height: 100vh;
   overflow: hidden;
-  background: var(--color-bg-primary);
+  background:
+    radial-gradient(ellipse at 50% 50%, rgba(0, 40, 60, 0.2), transparent 62%),
+    var(--color-bg-primary);
 }
 
-/* ===== Sidebar ===== */
 .sidebar {
   width: var(--sidebar-width);
   height: 100%;
   background: var(--color-bg-sidebar);
   border-right: 1px solid var(--color-border-subtle);
+  box-shadow: 4px 0 24px rgba(0, 204, 255, 0.08);
   display: flex;
   flex-direction: column;
   flex-shrink: 0;
@@ -156,30 +174,48 @@ function toggleTheme() {
 }
 
 .sidebar-header {
+  height: 56px;
   display: flex;
   align-items: center;
+  justify-content: center;
   gap: 10px;
-  height: 56px;
-  padding: 0 16px;
-}
-
-.logo {
-  width: 28px;
-  height: 28px;
-  border-radius: var(--radius-md);
-  overflow: hidden;
+  border-bottom: 1px solid rgba(0, 255, 255, 0.1);
   flex-shrink: 0;
 }
 
-.logo img {
-  width: 100%;
-  height: 100%;
+.logo-mark {
+  width: 28px;
+  height: 28px;
+  border-radius: var(--radius-md);
+  background: linear-gradient(135deg, #3ba6ff, #6e6eff);
+  position: relative;
+  flex-shrink: 0;
+  box-shadow: 0 0 10px rgba(59, 166, 255, 0.2);
+}
+
+.logo-mark::before,
+.logo-mark::after {
+  content: "";
+  position: absolute;
+  left: 8px;
+  right: 8px;
+  height: 2px;
+  background: #fff;
+  border-radius: 1px;
+}
+
+.logo-mark::before {
+  top: 10px;
+}
+
+.logo-mark::after {
+  top: 14px;
 }
 
 .brand {
+  color: var(--color-text-primary);
   font-size: var(--font-size-2xl);
   font-weight: 600;
-  color: var(--color-text-primary);
   white-space: nowrap;
 }
 
@@ -188,121 +224,140 @@ function toggleTheme() {
   display: flex;
   flex-direction: column;
   gap: 2px;
-  padding: 0 12px;
+  padding: 12px;
   overflow-y: auto;
 }
 
 .nav-item {
+  min-height: 34px;
+  padding: 0 8px;
+  border: 1px solid transparent;
+  border-radius: var(--radius-md);
   display: flex;
   align-items: center;
   gap: 10px;
-  height: 34px;
-  padding: 0 8px;
-  border-radius: var(--radius-md);
   color: var(--color-text-secondary);
   font-size: var(--font-size-base);
   font-weight: 500;
-  transition: all 150ms ease;
-  cursor: pointer;
 }
 
 .nav-item:hover {
-  background: var(--color-bg-hover);
   color: var(--color-text-primary);
+  background: rgba(255, 255, 255, 0.03);
 }
 
 .nav-item.active {
+  color: var(--color-accent-primary);
   background: var(--color-bg-elevated);
-  color: var(--color-text-primary);
+  border-color: rgba(0, 255, 255, 0.3);
+  box-shadow:
+    inset 0 0 8px rgba(0, 255, 255, 0.15),
+    0 0 12px rgba(0, 255, 255, 0.1);
   font-weight: 600;
-}
-
-.nav-item.active .nav-icon {
-  opacity: 1;
-  filter: brightness(1.3);
 }
 
 .nav-icon {
   width: 16px;
   height: 16px;
+  display: grid;
+  place-items: center;
   flex-shrink: 0;
-  opacity: 0.7;
-  transition: opacity 150ms ease;
+}
+
+.nav-icon svg {
+  width: 16px;
+  height: 16px;
 }
 
 .nav-label {
-  flex: 1;
-}
-
-.nav-badge {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  min-width: 16px;
-  height: 18px;
-  padding: 0 4px;
-  background: var(--color-accent-primary);
-  color: #fff;
-  font-size: 10px;
-  font-family: var(--font-family-mono);
-  font-weight: 500;
-  border-radius: var(--radius-sm);
   line-height: 1;
 }
 
-.nav-item:not(.active) .nav-badge {
-  background: var(--color-border-strong);
-  color: var(--color-text-secondary);
+.sidebar-profile {
+  min-height: 56px;
+  padding: 0 16px;
+  border-top: 1px solid rgba(0, 255, 255, 0.1);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-shrink: 0;
 }
 
-/* ===== Main Area ===== */
-.main-area {
-  flex: 1;
+.profile-avatar {
+  width: 32px;
+  height: 32px;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #3b82f4, #7070f2);
+  color: #fff;
+  font-weight: 600;
+  flex-shrink: 0;
+}
+
+.profile-copy {
+  min-width: 0;
   display: flex;
   flex-direction: column;
+}
+
+.profile-name {
+  color: var(--color-text-primary);
+  font-size: var(--font-size-sm);
+}
+
+.profile-mode {
+  color: var(--color-text-tertiary);
+  font-family: var(--font-family-mono);
+  font-size: 9px;
+  letter-spacing: 0.06em;
+}
+
+.main-area {
+  flex: 1;
   min-width: 0;
+  display: flex;
+  flex-direction: column;
   overflow: hidden;
 }
 
-/* ===== Top Bar ===== */
 .top-bar {
   height: var(--topbar-height);
-  background: var(--color-bg-primary);
-  border-bottom: 1px solid var(--color-border-subtle);
+  padding: 0 16px;
+  border-bottom: 1px solid rgba(0, 255, 255, 0.1);
+  background: var(--color-bg-sidebar);
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 0 16px;
   gap: 12px;
   flex-shrink: 0;
   z-index: var(--z-topbar);
 }
 
-.top-left {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  min-width: 0;
-}
-
-.bc-item {
-  font-size: var(--font-size-base);
-  font-weight: 600;
-  color: var(--color-text-primary);
-}
-
+.top-left,
 .top-right {
   display: flex;
   align-items: center;
+  min-width: 0;
+}
+
+.top-right {
   gap: 8px;
   flex-shrink: 0;
 }
 
+.breadcrumb {
+  color: var(--color-text-primary);
+  font-size: var(--font-size-base);
+  font-weight: 600;
+}
+
 .api-health {
-  display: flex;
+  height: 28px;
+  padding: 0 8px;
+  display: inline-flex;
   align-items: center;
   gap: 6px;
-  padding: 4px 8px;
   border-radius: var(--radius-sm);
 }
 
@@ -311,16 +366,19 @@ function toggleTheme() {
   height: 6px;
   border-radius: 50%;
   background: var(--color-status-success);
+  box-shadow: var(--glow-green);
 }
 
 .api-text {
-  font-size: var(--font-size-xs);
-  font-weight: 500;
   color: var(--color-status-success);
+  font-family: var(--font-family-mono);
+  font-size: var(--font-size-xs);
+  letter-spacing: 0.05em;
 }
 
 .api-health--checking .api-dot {
   background: var(--color-status-neutral);
+  box-shadow: none;
 }
 
 .api-health--checking .api-text {
@@ -329,50 +387,94 @@ function toggleTheme() {
 
 .api-health--down .api-dot {
   background: var(--color-status-error);
+  box-shadow: 0 0 6px rgba(255, 51, 102, 0.5);
 }
 
 .api-health--down .api-text {
   color: var(--color-status-error);
 }
 
-.theme-toggle {
+.icon-btn {
   width: 32px;
   height: 32px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: var(--color-bg-elevated);
   border: 1px solid var(--color-border-subtle);
   border-radius: var(--radius-md);
-  color: var(--color-text-secondary);
-  cursor: pointer;
-  transition: all 150ms ease;
+  display: grid;
+  place-items: center;
+  color: var(--color-accent-primary);
+  background: var(--color-bg-elevated);
 }
 
-.theme-toggle:hover {
-  background: var(--color-bg-hover);
-  color: var(--color-text-primary);
+.icon-btn:hover {
+  border-color: var(--color-accent-primary);
+  box-shadow: var(--glow-cyan-sm);
 }
 
-.account {
+.icon-btn svg {
+  width: 15px;
+  height: 15px;
+}
+
+.account-avatar {
   width: 32px;
   height: 32px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
   border-radius: 50%;
-  background: linear-gradient(135deg, #3B82F6, #6F6FF2);
-  color: #fff;
-  font-size: var(--font-size-base);
-  font-weight: 600;
-  cursor: pointer;
+  background: linear-gradient(135deg, var(--color-accent-primary), var(--color-accent-magenta));
+  box-shadow: var(--glow-cyan-sm);
   flex-shrink: 0;
 }
 
-/* ===== Content Area ===== */
 .content-area {
   flex: 1;
-  overflow-y: auto;
-  overflow-x: hidden;
+  min-width: 0;
+  overflow: auto;
+}
+
+@media (max-width: 900px) {
+  .sidebar {
+    width: 64px;
+  }
+
+  .sidebar-header {
+    justify-content: center;
+  }
+
+  .brand,
+  .nav-label,
+  .profile-copy {
+    display: none;
+  }
+
+  .sidebar-nav {
+    padding: 12px 10px;
+  }
+
+  .nav-item {
+    justify-content: center;
+    padding: 0;
+  }
+
+  .sidebar-profile {
+    justify-content: center;
+    padding: 0;
+  }
+}
+
+@media (max-width: 480px) {
+  .sidebar {
+    width: 56px;
+  }
+
+  .api-text {
+    display: none;
+  }
+
+  .api-health {
+    padding: 4px;
+  }
+
+  .top-bar {
+    padding: 0 10px;
+  }
 }
 </style>

@@ -10,6 +10,10 @@ from sqlalchemy import Engine, create_engine, text
 
 REPO_ROOT = Path(__file__).parents[3]
 _TRUNCATE = (
+    "credential_entries",
+    "credential_vault_metadata",
+    "provider_configurations",
+    "platform_account_bindings",
     "trend_clusters",
     "trend_item_snapshots",
     "source_assets",

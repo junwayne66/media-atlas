@@ -629,7 +629,7 @@ onMounted(async () => {
 
 .job-item.active {
   border-color: var(--color-accent-primary);
-  background: rgba(59, 130, 246, 0.05);
+  background: rgba(0, 255, 255, 0.04);
 }
 
 .job-item-top {

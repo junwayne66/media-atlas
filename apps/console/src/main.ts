@@ -3,6 +3,7 @@ import naive from "naive-ui";
 import App from "./App.vue";
 import router from "./router";
 import "./styles/tokens.css";
+import "./styles/sci-fi.css";
 
 const app = createApp(App);
 app.use(router);

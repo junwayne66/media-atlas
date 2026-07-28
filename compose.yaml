@@ -10,7 +10,7 @@ services:
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-videoforge}
       POSTGRES_DB: ${POSTGRES_DB:-videoforge}
     ports:
-      - "${POSTGRES_PORT:-5432}:5432"
+      - "127.0.0.1:${POSTGRES_PORT:-5432}:5432"
     volumes:
       - pgdata:/var/lib/postgresql/data
     healthcheck:
@@ -23,7 +23,7 @@ services:
     # 固定 7.2：redis 7.4 起改用 RSALv2/SSPLv1 许可证（见 third_party_manifest.yaml）
     image: redis:7.2-alpine
     ports:
-      - "${REDIS_PORT:-6379}:6379"
+      - "127.0.0.1:${REDIS_PORT:-6379}:6379"
     healthcheck:
       test: ["CMD", "redis-cli", "ping"]
       interval: 5s
@@ -38,8 +38,8 @@ services:
       MINIO_ROOT_USER: ${MINIO_ROOT_USER:-videoforge}
       MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD:-videoforge123}
     ports:
-      - "${MINIO_PORT:-9000}:9000"
-      - "${MINIO_CONSOLE_PORT:-9001}:9001"
+      - "127.0.0.1:${MINIO_PORT:-9000}:9000"
+      - "127.0.0.1:${MINIO_CONSOLE_PORT:-9001}:9001"
     volumes:
       - miniodata:/data
     healthcheck:
@@ -63,7 +63,7 @@ services:
       DBNAME: temporal
       VISIBILITY_DBNAME: temporal_visibility
     ports:
-      - "${TEMPORAL_PORT:-7233}:7233"
+      - "127.0.0.1:${TEMPORAL_PORT:-7233}:7233"
     healthcheck:
       # server 绑定在容器 eth0 IP（auto-setup 默认 BIND_ON_IP），不能探 localhost
       test: ["CMD-SHELL", "nc -z \"$$(hostname)\" 7233"]
@@ -80,7 +80,7 @@ services:
     environment:
       TEMPORAL_ADDRESS: temporal:7233
     ports:
-      - "${TEMPORAL_UI_PORT:-8233}:8080"
+      - "127.0.0.1:${TEMPORAL_UI_PORT:-8233}:8080"
 
   api:
     build:
@@ -103,7 +103,7 @@ services:
         "--reload",
       ]
     ports:
-      - "${API_PORT:-8000}:8000"
+      - "127.0.0.1:${API_PORT:-8000}:8000"
     volumes:
       - ./apps/api/src:/app/apps/api/src
     depends_on:
@@ -121,7 +121,7 @@ services:
       context: .
       dockerfile: infra/docker/console.Dockerfile
     ports:
-      - "${CONSOLE_PORT:-8080}:80"
+      - "127.0.0.1:${CONSOLE_PORT:-8080}:80"
     depends_on:
       - api
 

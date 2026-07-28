@@ -15,6 +15,10 @@ from sqlalchemy.orm import Session
 
 REPO_ROOT = Path(__file__).parents[3]
 ALL_TABLES = (
+    "credential_entries",
+    "credential_vault_metadata",
+    "provider_configurations",
+    "platform_account_bindings",
     "processed_events",
     "outbox_events",
     "artifacts",

@@ -73,7 +73,7 @@
             <div v-for="g in rankedGroups" :key="g.dimension + g.value" class="platform-item">
               <span class="platform-name">{{ DIMENSION_LABEL[g.dimension] }} · {{ g.value }}</span>
               <div class="platform-bar-track">
-                <div class="platform-bar-fill" :style="{ width: barWidth(g.median_relative), background: '#3B82F6' }"></div>
+                <div class="platform-bar-fill" :style="{ width: barWidth(g.median_relative), background: '#00FFFF' }"></div>
               </div>
               <span class="platform-percent mono">{{ relText(g.median_relative) }}</span>
               <span class="platform-count mono">n={{ g.sample_count }}</span>

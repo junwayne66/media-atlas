@@ -27,19 +27,19 @@ const routes: RouteRecordRaw[] = [
     path: "/blueprint",
     name: "Blueprint",
     component: () => import("@/views/BlueprintView.vue"),
-    meta: { title: "分析查看器", nav: "项目" },
+    meta: { title: "创作编辑", nav: "创作编辑" },
   },
   {
     path: "/script-editor",
     name: "ScriptEditor",
     component: () => import("@/views/ScriptEditorView.vue"),
-    meta: { title: "创作编辑", nav: "项目" },
+    meta: { title: "脚本编辑", nav: "脚本编辑" },
   },
   {
     path: "/localization",
     name: "Localization",
     component: () => import("@/views/LocalizationView.vue"),
-    meta: { title: "本地化工作台", nav: "项目" },
+    meta: { title: "本地化", nav: "本地化" },
   },
   {
     path: "/review",

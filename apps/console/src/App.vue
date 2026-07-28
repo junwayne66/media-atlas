@@ -5,18 +5,19 @@
 </template>
 
 <script setup lang="ts">
-import { computed, ref } from "vue";
+import { computed, onMounted, onUnmounted } from "vue";
 import { darkTheme, type GlobalThemeOverrides } from "naive-ui";
+import { useTheme } from "@/composables/useTheme";
 
-const isDark = ref(true);
+const { isDark, toggleTheme } = useTheme();
 
 const themeOverride = computed(() => (isDark.value ? darkTheme : null));
 
 const themeOverrides = computed<GlobalThemeOverrides>(() => ({
   common: {
-    primaryColor: "#3B82F6",
-    primaryColorHover: "#4D8DF9",
-    primaryColorPressed: "#3574D4",
+    primaryColor: "#00FFFF",
+    primaryColorHover: "#66FFFF",
+    primaryColorPressed: "#00CCCC",
     borderRadius: "6px",
     fontFamily: '"Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
     fontFamilyMono: '"Geist Mono", "JetBrains Mono", "SF Mono", monospace',
@@ -37,13 +38,15 @@ const themeOverrides = computed<GlobalThemeOverrides>(() => ({
   },
 }));
 
-// Toggle theme via keyboard shortcut: Ctrl+Shift+L
-window.addEventListener("keydown", (e) => {
+function handleThemeShortcut(e: KeyboardEvent): void {
   if (e.ctrlKey && e.shiftKey && e.key === "L") {
-    isDark.value = !isDark.value;
-    document.documentElement.setAttribute("data-theme", isDark.value ? "dark" : "light");
+    e.preventDefault();
+    toggleTheme();
   }
-});
+}
+
+onMounted(() => window.addEventListener("keydown", handleThemeShortcut));
+onUnmounted(() => window.removeEventListener("keydown", handleThemeShortcut));
 </script>
 
 <style scoped></style>

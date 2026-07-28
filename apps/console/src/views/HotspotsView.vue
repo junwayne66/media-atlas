@@ -368,15 +368,15 @@ onMounted(reload);
   font-size: var(--font-size-xs);
   font-weight: 500;
   color: var(--color-accent-primary);
-  background: rgba(59, 130, 246, 0.1);
-  border: 1px solid rgba(59, 130, 246, 0.3);
+  background: rgba(0, 255, 255, 0.08);
+  border: 1px solid rgba(0, 255, 255, 0.3);
   border-radius: var(--radius-sm);
   cursor: pointer;
   transition: all 150ms ease;
 }
 
 .action-btn:hover:not(:disabled) {
-  background: rgba(59, 130, 246, 0.2);
+  background: rgba(0, 255, 255, 0.16);
 }
 
 .action-btn:disabled {
