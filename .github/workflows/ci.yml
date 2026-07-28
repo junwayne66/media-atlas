@@ -85,14 +85,14 @@ jobs:
           docker compose logs api
           exit 1
 
-      - name: Web reachable
+      - name: Console reachable
         run: |
           for i in $(seq 1 30); do
-            if curl -fsS -o /dev/null http://localhost:5173; then echo "web: ok"; exit 0; fi
+            if curl -fsS -o /dev/null http://localhost:8080; then echo "console: ok"; exit 0; fi
             sleep 2
           done
-          echo "web did not become reachable" >&2
-          docker compose logs web
+          echo "console did not become reachable" >&2
+          docker compose logs console
           exit 1
 
       - name: Temporal server healthy

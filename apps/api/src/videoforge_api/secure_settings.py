@@ -326,14 +326,10 @@ class SettingsGateway(Protocol):
     def initialize_vault(self, body: InitializeVaultRequest) -> VaultView: ...
     def unlock_vault(self, body: UnlockVaultRequest) -> VaultView: ...
     def lock_vault(self) -> VaultView: ...
-    def upsert_provider(
-        self, kind: ProviderKind, body: ProviderWriteRequest
-    ) -> ProviderView: ...
+    def upsert_provider(self, kind: ProviderKind, body: ProviderWriteRequest) -> ProviderView: ...
     def delete_provider(self, kind: ProviderKind, expected_version: int) -> None: ...
     def create_account(self, body: AccountWriteRequest) -> PlatformAccountView: ...
-    def update_account(
-        self, account_id: str, body: AccountWriteRequest
-    ) -> PlatformAccountView: ...
+    def update_account(self, account_id: str, body: AccountWriteRequest) -> PlatformAccountView: ...
     def delete_account(self, account_id: str, expected_version: int) -> None: ...
 
 
@@ -368,9 +364,7 @@ def _credential_aad(
     owner_id: str,
     purpose: str,
 ) -> bytes:
-    return (
-        f"videoforge:credential:v1:{credential_id}:{owner_type}:{owner_id}:{purpose}"
-    ).encode()
+    return (f"videoforge:credential:v1:{credential_id}:{owner_type}:{owner_id}:{purpose}").encode()
 
 
 class DbSettingsGateway:
@@ -386,9 +380,7 @@ class DbSettingsGateway:
         with session_scope(self._engine) as session:
             repo = SettingsRepository(session)
             metadata = repo.get_vault_metadata()
-            providers = [
-                self._provider_view(repo, item) for item in repo.list_providers()
-            ]
+            providers = [self._provider_view(repo, item) for item in repo.list_providers()]
             accounts = [self._account_view(repo, item) for item in repo.list_accounts()]
         return SettingsSnapshot(
             vault=self._vault_view(metadata is not None),
@@ -435,9 +427,7 @@ class DbSettingsGateway:
             initialized = SettingsRepository(session).get_vault_metadata() is not None
         return self._vault_view(initialized)
 
-    def upsert_provider(
-        self, kind: ProviderKind, body: ProviderWriteRequest
-    ) -> ProviderView:
+    def upsert_provider(self, kind: ProviderKind, body: ProviderWriteRequest) -> ProviderView:
         if body.credential_action is CredentialAction.KEEP:
             return self._upsert_provider_transaction(kind, body, key=None)
         with self._vault.lease() as key:
@@ -509,8 +499,7 @@ class DbSettingsGateway:
     def delete_provider(self, kind: ProviderKind, expected_version: int) -> None:
         with session_scope(self._engine) as session:
             configured = (
-                SettingsRepository(session).get_credential("PROVIDER", kind.value)
-                is not None
+                SettingsRepository(session).get_credential("PROVIDER", kind.value) is not None
             )
         if configured:
             with self._vault.lease():
@@ -526,14 +515,10 @@ class DbSettingsGateway:
 
     def create_account(self, body: AccountWriteRequest) -> PlatformAccountView:
         if body.expected_version is not None:
-            raise VersionConflictError(
-                "platform_account_binding", "new", body.expected_version
-            )
+            raise VersionConflictError("platform_account_binding", "new", body.expected_version)
         return self._write_account(None, body)
 
-    def update_account(
-        self, account_id: str, body: AccountWriteRequest
-    ) -> PlatformAccountView:
+    def update_account(self, account_id: str, body: AccountWriteRequest) -> PlatformAccountView:
         if body.expected_version is None:
             raise InvalidSettingsError("更新账号必须提供 expected_version")
         return self._write_account(account_id, body)
@@ -546,20 +531,15 @@ class DbSettingsGateway:
         previous_server_credential = False
         if account_id is not None:
             with session_scope(self._engine) as session:
-                previous = SettingsRepository(session).get_credential(
-                    "ACCOUNT", account_id
-                )
+                previous = SettingsRepository(session).get_credential("ACCOUNT", account_id)
                 previous_server_credential = (
                     previous is not None
                     and previous.storage_kind == AccountBinding.SERVER_ENCRYPTED.value
                 )
-        needs_server_key = (
-            body.credential_action in {CredentialAction.REPLACE, CredentialAction.CLEAR}
-            and (
-                body.binding is AccountBinding.SERVER_ENCRYPTED
-                or previous_server_credential
-            )
-        )
+        needs_server_key = body.credential_action in {
+            CredentialAction.REPLACE,
+            CredentialAction.CLEAR,
+        } and (body.binding is AccountBinding.SERVER_ENCRYPTED or previous_server_credential)
         if needs_server_key:
             with self._vault.lease() as key:
                 return self._write_account_transaction(account_id, body, key=key)
@@ -583,9 +563,7 @@ class DbSettingsGateway:
                 and body.credential_action is CredentialAction.KEEP
                 and current.binding != body.binding.value
             ):
-                raise InvalidSettingsError(
-                    "改变凭据保存位置时必须明确替换或清除旧凭据"
-                )
+                raise InvalidSettingsError("改变凭据保存位置时必须明确替换或清除旧凭据")
 
             record = PlatformAccountBindingRecord(
                 id=account_id or new_id(),
@@ -646,9 +624,7 @@ class DbSettingsGateway:
     def delete_account(self, account_id: str, expected_version: int) -> None:
         with session_scope(self._engine) as session:
             credential = SettingsRepository(session).get_credential("ACCOUNT", account_id)
-        needs_server_key = (
-            credential is not None and credential.storage_kind == "SERVER_ENCRYPTED"
-        )
+        needs_server_key = credential is not None and credential.storage_kind == "SERVER_ENCRYPTED"
         if needs_server_key:
             with self._vault.lease():
                 with session_scope(self._engine) as session:
@@ -715,9 +691,7 @@ class DbSettingsGateway:
         record: ProviderConfigurationRecord,
     ) -> ProviderView:
         configured = repo.get_credential("PROVIDER", record.kind) is not None
-        readiness: Literal[
-            "DISABLED", "MISSING_CREDENTIAL", "CONFIGURED_UNVERIFIED"
-        ]
+        readiness: Literal["DISABLED", "MISSING_CREDENTIAL", "CONFIGURED_UNVERIFIED"]
         if not record.enabled:
             readiness = "DISABLED"
         elif not configured:

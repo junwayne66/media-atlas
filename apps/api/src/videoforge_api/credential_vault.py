@@ -151,9 +151,7 @@ class CredentialVault:
                 )
             except ValueError as exc:
                 self._record_failed_unlock()
-                raise InvalidPassphraseError(
-                    "无法解锁凭据库：口令错误或本地凭据库已损坏"
-                ) from exc
+                raise InvalidPassphraseError("无法解锁凭据库：口令错误或本地凭据库已损坏") from exc
             if len(raw) != MASTER_KEY_BYTES:
                 raise InvalidPassphraseError("无法解锁凭据库：本地凭据库材料无效")
             candidate = bytearray(raw)

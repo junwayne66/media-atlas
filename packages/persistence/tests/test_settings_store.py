@@ -161,9 +161,7 @@ def test_account_locator_unique_cas_and_atomic_delete(migrated_engine: Engine) -
         current = repo.get_account(account.id)
         assert current is not None
         updated = repo.update_account(
-            PlatformAccountBindingRecord(
-                **{**current.__dict__, "display_name": "合成账号二"}
-            ),
+            PlatformAccountBindingRecord(**{**current.__dict__, "display_name": "合成账号二"}),
             expected_version=1,
         )
         assert updated.row_version == 2

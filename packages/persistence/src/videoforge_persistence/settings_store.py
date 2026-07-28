@@ -211,9 +211,7 @@ class SettingsRepository:
         row = self._session.get(ProviderConfigurationRow, kind)
         return None if row is None else _provider_record(row)
 
-    def create_provider(
-        self, record: ProviderConfigurationRecord
-    ) -> ProviderConfigurationRecord:
+    def create_provider(self, record: ProviderConfigurationRecord) -> ProviderConfigurationRecord:
         row = ProviderConfigurationRow(**record.__dict__)
         self._session.add(row)
         try:
@@ -282,9 +280,7 @@ class SettingsRepository:
         row = self._session.get(PlatformAccountBindingRow, account_id)
         return None if row is None else _account_record(row)
 
-    def create_account(
-        self, record: PlatformAccountBindingRecord
-    ) -> PlatformAccountBindingRecord:
+    def create_account(self, record: PlatformAccountBindingRecord) -> PlatformAccountBindingRecord:
         row = PlatformAccountBindingRow(**record.__dict__)
         self._session.add(row)
         try:
@@ -334,9 +330,7 @@ class SettingsRepository:
         if hit is None:
             if self._session.get(PlatformAccountBindingRow, record.id) is None:
                 raise NotFoundError("platform_account_binding", record.id)
-            raise VersionConflictError(
-                "platform_account_binding", record.id, expected_version
-            )
+            raise VersionConflictError("platform_account_binding", record.id, expected_version)
         return replace(
             record,
             verification_status="UNVERIFIED",
@@ -356,9 +350,7 @@ class SettingsRepository:
         if self._session.execute(stmt).scalar_one_or_none() is None:
             if self._session.get(PlatformAccountBindingRow, account_id) is None:
                 raise NotFoundError("platform_account_binding", account_id)
-            raise VersionConflictError(
-                "platform_account_binding", account_id, expected_version
-            )
+            raise VersionConflictError("platform_account_binding", account_id, expected_version)
         self.clear_credential("ACCOUNT", account_id)
 
 

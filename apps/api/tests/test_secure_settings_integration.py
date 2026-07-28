@@ -166,10 +166,7 @@ def test_provider_lifecycle_restart_lock_and_zero_plaintext(
     )
     assert cleared.status_code == 200
     assert cleared.json()["credential_configured"] is False
-    assert (
-        restarted.delete("/v1/settings/providers/LLM?expected_version=3").status_code
-        == 204
-    )
+    assert restarted.delete("/v1/settings/providers/LLM?expected_version=3").status_code == 204
     with migrated_engine.connect() as conn:
         assert (
             conn.execute(
@@ -230,28 +227,26 @@ def test_platform_binding_storage_loci_and_atomic_delete(migrated_engine: Engine
     desktop_id = desktop.json()["id"]
 
     with migrated_engine.connect() as conn:
-        locator = conn.execute(
-            text(
-                "SELECT external_handle, nonce, ciphertext, auth_tag "
-                "FROM credential_entries WHERE owner_id=:owner_id"
-            ),
-            {"owner_id": desktop_id},
-        ).mappings().one()
+        locator = (
+            conn.execute(
+                text(
+                    "SELECT external_handle, nonce, ciphertext, auth_tag "
+                    "FROM credential_entries WHERE owner_id=:owner_id"
+                ),
+                {"owner_id": desktop_id},
+            )
+            .mappings()
+            .one()
+        )
         assert locator["external_handle"] == desktop_handle
         assert locator["nonce"] is locator["ciphertext"] is locator["auth_tag"] is None
 
     _assert_database_has_no_plaintext(migrated_engine, CANARY)
     assert (
-        client.delete(
-            f"/v1/settings/accounts/{official_id}?expected_version=1"
-        ).status_code
-        == 204
+        client.delete(f"/v1/settings/accounts/{official_id}?expected_version=1").status_code == 204
     )
     assert (
-        client.delete(
-            f"/v1/settings/accounts/{desktop_id}?expected_version=1"
-        ).status_code
-        == 204
+        client.delete(f"/v1/settings/accounts/{desktop_id}?expected_version=1").status_code == 204
     )
     with migrated_engine.connect() as conn:
         assert (

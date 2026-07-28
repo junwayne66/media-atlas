@@ -80,9 +80,7 @@ class StubSettingsGateway:
     def lock_vault(self) -> VaultView:
         return VaultView(state=VaultState.LOCKED, initialized=True, unlocked=False)
 
-    def upsert_provider(
-        self, kind: ProviderKind, body: ProviderWriteRequest
-    ) -> ProviderView:
+    def upsert_provider(self, kind: ProviderKind, body: ProviderWriteRequest) -> ProviderView:
         if body.provider_name == "conflict":
             raise VersionConflictError("provider_configuration", kind.value, 1)
         if body.credential_action.value == "REPLACE" and body.provider_name == "locked":
@@ -95,9 +93,7 @@ class StubSettingsGateway:
     def create_account(self, body: AccountWriteRequest) -> PlatformAccountView:
         return _account()
 
-    def update_account(
-        self, account_id: str, body: AccountWriteRequest
-    ) -> PlatformAccountView:
+    def update_account(self, account_id: str, body: AccountWriteRequest) -> PlatformAccountView:
         return _account(version=(body.expected_version or 0) + 1)
 
     def delete_account(self, account_id: str, expected_version: int) -> None:
