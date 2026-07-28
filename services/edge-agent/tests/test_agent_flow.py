@@ -1,16 +1,78 @@
 """端到端：真实 API 路由 + 真实 Postgres + agent 主循环（ASGITransport 无端口）。"""
 
+import asyncio
+from datetime import UTC, datetime, timedelta
 from pathlib import Path
 
 import httpx
 import pytest
 
+from videoforge_contracts import ExecutionPolicy, TaskEnvelope
 from videoforge_edge_agent.client import ControlPlaneClient
 from videoforge_edge_agent.main import build_registry
 from videoforge_edge_agent.runner import AgentRunner, output_digest
 from videoforge_provider_sdk import FakeProvider, ProviderRegistry, scan_descriptors
 
 REPO_ROOT = Path(__file__).parents[3]
+
+
+class _SlowProvider(FakeProvider):
+    async def invoke(self, capability, payload):
+        await asyncio.sleep(10)
+        return await super().invoke(capability, payload)
+
+
+class _LeaseLosingClient:
+    def __init__(self, envelope: TaskEnvelope) -> None:
+        self.envelope = envelope
+        self.renewed = 0
+        self.completed = 0
+        self.failed = 0
+
+    async def register(self, payload):
+        return "worker-unit"
+
+    async def claim(self, **kwargs):
+        out, self.envelope = self.envelope, None
+        return out
+
+    async def renew(self, *args, **kwargs):
+        self.renewed += 1
+        request = httpx.Request("POST", "http://control/renew")
+        response = httpx.Response(409, request=request)
+        raise httpx.HTTPStatusError("lease lost", request=request, response=response)
+
+    async def complete(self, *args, **kwargs):
+        self.completed += 1
+        return True
+
+    async def fail(self, *args, **kwargs):
+        self.failed += 1
+
+
+async def test_task_renewal_loss_cancels_provider_and_forbids_submit() -> None:
+    descriptors = {d.name: d for d in scan_descriptors(REPO_ROOT / "connectors")}
+    registry = ProviderRegistry()
+    registry.register(_SlowProvider(descriptors["source.fake"]))
+    envelope = TaskEnvelope(
+        task_id="task-unit",
+        idempotency_key="task-unit",
+        capability="source.discover",
+        execution_policy=ExecutionPolicy.LOCAL_ONLY,
+        attempt=1,
+        lease_id="lease-unit",
+        lease_expires_at=datetime.now(UTC) + timedelta(seconds=1),
+        params={"platform": "douyin"},
+        created_at=datetime.now(UTC),
+    )
+    client = _LeaseLosingClient(envelope)
+    runner = AgentRunner(client, registry, lease_ttl_s=1)
+    runner.worker_id = "worker-unit"
+
+    assert await runner.run_once() is True
+    assert client.renewed == 1
+    assert client.completed == 0
+    assert client.failed == 0
 
 
 async def _enqueue(control_plane: ControlPlaneClient, capability: str, key: str) -> str:
@@ -47,7 +109,12 @@ async def test_fake_source_to_fake_render_flow(control_plane: ControlPlaneClient
     for task_id, capability in ((t_source, "source.discover"), (t_render, "render.compose")):
         status = await _status(control_plane, task_id)
         assert status["status"] == "COMPLETED"
-        assert status["output"]["capability"] == capability
+        if capability == "source.discover":
+            # Douyin 已升级为零网络 Fixture Provider；其他连接器仍走 Fake。
+            assert status["output"]["status"] == "SUCCEEDED"
+            assert status["output"]["result"]["platform"] == "douyin"
+        else:
+            assert status["output"]["capability"] == capability
         assert status["output_digest"] == output_digest(status["output"])
 
     await control_plane.heartbeat(runner.worker_id)  # 心跳链路可用

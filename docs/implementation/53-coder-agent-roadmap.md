@@ -82,6 +82,16 @@ DoD：关闭 UI 后 Sidecar 继续；Lease 过期可重分配；Secret 不出现
 
 SHA、视频 pHash、音频/文本指纹和 duplicate group。
 
+### VF-108 Recoverable Ingest Worker
+
+依赖：VF-004/005/006/007/101/102/105/106/107。
+产物：Douyin 离线发现/解析/授权获取 Adapter、IngestWorkflow、Task Lease 任务级续租与取消、
+SourceAsset/Artifact 持久化、Rights Gate、不可变审计、人工恢复、SSRF 策略和 Compose Worker。
+外部设计中的 `crawl_jobs` 映射到现有 Temporal + `worker_tasks`，不得新增竞争性执行队列。
+DoD：50 个离线链接零静默失败；UNKNOWN 零对象；合成媒体有 SHA/size/MIME/媒体 Golden；
+两个 Worker 并发与租约过期可恢复；challenge 零自动快速重试且可显式恢复；Secret canary
+在信封、业务表、事件、对象元数据和日志中命中为零；Temporal time-skipping 通过。
+
 **P1 Exit**：50 个试点链接可导入或明确提示人工回退；热点 Top-20 有证据和可重放得分。
 
 ## 4. P2：理解与 Blueprint
@@ -265,4 +275,3 @@ Known limitations:
 - Golden 样本出现质量回退而无法解释。
 
 此时应保留可运行 Fake/Manual Adapter，输出阻塞证据和最小决策问题。
-

@@ -5,6 +5,8 @@ version: 0.1.0
 capabilities:
   - source.discover
   - source.metadata
+  - source.resolve
+  - source.acquire
 execution_location: local
 languages:
   - zh-CN
@@ -15,7 +17,6 @@ platforms:
 isolation_level: L4
 license_notes: >
   官方开放平台能力优先（需 client_key/secret 与 App 审核）；公开信号适配器为 L4，
-  实时抓取未启用；手工导入始终可用。候选实时适配器 f2（Apache-2.0）待授权后接入。
-required_secrets:
-  - douyin_open_api_client_key
-  - douyin_open_api_client_secret
+  实时抓取未启用；首版 discover/resolve/acquire 仅使用脱敏 Fixture、纯 URL 解析与合成媒体，
+  手工导入始终可用。候选实时适配器 f2（Apache-2.0）和浏览器运行时均待显式授权后接入。
+required_secrets: []

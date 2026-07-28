@@ -11,6 +11,7 @@ from videoforge_persistence.errors import (
     VersionConflictError,
 )
 from videoforge_persistence.ids import new_id
+from videoforge_persistence.ingest import IngestRepository, IngestStateError
 from videoforge_persistence.lease import (
     DEFAULT_MAX_ATTEMPTS,
     LeaseLostError,
@@ -50,6 +51,8 @@ __all__ = [
     "ArtifactRepository",
     "CredentialEntryRecord",
     "DuplicateError",
+    "IngestRepository",
+    "IngestStateError",
     "LeaseLostError",
     "NotFoundError",
     "OutboxEvent",

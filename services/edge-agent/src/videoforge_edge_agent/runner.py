@@ -10,7 +10,10 @@ import json
 import logging
 import platform
 import socket
+from contextlib import suppress
 from typing import Any
+
+import httpx
 
 from videoforge_edge_agent.client import ControlPlaneClient
 from videoforge_edge_agent.logsafe import scrub_text, secrets_from_env
@@ -85,10 +88,37 @@ class AgentRunner:
             envelope.capability,
             envelope.attempt,
         )
+        lease_lost = asyncio.Event()
+        renew_task = asyncio.create_task(
+            self._renew_task_lease(
+                envelope.task_id,
+                envelope.lease_id,
+                lease_lost,
+            )
+        )
+        invoke_task: asyncio.Task[dict[str, Any]] | None = None
+        wait_lost: asyncio.Task[bool] | None = None
         try:
-            decision = route(self._registry, envelope.capability)
+            decision = route(
+                self._registry,
+                envelope.capability,
+                platform=envelope.params.get("platform"),
+                policy=envelope.execution_policy,
+            )
             provider = self._registry.get(decision.selected).provider
-            result = await provider.invoke(envelope.capability, envelope.params)
+            invoke_task = asyncio.create_task(provider.invoke(envelope.capability, envelope.params))
+            wait_lost = asyncio.create_task(lease_lost.wait())
+            done, _ = await asyncio.wait(
+                {invoke_task, wait_lost}, return_when=asyncio.FIRST_COMPLETED
+            )
+            if wait_lost in done and lease_lost.is_set():
+                invoke_task.cancel()
+                with suppress(asyncio.CancelledError):
+                    await invoke_task
+                logger.warning("task=%s 租约已失效，本地执行已取消且禁止提交", envelope.task_id)
+                return True
+            wait_lost.cancel()
+            result = await invoke_task
             self._registry.record_result(decision.selected, success=True)
         except NoEligibleProviderError as exc:
             # 上报服务端的失败文本同样过洗涤：异常消息可能夹带 Secret
@@ -107,7 +137,16 @@ class AgentRunner:
             )
             logger.warning("task=%s 执行失败已释放: %r", envelope.task_id, exc)
             return True
+        finally:
+            if wait_lost is not None:
+                wait_lost.cancel()
+            renew_task.cancel()
+            with suppress(asyncio.CancelledError):
+                await renew_task
 
+        if lease_lost.is_set():
+            logger.warning("task=%s 完成时租约已失效，结果未提交", envelope.task_id)
+            return True
         stored = await self._client.complete(
             envelope.task_id,
             lease_id=envelope.lease_id,
@@ -116,6 +155,33 @@ class AgentRunner:
         )
         logger.info("task=%s 完成 stored=%s", envelope.task_id, stored)
         return True
+
+    async def _renew_task_lease(
+        self,
+        task_id: str,
+        lease_id: str,
+        lease_lost: asyncio.Event,
+    ) -> None:
+        """任务级续租；409 表示任务已取消/易主，立即通知执行协程停止。
+
+        网络暂时故障只记录并在下一周期重试；控制面仍会用租约到期保护迟到提交。
+        """
+        interval = max(0.05, self._lease_ttl_s / 3)
+        while True:
+            await asyncio.sleep(interval)
+            try:
+                await self._client.renew(
+                    task_id,
+                    lease_id=lease_id,
+                    lease_ttl_s=self._lease_ttl_s,
+                )
+            except httpx.HTTPStatusError as exc:
+                if exc.response.status_code == 409:
+                    lease_lost.set()
+                    return
+                logger.warning("task=%s 续租 HTTP 失败: %s", task_id, exc.response.status_code)
+            except Exception as exc:  # 网络瞬断不等价于确定丢租约
+                logger.warning("task=%s 续租失败，将在下一周期重试: %r", task_id, exc)
 
     async def _heartbeat_loop(self) -> None:
         assert self.worker_id is not None

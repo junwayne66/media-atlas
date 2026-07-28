@@ -15,10 +15,19 @@ from sqlalchemy.orm import Session
 
 REPO_ROOT = Path(__file__).parents[3]
 ALL_TABLES = (
+    "ingest_job_events",
+    "ingest_jobs",
+    "rights_attestations",
+    "discovery_queries",
+    "source_profiles",
     "credential_entries",
     "credential_vault_metadata",
     "provider_configurations",
     "platform_account_bindings",
+    "performance_snapshots",
+    "publish_jobs",
+    "review_decisions",
+    "creative_documents",
     "processed_events",
     "outbox_events",
     "artifacts",

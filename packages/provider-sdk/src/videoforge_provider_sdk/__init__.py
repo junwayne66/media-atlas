@@ -167,6 +167,14 @@ from videoforge_provider_sdk.metrics_connector import (
     MetricsFetchStatus,
     UnconfiguredMetricsConnector,
 )
+from videoforge_provider_sdk.network_guard import (
+    HostResolver,
+    UnsafeNetworkTarget,
+    ValidatedNetworkTarget,
+    system_resolver,
+    validate_redirect_chain,
+    validate_url_target,
+)
 from videoforge_provider_sdk.neutral_connector import (
     CANARY_KEYWORD,
     NeutralDiscoveryConnector,
@@ -390,6 +398,7 @@ __all__ = [
     "FixtureFetcher",
     "FixtureShortLinkExpander",
     "FrameSample",
+    "HostResolver",
     "HighlightFeatureErrorCode",
     "HighlightFeatureProvider",
     "HighlightFeatureRequest",
@@ -467,7 +476,9 @@ __all__ = [
     "UnconfiguredTRAProvider",
     "UnconfiguredTimelineExporter",
     "UnconfiguredVLMProvider",
+    "UnsafeNetworkTarget",
     "UnresolvableUrl",
+    "ValidatedNetworkTarget",
     "VLMErrorCode",
     "VLMProvider",
     "VLMRequest",
@@ -491,6 +502,9 @@ __all__ = [
     "sha256_file",
     "status_for_download_error",
     "status_for_error",
+    "system_resolver",
+    "validate_redirect_chain",
+    "validate_url_target",
     "DurationRewriteDirection",
     "DurationRewriteErrorCode",
     "DurationRewriteProvider",

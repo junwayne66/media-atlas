@@ -65,3 +65,45 @@ class ControlPlaneClient:
             json={"lease_id": lease_id, "reason": reason},
         )
         resp.raise_for_status()
+
+    async def cancel(self, task_id: str) -> None:
+        resp = await self._http.post(f"/v1/worker-tasks/{task_id}/cancel")
+        resp.raise_for_status()
+
+    async def stage_ingest_artifact(self, job_id: str) -> dict[str, Any]:
+        resp = await self._http.post(f"/v1/ingest/jobs/{job_id}/artifact-uploads")
+        resp.raise_for_status()
+        return resp.json()
+
+    async def put_presigned(
+        self, put_url: str, data: bytes, *, mime_type: str
+    ) -> None:
+        # URL 仅在本方法栈内使用，不记录日志、不回传任务结果。
+        resp = await self._http.put(
+            put_url,
+            content=data,
+            headers={"Content-Type": mime_type},
+        )
+        resp.raise_for_status()
+
+    async def commit_ingest_artifact(
+        self,
+        job_id: str,
+        upload_id: str,
+        *,
+        filename: str,
+        mime_type: str,
+        sha256: str,
+        size_bytes: int,
+    ) -> dict[str, Any]:
+        resp = await self._http.post(
+            f"/v1/ingest/jobs/{job_id}/artifact-uploads/{upload_id}/commit",
+            json={
+                "filename": filename,
+                "mime_type": mime_type,
+                "sha256": sha256,
+                "size_bytes": size_bytes,
+            },
+        )
+        resp.raise_for_status()
+        return resp.json()

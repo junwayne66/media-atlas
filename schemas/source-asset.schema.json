@@ -105,6 +105,17 @@
       "title": "AcquisitionSummary",
       "type": "object"
     },
+    "RightsBasis": {
+      "enum": [
+        "UNKNOWN",
+        "OWNED",
+        "LICENSED",
+        "USER_PROVIDED",
+        "INTERNAL_APPROVED"
+      ],
+      "title": "RightsBasis",
+      "type": "string"
+    },
     "SourceAssetKind": {
       "enum": [
         "URL",
@@ -119,10 +130,120 @@
         "IMPORTED",
         "MANUAL_FALLBACK",
         "NEEDS_EXPANSION",
-        "UNRESOLVABLE"
+        "UNRESOLVABLE",
+        "METADATA_ONLY"
       ],
       "title": "SourceDisposition",
       "type": "string"
+    },
+    "SourcePublicMetadata": {
+      "additionalProperties": false,
+      "properties": {
+        "author_name": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Author Name"
+        },
+        "author_platform_id": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Author Platform Id"
+        },
+        "cover_url": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Cover Url"
+        },
+        "description": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Description"
+        },
+        "duration_ms": {
+          "anyOf": [
+            {
+              "minimum": 0,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Duration Ms"
+        },
+        "published_at": {
+          "anyOf": [
+            {
+              "format": "date-time",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Published At"
+        },
+        "raw_metadata": {
+          "additionalProperties": true,
+          "title": "Raw Metadata",
+          "type": "object"
+        },
+        "schema_version": {
+          "default": "1",
+          "description": "合同 schema 版本；Reader 需兼容当前与前一版本",
+          "title": "Schema Version",
+          "type": "string"
+        },
+        "stats": {
+          "additionalProperties": true,
+          "title": "Stats",
+          "type": "object"
+        },
+        "title": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Title"
+        }
+      },
+      "title": "SourcePublicMetadata",
+      "type": "object"
     }
   },
   "$id": "https://videoforge.dev/schemas/source-asset.schema.json",
@@ -140,6 +261,13 @@
         }
       ],
       "default": null
+    },
+    "artifact_ids": {
+      "items": {
+        "type": "string"
+      },
+      "title": "Artifact Ids",
+      "type": "array"
     },
     "canonical_url": {
       "anyOf": [
@@ -169,6 +297,19 @@
       "format": "date-time",
       "title": "Created At",
       "type": "string"
+    },
+    "discovered_at": {
+      "anyOf": [
+        {
+          "format": "date-time",
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Discovered At"
     },
     "disposition": {
       "$ref": "#/$defs/SourceDisposition"
@@ -207,6 +348,19 @@
     "kind": {
       "$ref": "#/$defs/SourceAssetKind"
     },
+    "last_seen_at": {
+      "anyOf": [
+        {
+          "format": "date-time",
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Last Seen At"
+    },
     "local_path": {
       "anyOf": [
         {
@@ -239,11 +393,33 @@
       "title": "Project Ids",
       "type": "array"
     },
+    "public_metadata": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/SourcePublicMetadata"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null
+    },
     "reason": {
       "description": "处置理由（面向人的可解释说明）",
       "minLength": 1,
       "title": "Reason",
       "type": "string"
+    },
+    "rights_attestation_ids": {
+      "items": {
+        "type": "string"
+      },
+      "title": "Rights Attestation Ids",
+      "type": "array"
+    },
+    "rights_basis": {
+      "$ref": "#/$defs/RightsBasis",
+      "default": "UNKNOWN"
     },
     "schema_version": {
       "default": "1",
