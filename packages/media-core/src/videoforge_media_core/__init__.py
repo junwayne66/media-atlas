@@ -1,4 +1,8 @@
-from videoforge_media_core.artifact_store import ArtifactStore, StagedUpload
+from videoforge_media_core.artifact_store import (
+    ArtifactStore,
+    StagedMediaInspection,
+    StagedUpload,
+)
 from videoforge_media_core.cache import LocalArtifactCache
 from videoforge_media_core.errors import (
     ArtifactStoreError,
@@ -70,6 +74,7 @@ __all__ = [
     "SceneResult",
     "assemble_render_argv",
     "StagedUpload",
+    "StagedMediaInspection",
     "StagedUploadMismatch",
     "StagedUploadNotFound",
     "VideoFingerprinter",

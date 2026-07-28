@@ -279,6 +279,12 @@ class WorkerTaskRow(Base):
     capability: Mapped[str] = mapped_column(String(200), nullable=False)
     params: Mapped[dict] = mapped_column(JSONB, nullable=False, default=dict)
     execution_policy: Mapped[str] = mapped_column(String(40), nullable=False)
+    workflow_id: Mapped[str | None] = mapped_column(String(200))
+    input_artifact_ids: Mapped[list] = mapped_column(JSONB, nullable=False, default=list)
+    output_schema_ref: Mapped[str | None] = mapped_column(Text)
+    resource_limits: Mapped[dict | None] = mapped_column(JSONB)
+    credential_handles: Mapped[list] = mapped_column(JSONB, nullable=False, default=list)
+    priority: Mapped[int] = mapped_column(Integer, nullable=False, default=0)
     # status ∈ PENDING / LEASED / COMPLETED / FAILED（FAILED 为终态，不再可领）
     status: Mapped[str] = mapped_column(String(20), nullable=False, default="PENDING")
     # attempt = 已消耗尝试数（每次 claim +1）；达到 max_attempts 即转终态 FAILED
@@ -292,4 +298,4 @@ class WorkerTaskRow(Base):
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
     updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
 
-    __table_args__ = (Index("ix_worker_tasks_claim", "status", "created_at"),)
+    __table_args__ = (Index("ix_worker_tasks_claim", "status", "priority", "created_at"),)

@@ -21,6 +21,7 @@ from enum import StrEnum
 from pydantic import Field, model_validator
 
 from videoforge_contracts.base import ContractModel
+from videoforge_contracts.ingest import RightsBasis, SourcePublicMetadata
 
 _SHA256_PATTERN = r"^[0-9a-f]{64}$"
 
@@ -37,6 +38,7 @@ class SourceDisposition(StrEnum):
     MANUAL_FALLBACK = "MANUAL_FALLBACK"  # 已解析但未能自动获取 → 人工下载后关联
     NEEDS_EXPANSION = "NEEDS_EXPANSION"  # 短链待展开
     UNRESOLVABLE = "UNRESOLVABLE"  # 无法识别平台/内容 ID
+    METADATA_ONLY = "METADATA_ONLY"  # 已保存公开元数据，尚未授权/获取原始媒体
 
 
 class AcquisitionAttemptSummary(ContractModel):
@@ -78,6 +80,12 @@ class SourceAsset(ContractModel):
     local_path: str | None = None
     file_sha256: str | None = Field(default=None, pattern=_SHA256_PATTERN)
     acquisition: AcquisitionSummary | None = None
+    public_metadata: SourcePublicMetadata | None = None
+    rights_basis: RightsBasis = RightsBasis.UNKNOWN
+    rights_attestation_ids: list[str] = Field(default_factory=list)
+    artifact_ids: list[str] = Field(default_factory=list)
+    discovered_at: datetime | None = None
+    last_seen_at: datetime | None = None
     project_ids: list[str] = Field(default_factory=list)
     created_at: datetime
     updated_at: datetime
@@ -85,11 +93,21 @@ class SourceAsset(ContractModel):
     @model_validator(mode="after")
     def _check_disposition_consistency(self) -> "SourceAsset":
         # IMPORTED 必须真有本地文件的哈希——否则「已导入」是空话，下游分析会拿不到输入
-        if self.disposition is SourceDisposition.IMPORTED and not self.file_sha256:
-            raise ValueError("IMPORTED 必须携带 file_sha256（否则并未真正导入）")
+        if (
+            self.disposition is SourceDisposition.IMPORTED
+            and not self.file_sha256
+            and not self.artifact_ids
+        ):
+            raise ValueError("IMPORTED 必须携带 file_sha256 或 artifact_ids（否则并未真正导入）")
         # 不可解析必须带错误码，保证 UI 能给出结构化提示而非空白
         if self.disposition is SourceDisposition.UNRESOLVABLE and not self.error_code:
             raise ValueError("UNRESOLVABLE 必须携带 error_code")
+        if (
+            self.discovered_at is not None
+            and self.last_seen_at is not None
+            and self.last_seen_at < self.discovered_at
+        ):
+            raise ValueError("last_seen_at 不能早于 discovered_at")
         return self
 
 

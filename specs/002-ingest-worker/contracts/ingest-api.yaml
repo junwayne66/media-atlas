@@ -1,0 +1,124 @@
+openapi: 3.1.0
+info:
+  title: VideoForge Ingest API
+  version: 0.1.0
+paths:
+  /v1/ingest/discovery:
+    post:
+      summary: 创建抖音离线发现任务
+      parameters:
+        - $ref: '#/components/parameters/IdempotencyKey'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: {$ref: '#/components/schemas/DiscoveryRequest'}
+      responses:
+        '202':
+          description: 已接受
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/JobAccepted'}
+  /v1/ingest/resolve:
+    post:
+      summary: 创建 URL 解析任务
+      parameters:
+        - $ref: '#/components/parameters/IdempotencyKey'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: {$ref: '#/components/schemas/ResolveRequest'}
+      responses:
+        '202':
+          description: 已接受
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/JobAccepted'}
+  /v1/ingest/sources/{source_asset_id}/acquisitions:
+    post:
+      summary: 创建经授权的媒体获取任务
+      parameters:
+        - $ref: '#/components/parameters/IdempotencyKey'
+        - name: source_asset_id
+          in: path
+          required: true
+          schema: {type: string}
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: {$ref: '#/components/schemas/AcquisitionRequest'}
+      responses:
+        '202':
+          description: 已接受
+        '409':
+          description: UNKNOWN 权利依据或已有普通获取
+  /v1/ingest/jobs/{job_id}:
+    get:
+      summary: 查询采集任务
+      responses:
+        '200': {description: 任务}
+  /v1/ingest/jobs/{job_id}/events:
+    get:
+      summary: 查询不可变任务事件
+      responses:
+        '200': {description: 事件列表}
+  /v1/ingest/jobs/{job_id}/resume:
+    post:
+      summary: 从 NEED_HUMAN 显式恢复
+      responses:
+        '202': {description: 已发出恢复信号}
+        '409': {description: 非法状态}
+  /v1/ingest/jobs/{job_id}/cancel:
+    post:
+      summary: 取消非终态任务
+      responses:
+        '202': {description: 已发出取消信号}
+        '409': {description: 已终态}
+components:
+  parameters:
+    IdempotencyKey:
+      name: Idempotency-Key
+      in: header
+      required: true
+      schema: {type: string, minLength: 1, maxLength: 200}
+  schemas:
+    RightsBasis:
+      type: string
+      enum: [UNKNOWN, OWNED, LICENSED, USER_PROVIDED, INTERNAL_APPROVED]
+    JobStatus:
+      type: string
+      enum: [PENDING, RUNNING, RETRY_WAIT, NEED_HUMAN, SUCCEEDED, FAILED, CANCELLED]
+    DiscoveryRequest:
+      type: object
+      additionalProperties: false
+      required: [platform, query]
+      properties:
+        platform: {const: douyin}
+        query: {type: string, minLength: 1, maxLength: 200}
+        max_items: {type: integer, minimum: 1, maximum: 200, default: 30}
+        profile_id: {type: [string, 'null']}
+        fixture: {type: [string, 'null']}
+    ResolveRequest:
+      type: object
+      additionalProperties: false
+      required: [url]
+      properties:
+        url: {type: string, minLength: 1, maxLength: 4000}
+        profile_id: {type: [string, 'null']}
+    AcquisitionRequest:
+      type: object
+      additionalProperties: false
+      required: [rights_basis]
+      properties:
+        rights_basis: {$ref: '#/components/schemas/RightsBasis'}
+        rights_note: {type: [string, 'null'], maxLength: 1000}
+        actor_id: {type: string, default: local-user}
+        force: {type: boolean, default: false}
+    JobAccepted:
+      type: object
+      required: [job_id, status]
+      properties:
+        job_id: {type: string}
+        status: {$ref: '#/components/schemas/JobStatus'}

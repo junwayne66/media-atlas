@@ -89,6 +89,10 @@ services:
     environment:
       VIDEOFORGE_DATABASE_URL: postgresql+psycopg://${POSTGRES_USER:-videoforge}:${POSTGRES_PASSWORD:-videoforge}@postgres:5432/${POSTGRES_DB:-videoforge}
       VIDEOFORGE_TEMPORAL_ADDRESS: temporal:7233
+      VIDEOFORGE_S3_ENDPOINT: http://minio:9000
+      VIDEOFORGE_S3_ACCESS_KEY: ${MINIO_ROOT_USER:-videoforge}
+      VIDEOFORGE_S3_SECRET_KEY: ${MINIO_ROOT_PASSWORD:-videoforge123}
+      VIDEOFORGE_S3_BUCKET: ${VIDEOFORGE_S3_BUCKET:-videoforge}
     command:
       [
         "uv",
@@ -107,12 +111,63 @@ services:
     volumes:
       - ./apps/api/src:/app/apps/api/src
     depends_on:
-      postgres:
-        condition: service_healthy
+      migrate:
+        condition: service_completed_successfully
       redis:
         condition: service_healthy
       minio:
         condition: service_healthy
+      temporal:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-fsS", "http://localhost:8000/healthz"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+
+  migrate:
+    build:
+      context: .
+      dockerfile: infra/docker/api.Dockerfile
+    environment:
+      VIDEOFORGE_DATABASE_URL: postgresql+psycopg://${POSTGRES_USER:-videoforge}:${POSTGRES_PASSWORD:-videoforge}@postgres:5432/${POSTGRES_DB:-videoforge}
+    command: ["uv", "run", "--no-sync", "alembic", "upgrade", "head"]
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  workflow-worker:
+    build:
+      context: .
+      dockerfile: infra/docker/worker.Dockerfile
+      args:
+        WORKER_PACKAGE: videoforge-temporal-worker
+    environment:
+      VIDEOFORGE_DATABASE_URL: postgresql+psycopg://${POSTGRES_USER:-videoforge}:${POSTGRES_PASSWORD:-videoforge}@postgres:5432/${POSTGRES_DB:-videoforge}
+      VIDEOFORGE_TEMPORAL_ADDRESS: temporal:7233
+    command: ["uv", "run", "--no-sync", "videoforge-temporal-worker"]
+    depends_on:
+      migrate:
+        condition: service_completed_successfully
+      temporal:
+        condition: service_healthy
+    restart: unless-stopped
+
+  edge-agent:
+    build:
+      context: .
+      dockerfile: infra/docker/worker.Dockerfile
+      args:
+        WORKER_PACKAGE: videoforge-edge-agent
+    environment:
+      VIDEOFORGE_CONTROL_PLANE_URL: http://api:8000
+      VIDEOFORGE_CONNECTORS_DIR: /app/connectors
+      VIDEOFORGE_WORKER_NAME: compose-edge-agent
+    command: ["uv", "run", "--no-sync", "videoforge-edge-agent"]
+    depends_on:
+      api:
+        condition: service_healthy
+    restart: unless-stopped
 
   # Web 控制台（pnpm workspace 成员 apps/console，@videoforge/console）：
   # 构建成静态资源由 nginx 托管，/api 同源反代到 api 服务（无 CORS）。
@@ -123,7 +178,8 @@ services:
     ports:
       - "127.0.0.1:${CONSOLE_PORT:-8080}:80"
     depends_on:
-      - api
+      api:
+        condition: service_healthy
 
 volumes:
   pgdata:

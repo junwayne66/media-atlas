@@ -2,8 +2,12 @@ from fastapi import FastAPI, Request
 from fastapi.exceptions import RequestValidationError
 from fastapi.middleware.cors import CORSMiddleware
 
+from videoforge_api.artifact_uploads import DbArtifactUploadGateway
+from videoforge_api.artifact_uploads import router as artifact_uploads_router
 from videoforge_api.creation import DbCreationGateway
 from videoforge_api.creation import router as creation_router
+from videoforge_api.ingest import DbTemporalIngestService
+from videoforge_api.ingest import router as ingest_router
 from videoforge_api.operations import TemporalOperationsService
 from videoforge_api.operations import router as operations_router
 from videoforge_api.performance import DbPerformanceGateway
@@ -12,6 +16,8 @@ from videoforge_api.projects import DbProjectGateway
 from videoforge_api.projects import router as projects_router
 from videoforge_api.publish import DbPublishGateway
 from videoforge_api.publish import router as publish_router
+from videoforge_api.readiness import DbIngestReadinessGateway
+from videoforge_api.readiness import router as readiness_router
 from videoforge_api.review import DbReviewGateway
 from videoforge_api.review import router as review_router
 from videoforge_api.secure_settings import DbSettingsGateway, redacted_validation_error_handler
@@ -23,6 +29,7 @@ from videoforge_api.trends import DbTrendGateway
 from videoforge_api.trends import router as trends_router
 from videoforge_api.workers import DbWorkerGateway
 from videoforge_api.workers import router as workers_router
+from videoforge_media_core import ArtifactStore, ObjectStore, S3Settings
 from videoforge_persistence import create_engine_from_env
 
 
@@ -40,6 +47,12 @@ def create_app(settings: Settings | None = None) -> FastAPI:
         settings.temporal_address, settings.temporal_namespace
     )
     engine = create_engine_from_env(settings.database_url)
+    app.state.ingest_service = DbTemporalIngestService(
+        engine, settings.temporal_address, settings.temporal_namespace
+    )
+    object_store = ObjectStore(S3Settings.from_env())
+    app.state.artifact_upload_gateway = DbArtifactUploadGateway(engine, ArtifactStore(object_store))
+    app.state.ingest_readiness_gateway = DbIngestReadinessGateway(engine, object_store)
     app.state.worker_gateway = DbWorkerGateway(engine)
     app.state.trend_gateway = DbTrendGateway(engine)
     app.state.source_gateway = DbSourceGateway(engine)
@@ -53,6 +66,9 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     # 单进程长期实例：解锁态只存在内存；reload/重启会自然回到 LOCKED。
     app.state.settings_gateway = DbSettingsGateway(engine)
     app.include_router(operations_router)
+    app.include_router(ingest_router)
+    app.include_router(artifact_uploads_router)
+    app.include_router(readiness_router)
     app.include_router(workers_router)
     app.include_router(trends_router)
     app.include_router(sources_router)
@@ -67,7 +83,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     @app.middleware("http")
     async def no_store_settings(request: Request, call_next):
         response = await call_next(request)
-        if request.url.path.startswith("/v1/settings"):
+        if request.url.path.startswith(("/v1/settings", "/v1/ingest/jobs")):
             response.headers["Cache-Control"] = "no-store"
             response.headers["Pragma"] = "no-cache"
         return response

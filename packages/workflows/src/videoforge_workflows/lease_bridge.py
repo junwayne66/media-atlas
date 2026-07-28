@@ -13,6 +13,8 @@ from datetime import timedelta
 from temporalio import workflow
 from temporalio.common import RetryPolicy
 
+from videoforge_contracts import ExecutionPolicy, ResourceLimits
+
 # Activity 按名调用：实现与注册在 temporal-worker（apps/temporal-worker），
 # 从而 workflows 包无需依赖 persistence。
 DISPATCH_ACTIVITY = "dispatch_to_worker"
@@ -32,6 +34,14 @@ class WorkerDispatch:
     capability: str
     params: dict = field(default_factory=dict)
     idempotency_key: str = ""
+    execution_policy: ExecutionPolicy = ExecutionPolicy.LOCAL_PREFERRED
+    workflow_id: str | None = None
+    input_artifact_ids: list[str] = field(default_factory=list)
+    output_schema_ref: str | None = None
+    resource_limits: ResourceLimits | None = None
+    credential_handles: list[str] = field(default_factory=list)
+    priority: int = 0
+    max_attempts: int = 5
 
 
 @dataclass

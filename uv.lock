@@ -1530,6 +1530,7 @@ version = "0.1.0"
 source = { editable = "services/edge-agent" }
 dependencies = [
     { name = "httpx" },
+    { name = "videoforge-connector-douyin" },
     { name = "videoforge-contracts" },
     { name = "videoforge-provider-sdk" },
 ]
@@ -1537,6 +1538,7 @@ dependencies = [
 [package.metadata]
 requires-dist = [
     { name = "httpx", specifier = ">=0.28" },
+    { name = "videoforge-connector-douyin", editable = "connectors/sources/douyin" },
     { name = "videoforge-contracts", editable = "packages/contracts-py" },
     { name = "videoforge-provider-sdk", editable = "packages/provider-sdk" },
 ]

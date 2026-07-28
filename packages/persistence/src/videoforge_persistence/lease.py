@@ -19,7 +19,7 @@ from sqlalchemy import and_, or_, select
 from sqlalchemy.dialects.postgresql import insert as pg_insert
 from sqlalchemy.orm import Session
 
-from videoforge_contracts import ExecutionPolicy, TaskEnvelope
+from videoforge_contracts import ExecutionPolicy, ResourceLimits, TaskEnvelope
 from videoforge_contracts.ids import new_id
 from videoforge_persistence.errors import DuplicateError, NotFoundError, PersistenceError
 from videoforge_persistence.tables import WorkerRow, WorkerTaskRow
@@ -102,20 +102,52 @@ class WorkerTaskRepository:
         idempotency_key: str,
         execution_policy: ExecutionPolicy = ExecutionPolicy.LOCAL_PREFERRED,
         max_attempts: int = DEFAULT_MAX_ATTEMPTS,
+        workflow_id: str | None = None,
+        input_artifact_ids: list[str] | None = None,
+        output_schema_ref: str | None = None,
+        resource_limits: ResourceLimits | dict[str, Any] | None = None,
+        credential_handles: list[str] | None = None,
+        priority: int = 0,
     ) -> str:
         if max_attempts < 1:
             raise ValueError("max_attempts 必须 ≥ 1")
         now = _now()
         task_id = new_id()
+        # 入库前构造完整合同：敏感键若混入 params，必须在写 PostgreSQL 前失败。
+        envelope = TaskEnvelope(
+            task_id=task_id,
+            idempotency_key=idempotency_key,
+            capability=capability,
+            attempt=1,
+            execution_policy=execution_policy,
+            workflow_id=workflow_id,
+            input_artifact_ids=input_artifact_ids or [],
+            params=params,
+            output_schema_ref=output_schema_ref,
+            resource_limits=resource_limits,
+            credential_handles=credential_handles or [],
+            priority=priority,
+            created_at=now,
+        )
         # ON CONFLICT 幂等：并发同 key 入队不冲突，落败方读回既有任务 id
         stmt = (
             pg_insert(WorkerTaskRow)
             .values(
                 id=task_id,
                 idempotency_key=idempotency_key,
-                capability=capability,
-                params=params,
-                execution_policy=str(execution_policy),
+                capability=envelope.capability,
+                params=envelope.params,
+                execution_policy=str(envelope.execution_policy),
+                workflow_id=envelope.workflow_id,
+                input_artifact_ids=envelope.input_artifact_ids,
+                output_schema_ref=envelope.output_schema_ref,
+                resource_limits=(
+                    None
+                    if envelope.resource_limits is None
+                    else envelope.resource_limits.model_dump(mode="json")
+                ),
+                credential_handles=envelope.credential_handles,
+                priority=envelope.priority,
                 status="PENDING",
                 attempt=0,
                 max_attempts=max_attempts,
@@ -161,7 +193,7 @@ class WorkerTaskRepository:
                         ),
                     ),
                 )
-                .order_by(WorkerTaskRow.created_at)
+                .order_by(WorkerTaskRow.priority.desc(), WorkerTaskRow.created_at)
                 .limit(1)
                 .with_for_update(skip_locked=True)
             ).first()
@@ -185,9 +217,15 @@ class WorkerTaskRepository:
             capability=row.capability,
             attempt=row.attempt,
             execution_policy=ExecutionPolicy(row.execution_policy),
+            workflow_id=row.workflow_id,
             lease_id=row.lease_id,
             lease_expires_at=row.lease_expires_at,
+            input_artifact_ids=row.input_artifact_ids,
             params=row.params,
+            output_schema_ref=row.output_schema_ref,
+            resource_limits=row.resource_limits,
+            credential_handles=row.credential_handles,
+            priority=row.priority,
             created_at=row.created_at,
         )
 
@@ -277,6 +315,20 @@ class WorkerTaskRepository:
         row.output = {"requeued_after": (row.output or {}).get("last_error")}
         row.updated_at = _now()
 
+    def cancel(self, task_id: str) -> None:
+        """取消待领或在途任务；清掉租约，使迟到 Worker 的 renew/complete/fail 全部失败。"""
+        row = self._session.get(WorkerTaskRow, task_id, with_for_update=True)
+        if row is None:
+            raise NotFoundError("worker_task", task_id)
+        if row.status not in {"PENDING", "LEASED"}:
+            raise TaskStateError(f"task {task_id} 状态为 {row.status}，不可取消")
+        row.status = "CANCELLED"
+        row.lease_id = None
+        row.leased_by = None
+        row.lease_expires_at = None
+        row.output = {"cancelled": True}
+        row.updated_at = _now()
+
     def _terminate(self, row: WorkerTaskRow, reason: str, *, exhausted: bool = True) -> None:
         """转入终态 FAILED：释放租约、记录原因；此后不可被 claim。"""
         row.status = "FAILED"
@@ -301,6 +353,8 @@ class WorkerTaskRepository:
             "attempt": row.attempt,
             "max_attempts": row.max_attempts,
             "capability": row.capability,
+            "workflow_id": row.workflow_id,
+            "priority": row.priority,
             "output": row.output,
             "output_digest": row.output_digest,
             "leased_by": row.leased_by,

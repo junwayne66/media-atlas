@@ -4,6 +4,9 @@ from logging.config import fileConfig
 from alembic import context
 from sqlalchemy import engine_from_config, pool
 
+# 导入分模块声明的 Row，确保 Base.metadata 在 autogenerate/校验时完整。
+from videoforge_persistence import creation_tables as _creation_tables  # noqa: F401
+from videoforge_persistence import ingest_tables as _ingest_tables  # noqa: F401
 from videoforge_persistence import settings_tables as _settings_tables  # noqa: F401
 from videoforge_persistence.tables import Base
 

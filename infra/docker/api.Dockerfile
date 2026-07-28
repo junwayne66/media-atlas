@@ -5,6 +5,10 @@ WORKDIR /app
 ENV UV_LINK_MODE=copy \
     UV_COMPILE_BYTECODE=1
 
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends ffmpeg curl ca-certificates \
+    && rm -rf /var/lib/apt/lists/*
+
 # 依赖层：uv workspace 的 frozen 解析需要**全部成员**的 pyproject 骨架在场
 # （成员清单见根 pyproject.toml [tool.uv.workspace]；漏一个就是
 # "Distribution not found at file:///app/..."）。先只装外部依赖，命中缓存。
@@ -28,6 +32,8 @@ RUN uv sync --frozen --no-dev --no-install-workspace --package videoforge-api
 COPY packages packages
 COPY connectors connectors
 COPY apps/api apps/api
+COPY migrations migrations
+COPY alembic.ini alembic.ini
 RUN uv sync --frozen --no-dev --package videoforge-api
 
 EXPOSE 8000

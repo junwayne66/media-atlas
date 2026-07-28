@@ -8,9 +8,11 @@ from temporalio.worker import Worker
 
 from videoforge_persistence import create_engine_from_env
 from videoforge_temporal_worker.dispatch import LeaseDispatchActivities
+from videoforge_temporal_worker.ingest_activities import IngestActivities
 from videoforge_workflows import (
     ALL_ACTIVITIES,
     CORE_TASK_QUEUE,
+    IngestWorkflow,
     PipelineSkeletonWorkflow,
     PipelineViaLeaseWorkflow,
 )
@@ -26,6 +28,7 @@ async def run_worker() -> None:
     # 派发 Activity 需要 DB 访问（enqueue/轮询 worker-task）；读取 VIDEOFORGE_DATABASE_URL
     engine = create_engine_from_env()
     dispatch = LeaseDispatchActivities(engine)
+    ingest = IngestActivities(engine)
 
     logger.info("worker connected to %s (queue=%s)", address, CORE_TASK_QUEUE)
     # 同步 Activity（dispatch_to_worker）需线程池执行器；异步 Activity 不占用它
@@ -33,8 +36,12 @@ async def run_worker() -> None:
         worker = Worker(
             client,
             task_queue=CORE_TASK_QUEUE,
-            workflows=[PipelineSkeletonWorkflow, PipelineViaLeaseWorkflow],
-            activities=[*ALL_ACTIVITIES, dispatch.dispatch_to_worker],
+            workflows=[PipelineSkeletonWorkflow, PipelineViaLeaseWorkflow, IngestWorkflow],
+            activities=[
+                *ALL_ACTIVITIES,
+                dispatch.dispatch_to_worker,
+                ingest.persist_ingest_stage,
+            ],
             activity_executor=executor,
         )
         await worker.run()

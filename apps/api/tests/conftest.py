@@ -10,10 +10,19 @@ from sqlalchemy import Engine, create_engine, text
 
 REPO_ROOT = Path(__file__).parents[3]
 _TRUNCATE = (
+    "ingest_job_events",
+    "ingest_jobs",
+    "rights_attestations",
+    "discovery_queries",
+    "source_profiles",
     "credential_entries",
     "credential_vault_metadata",
     "provider_configurations",
     "platform_account_bindings",
+    "performance_snapshots",
+    "publish_jobs",
+    "review_decisions",
+    "creative_documents",
     "trend_clusters",
     "trend_item_snapshots",
     "source_assets",
@@ -21,6 +30,10 @@ _TRUNCATE = (
     "analysis_artifacts",
     "projects",
     "outbox_events",
+    "processed_events",
+    "artifacts",
+    "worker_tasks",
+    "workers",
 )
 
 os.environ.setdefault("TESTCONTAINERS_RYUK_DISABLED", "true")

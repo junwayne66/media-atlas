@@ -12,7 +12,7 @@ from fastapi import APIRouter, Depends, HTTPException, Request, Response
 from pydantic import BaseModel, Field
 from sqlalchemy import Engine
 
-from videoforge_contracts import ExecutionPolicy, TaskEnvelope
+from videoforge_contracts import ExecutionPolicy, ResourceLimits, TaskEnvelope
 from videoforge_persistence import (
     LeaseLostError,
     NotFoundError,
@@ -63,6 +63,12 @@ class EnqueueRequest(BaseModel):
     idempotency_key: str = Field(min_length=1)
     execution_policy: ExecutionPolicy = ExecutionPolicy.LOCAL_PREFERRED
     max_attempts: int = Field(default=DEFAULT_MAX_ATTEMPTS, ge=1, le=50)
+    workflow_id: str | None = None
+    input_artifact_ids: list[str] = Field(default_factory=list)
+    output_schema_ref: str | None = None
+    resource_limits: ResourceLimits | None = None
+    credential_handles: list[str] = Field(default_factory=list)
+    priority: int = Field(default=0, ge=-100, le=100)
 
 
 class RequeueRequest(BaseModel):
@@ -87,6 +93,8 @@ class WorkerGateway(Protocol):
     def fail(self, task_id: str, request: FailRequest) -> None: ...
 
     def requeue(self, task_id: str, request: RequeueRequest) -> None: ...
+
+    def cancel(self, task_id: str) -> None: ...
 
     def task_status(self, task_id: str) -> dict[str, Any]: ...
 
@@ -122,6 +130,12 @@ class DbWorkerGateway:
                 idempotency_key=request.idempotency_key,
                 execution_policy=request.execution_policy,
                 max_attempts=request.max_attempts,
+                workflow_id=request.workflow_id,
+                input_artifact_ids=request.input_artifact_ids,
+                output_schema_ref=request.output_schema_ref,
+                resource_limits=request.resource_limits,
+                credential_handles=request.credential_handles,
+                priority=request.priority,
             )
 
     def claim(self, request: ClaimRequest) -> TaskEnvelope | None:
@@ -154,6 +168,10 @@ class DbWorkerGateway:
     def requeue(self, task_id: str, request: RequeueRequest) -> None:
         with session_scope(self._engine) as s:
             WorkerTaskRepository(s).requeue(task_id, max_attempts=request.max_attempts)
+
+    def cancel(self, task_id: str) -> None:
+        with session_scope(self._engine) as s:
+            WorkerTaskRepository(s).cancel(task_id)
 
     def task_status(self, task_id: str) -> dict[str, Any]:
         with session_scope(self._engine) as s:
@@ -235,6 +253,16 @@ def requeue_task(task_id: str, body: RequeueRequest, gateway: GatewayDep) -> Non
     """人工「重试失败任务」：终态 FAILED → 重置尝试计数回 PENDING（未来 UI 用）。"""
     try:
         gateway.requeue(task_id, body)
+    except NotFoundError:
+        raise HTTPException(status_code=404, detail=f"task 不存在: {task_id}") from None
+    except TaskStateError as exc:
+        raise HTTPException(status_code=409, detail=str(exc)) from None
+
+
+@router.post("/worker-tasks/{task_id}/cancel", status_code=204)
+def cancel_task(task_id: str, gateway: GatewayDep) -> None:
+    try:
+        gateway.cancel(task_id)
     except NotFoundError:
         raise HTTPException(status_code=404, detail=f"task 不存在: {task_id}") from None
     except TaskStateError as exc:

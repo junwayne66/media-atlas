@@ -1,13 +1,21 @@
 """Task Lease 语义测试（VF-007 DoD：Lease 过期可重分配 + 幂等提交）。"""
 
-import pytest
+import threading
+import time
+from concurrent.futures import ThreadPoolExecutor
 
+import pytest
+from pydantic import ValidationError
+from sqlalchemy import Engine
+
+from videoforge_contracts import ExecutionPolicy
 from videoforge_persistence import (
     LeaseLostError,
     NotFoundError,
     TaskStateError,
     WorkerRepository,
     WorkerTaskRepository,
+    session_scope,
 )
 
 
@@ -63,6 +71,53 @@ def test_claim_leases_pending_task(session) -> None:
         WorkerTaskRepository(session).claim(worker_id=worker, capabilities=["source.discover"])
         is None
     )  # 已被租，无第二个任务
+
+
+def test_full_envelope_roundtrip_and_priority_order(session) -> None:
+    worker = _register(session, "w1")
+    repo = WorkerTaskRepository(session)
+    low = repo.enqueue(
+        capability="source.discover",
+        params={"platform": "douyin"},
+        idempotency_key="low",
+        priority=-1,
+    )
+    high = repo.enqueue(
+        capability="source.discover",
+        params={"platform": "douyin"},
+        idempotency_key="high",
+        execution_policy=ExecutionPolicy.LOCAL_ONLY,
+        workflow_id="ingest-job-1",
+        input_artifact_ids=["artifact-input"],
+        output_schema_ref="schemas/stage-outcome.schema.json",
+        resource_limits={"timeout_s": 30, "memory_mb": 128},
+        credential_handles=["profile_01HZZZZZ"],
+        priority=10,
+    )
+    session.flush()
+
+    envelope = repo.claim(worker_id=worker, capabilities=["source.discover"])
+    assert envelope is not None and envelope.task_id == high
+    assert envelope.workflow_id == "ingest-job-1"
+    assert envelope.execution_policy is ExecutionPolicy.LOCAL_ONLY
+    assert envelope.input_artifact_ids == ["artifact-input"]
+    assert envelope.output_schema_ref == "schemas/stage-outcome.schema.json"
+    assert envelope.resource_limits is not None
+    assert envelope.resource_limits.timeout_s == 30
+    assert envelope.credential_handles == ["profile_01HZZZZZ"]
+    assert low != high
+
+
+def test_enqueue_rejects_sensitive_params_before_insert(session) -> None:
+    repo = WorkerTaskRepository(session)
+    with pytest.raises(ValidationError, match="明文凭据"):
+        repo.enqueue(
+            capability="source.discover",
+            params={"headers": {"Authorization": "Bearer canary"}},
+            idempotency_key="unsafe",
+        )
+    session.flush()
+    assert repo.claim(worker_id="unused", capabilities=["source.discover"]) is None
 
 
 def test_claim_filters_by_capability(session) -> None:
@@ -273,6 +328,26 @@ def test_renew_and_complete_rejected_on_terminal_task(session) -> None:
     assert repo.get_status(envelope.task_id)["status"] == "FAILED"
 
 
+def test_cancel_invalidates_active_lease_and_is_terminal(session) -> None:
+    worker = _register(session, "w1")
+    task_id = _enqueue(session)
+    session.flush()
+    repo = WorkerTaskRepository(session)
+    envelope = repo.claim(worker_id=worker, capabilities=["source.discover"])
+    assert envelope is not None
+    repo.cancel(task_id)
+    session.flush()
+
+    assert repo.get_status(task_id)["status"] == "CANCELLED"
+    assert repo.claim(worker_id=worker, capabilities=["source.discover"]) is None
+    with pytest.raises(LeaseLostError):
+        repo.renew(task_id, lease_id=envelope.lease_id)
+    with pytest.raises(LeaseLostError):
+        repo.complete(task_id, lease_id=envelope.lease_id, output_digest="a" * 64, output={})
+    with pytest.raises(TaskStateError):
+        repo.cancel(task_id)
+
+
 def test_requeue_recovers_failed_task(session) -> None:
     """人工恢复：FAILED → PENDING 且尝试计数清零，可重新领取。"""
     w1 = _register(session, "w1")
@@ -336,3 +411,45 @@ def test_worker_register_and_heartbeat(session) -> None:
     workers.heartbeat(wid)
     with pytest.raises(NotFoundError):
         workers.heartbeat("ghost")
+
+
+def test_two_workers_claim_100_tasks_without_duplicates(migrated_engine: Engine) -> None:
+    with session_scope(migrated_engine) as session:
+        worker_ids = [_register(session, f"stress-{index}") for index in (1, 2)]
+        task_ids = {_enqueue(session, key=f"stress-task-{index}") for index in range(100)}
+
+    barrier = threading.Barrier(2)
+    claimed: list[str] = []
+    claimed_lock = threading.Lock()
+
+    def consume(worker_id: str) -> None:
+        barrier.wait()
+        misses = 0
+        while misses < 5:
+            with session_scope(migrated_engine) as session:
+                repo = WorkerTaskRepository(session)
+                envelope = repo.claim(
+                    worker_id=worker_id,
+                    capabilities=["source.discover"],
+                    lease_ttl_s=30,
+                )
+                if envelope is None:
+                    misses += 1
+                else:
+                    misses = 0
+                    repo.complete(
+                        envelope.task_id,
+                        lease_id=envelope.lease_id,
+                        output_digest="a" * 64,
+                        output={"worker_id": worker_id},
+                    )
+                    with claimed_lock:
+                        claimed.append(envelope.task_id)
+            if envelope is None:
+                time.sleep(0.005)
+
+    with ThreadPoolExecutor(max_workers=2) as pool:
+        list(pool.map(consume, worker_ids))
+
+    assert len(claimed) == 100
+    assert set(claimed) == task_ids

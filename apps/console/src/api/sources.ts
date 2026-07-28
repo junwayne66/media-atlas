@@ -82,6 +82,7 @@ export const DISPOSITION_LABEL: Record<SourceDisposition, string> = {
   MANUAL_FALLBACK: "人工下载",
   NEEDS_EXPANSION: "待展开短链",
   UNRESOLVABLE: "无法解析",
+  METADATA_ONLY: "仅公开元数据",
 };
 
 export const DISPOSITION_HINT: Record<SourceDisposition, string> = {
@@ -89,4 +90,5 @@ export const DISPOSITION_HINT: Record<SourceDisposition, string> = {
   MANUAL_FALLBACK: "live 下载未配置，请人工下载后关联本地文件（这是既定流程，不是错误）。",
   NEEDS_EXPANSION: "短链需先展开为规范链接；live 展开未接通，请粘贴展开后的链接。",
   UNRESOLVABLE: "链接无法解析为受支持的平台素材，请检查输入。",
+  METADATA_ONLY: "已保存公开元数据；原始媒体尚未获得授权或尚未采集。",
 };

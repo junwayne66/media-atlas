@@ -4,7 +4,7 @@ from typing import BinaryIO
 
 import boto3
 from botocore.client import Config
-from botocore.exceptions import ClientError
+from botocore.exceptions import BotoCoreError, ClientError
 
 
 @dataclass(frozen=True)
@@ -53,6 +53,13 @@ class ObjectStore:
         except ClientError:
             self._client.create_bucket(Bucket=self.bucket)
 
+    def health_check(self) -> bool:
+        try:
+            self._client.head_bucket(Bucket=self.bucket)
+        except (BotoCoreError, ClientError):
+            return False
+        return True
+
     def head(self, key: str) -> dict | None:
         try:
             return self._client.head_object(Bucket=self.bucket, Key=key)
@@ -82,6 +89,19 @@ class ObjectStore:
 
     def delete(self, key: str) -> None:
         self._client.delete_object(Bucket=self.bucket, Key=key)
+
+    def list_objects(self, prefix: str) -> list[dict]:
+        items: list[dict] = []
+        token: str | None = None
+        while True:
+            params: dict = {"Bucket": self.bucket, "Prefix": prefix}
+            if token is not None:
+                params["ContinuationToken"] = token
+            response = self._client.list_objects_v2(**params)
+            items.extend(response.get("Contents", []))
+            if not response.get("IsTruncated"):
+                return items
+            token = response.get("NextContinuationToken")
 
     def presign_put(self, key: str, expires_s: int = 3600) -> str:
         return self._client.generate_presigned_url(

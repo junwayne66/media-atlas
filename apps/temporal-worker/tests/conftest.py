@@ -9,7 +9,17 @@ from alembic.config import Config
 from sqlalchemy import Engine, create_engine, text
 
 REPO_ROOT = Path(__file__).parents[3]
-ALL_TABLES = ("worker_tasks", "workers")
+ALL_TABLES = (
+    "ingest_job_events",
+    "ingest_jobs",
+    "rights_attestations",
+    "discovery_queries",
+    "source_profiles",
+    "source_assets",
+    "outbox_events",
+    "worker_tasks",
+    "workers",
+)
 
 os.environ.setdefault("TESTCONTAINERS_RYUK_DISABLED", "true")
 

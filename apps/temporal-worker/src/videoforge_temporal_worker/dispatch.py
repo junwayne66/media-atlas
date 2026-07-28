@@ -14,7 +14,7 @@ from sqlalchemy import Engine
 from temporalio import activity
 from temporalio.exceptions import ApplicationError
 
-from videoforge_persistence import WorkerTaskRepository, session_scope
+from videoforge_persistence import IngestRepository, WorkerTaskRepository, session_scope
 from videoforge_workflows import WorkerDispatch, WorkerDispatchResult
 
 
@@ -56,7 +56,22 @@ def dispatch_and_wait(
             capability=dispatch.capability,
             params=dispatch.params,
             idempotency_key=dispatch.idempotency_key,
+            execution_policy=dispatch.execution_policy,
+            workflow_id=dispatch.workflow_id,
+            input_artifact_ids=dispatch.input_artifact_ids,
+            output_schema_ref=dispatch.output_schema_ref,
+            resource_limits=dispatch.resource_limits,
+            credential_handles=dispatch.credential_handles,
+            priority=dispatch.priority,
+            max_attempts=dispatch.max_attempts,
         )
+        job_id = dispatch.params.get("job_id")
+        if isinstance(job_id, str) and dispatch.workflow_id is not None:
+            IngestRepository(s).bind_worker_task(
+                job_id,
+                task_id,
+                event_id=f"worker-task-bound:{task_id}",
+            )
     deadline = None if max_wait_s is None else monotonic() + max_wait_s
     while True:
         with session_scope(engine) as s:
@@ -69,6 +84,15 @@ def dispatch_and_wait(
             raise WorkerTaskFailed(
                 f"task {task_id} ({dispatch.capability}) 已终态失败："
                 f"{last_error}（attempt {status['attempt']}/{status['max_attempts']}）"
+            )
+        if status["status"] == "CANCELLED":
+            return WorkerDispatchResult(
+                task_id=task_id,
+                output={
+                    "status": "CANCELLED",
+                    "error_code": "CANCELLED",
+                    "message": "任务已由控制面取消",
+                },
             )
         if deadline is not None and monotonic() >= deadline:
             raise DispatchTimeout(

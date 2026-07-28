@@ -5,6 +5,14 @@ from videoforge_workflows.activities import (
     render_output,
 )
 from videoforge_workflows.constants import CORE_TASK_QUEUE
+from videoforge_workflows.ingest import (
+    PERSIST_INGEST_ACTIVITY,
+    IngestPersistRequest,
+    IngestWorkflow,
+    IngestWorkflowInput,
+    IngestWorkflowResult,
+    IngestWorkflowState,
+)
 from videoforge_workflows.lease_bridge import (
     DISPATCH_ACTIVITY,
     LeasePipelineInput,
@@ -28,10 +36,16 @@ __all__ = [
     "DISPATCH_ACTIVITY",
     "LeasePipelineInput",
     "LeasePipelineResult",
+    "IngestPersistRequest",
+    "IngestWorkflow",
+    "IngestWorkflowInput",
+    "IngestWorkflowResult",
+    "IngestWorkflowState",
     "PipelineInput",
     "PipelineSkeletonWorkflow",
     "PipelineStatus",
     "PipelineViaLeaseWorkflow",
+    "PERSIST_INGEST_ACTIVITY",
     "REJECT",
     "WorkerDispatch",
     "WorkerDispatchResult",

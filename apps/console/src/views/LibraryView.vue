@@ -176,6 +176,7 @@ const DISPOSITION_VARIANT: Record<SourceDisposition, Variant> = {
   MANUAL_FALLBACK: "info",
   NEEDS_EXPANSION: "warning",
   UNRESOLVABLE: "error",
+  METADATA_ONLY: "info",
 };
 
 const columns = [
