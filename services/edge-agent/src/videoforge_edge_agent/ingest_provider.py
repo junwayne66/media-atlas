@@ -71,9 +71,7 @@ _SYNTHETIC_MP4 = base64.b64decode(
 class IngestArtifactClient(Protocol):
     async def stage_ingest_artifact(self, job_id: str) -> dict[str, Any]: ...
 
-    async def put_presigned(
-        self, put_url: str, data: bytes, *, mime_type: str
-    ) -> None: ...
+    async def put_presigned(self, put_url: str, data: bytes, *, mime_type: str) -> None: ...
 
     async def commit_ingest_artifact(
         self,
@@ -152,9 +150,7 @@ class DouyinIngestProvider:
                         item.model_dump(mode="json")
                         for item in result.snapshots[: int(payload.get("max_items", 30))]
                     ],
-                    "result_count": min(
-                        len(result.snapshots), int(payload.get("max_items", 30))
-                    ),
+                    "result_count": min(len(result.snapshots), int(payload.get("max_items", 30))),
                 },
             )
         if result.status is DiscoveryStatus.EMPTY:
@@ -203,9 +199,7 @@ class DouyinIngestProvider:
             # MP4 允许末尾附加未知数据；ffprobe 仍会复核媒体流，job 标记让强制版本哈希稳定区分。
             media_bytes += f"videoforge-force:{job_id}".encode()
         sha256 = hashlib.sha256(media_bytes).hexdigest()
-        await self._upload_client.put_presigned(
-            put_url, media_bytes, mime_type="video/mp4"
-        )
+        await self._upload_client.put_presigned(put_url, media_bytes, mime_type="video/mp4")
         artifact = await self._upload_client.commit_ingest_artifact(
             job_id,
             upload_id,
@@ -224,8 +218,7 @@ class DouyinIngestProvider:
                 "size_bytes": artifact["size_bytes"],
                 "mime_type": artifact["mime_type"],
                 "media": {
-                    key: media.get(key)
-                    for key in ("duration_s", "fps", "width", "height", "codec")
+                    key: media.get(key) for key in ("duration_s", "fps", "width", "height", "codec")
                 },
             },
         )

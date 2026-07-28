@@ -44,9 +44,7 @@ class StubIngestService:
     def __init__(self) -> None:
         self.jobs = {
             "job-1": _job(),
-            "needs-human": _job(
-                job_id="needs-human", status=IngestJobStatus.NEED_HUMAN
-            ),
+            "needs-human": _job(job_id="needs-human", status=IngestJobStatus.NEED_HUMAN),
             "done": _job(job_id="done", status=IngestJobStatus.SUCCEEDED),
         }
 
@@ -57,9 +55,7 @@ class StubIngestService:
         assert request.query == "番茄炒蛋"
         return self.jobs["job-1"]
 
-    async def start_resolve(
-        self, idempotency_key: str, request: ResolveStartRequest
-    ) -> IngestJob:
+    async def start_resolve(self, idempotency_key: str, request: ResolveStartRequest) -> IngestJob:
         assert idempotency_key == "idem-1"
         return _job(job_type=IngestJobType.CONTENT_RESOLVE)
 

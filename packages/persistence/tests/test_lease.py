@@ -416,9 +416,7 @@ def test_worker_register_and_heartbeat(session) -> None:
 def test_two_workers_claim_100_tasks_without_duplicates(migrated_engine: Engine) -> None:
     with session_scope(migrated_engine) as session:
         worker_ids = [_register(session, f"stress-{index}") for index in (1, 2)]
-        task_ids = {
-            _enqueue(session, key=f"stress-task-{index}") for index in range(100)
-        }
+        task_ids = {_enqueue(session, key=f"stress-task-{index}") for index in range(100)}
 
     barrier = threading.Barrier(2)
     claimed: list[str] = []

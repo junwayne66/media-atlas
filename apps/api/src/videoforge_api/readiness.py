@@ -44,19 +44,23 @@ class DbIngestReadinessGateway:
         try:
             with session_scope(self._engine) as session:
                 pending = session.scalar(
-                    select(func.count()).select_from(WorkerTaskRow).where(
-                        WorkerTaskRow.status == "PENDING"
-                    )
+                    select(func.count())
+                    .select_from(WorkerTaskRow)
+                    .where(WorkerTaskRow.status == "PENDING")
                 )
                 stale = session.scalar(
-                    select(func.count()).select_from(WorkerTaskRow).where(
+                    select(func.count())
+                    .select_from(WorkerTaskRow)
+                    .where(
                         WorkerTaskRow.status == "LEASED",
                         WorkerTaskRow.lease_expires_at < now,
                     )
                 )
                 recent = now - timedelta(hours=24)
                 parser_errors = session.scalar(
-                    select(func.count()).select_from(IngestJobRow).where(
+                    select(func.count())
+                    .select_from(IngestJobRow)
+                    .where(
                         IngestJobRow.updated_at >= recent,
                         IngestJobRow.error_code.in_(
                             {"PARSER_DRIFT", "RESULT_UNKNOWN", "PARSER_RESULT_UNKNOWN"}
@@ -64,7 +68,9 @@ class DbIngestReadinessGateway:
                     )
                 )
                 challenges = session.scalar(
-                    select(func.count()).select_from(IngestJobRow).where(
+                    select(func.count())
+                    .select_from(IngestJobRow)
+                    .where(
                         IngestJobRow.updated_at >= recent,
                         IngestJobRow.error_code.in_(
                             {"CHALLENGE_DETECTED", "LOGIN_REQUIRED", "NEEDS_EXPANSION"}

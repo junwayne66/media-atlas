@@ -54,9 +54,7 @@ class ArtifactUploadStateError(RuntimeError):
 class ArtifactUploadGateway(Protocol):
     def stage(self, job_id: str) -> ArtifactStageView: ...
 
-    def commit(
-        self, job_id: str, upload_id: str, request: ArtifactCommitRequest
-    ) -> Artifact: ...
+    def commit(self, job_id: str, upload_id: str, request: ArtifactCommitRequest) -> Artifact: ...
 
 
 class DbArtifactUploadGateway:
@@ -88,9 +86,7 @@ class DbArtifactUploadGateway:
             expires_at=staged.expires_at.isoformat(),
         )
 
-    def commit(
-        self, job_id: str, upload_id: str, request: ArtifactCommitRequest
-    ) -> Artifact:
+    def commit(self, job_id: str, upload_id: str, request: ArtifactCommitRequest) -> Artifact:
         job = self._eligible_job(job_id)
         inspection = self._artifacts.inspect_staged_media(
             upload_id,

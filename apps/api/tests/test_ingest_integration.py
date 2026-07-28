@@ -245,9 +245,7 @@ async def test_rights_gate_synthetic_artifact_and_reuse(
             event_type="ingest.job.running",
         )
     forced_outcome = StageOutcome.model_validate(
-        await DouyinIngestProvider(
-            upload_client=_GatewayUploadClient(gateway)
-        ).invoke(
+        await DouyinIngestProvider(upload_client=_GatewayUploadClient(gateway)).invoke(
             "source.acquire",
             {
                 **forced.payload,
@@ -393,9 +391,10 @@ async def test_transaction_race_leaves_discoverable_and_cleanable_orphan(
     orphaned = ingest_object_store.list_objects(prefix)
     assert len(orphaned) == 1
     with session_scope(migrated_engine) as session:
-        assert ArtifactRepository(session).find_by_sha256(
-            hashlib.sha256(_SYNTHETIC_MP4).hexdigest()
-        ) == []
+        assert (
+            ArtifactRepository(session).find_by_sha256(hashlib.sha256(_SYNTHETIC_MP4).hexdigest())
+            == []
+        )
         assert SourceAssetRepository(session).get(source.id).artifact_ids == []
     deleted = store.cleanup_orphan_artifacts(
         namespace="ingest",

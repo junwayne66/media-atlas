@@ -24,9 +24,7 @@ class StubUploadGateway:
             expires_at="2026-07-27T12:00:00+00:00",
         )
 
-    def commit(
-        self, job_id: str, upload_id: str, request: ArtifactCommitRequest
-    ) -> Artifact:
+    def commit(self, job_id: str, upload_id: str, request: ArtifactCommitRequest) -> Artifact:
         return Artifact(
             id="artifact-1",
             kind="source_video",

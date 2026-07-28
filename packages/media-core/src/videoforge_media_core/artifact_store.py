@@ -67,14 +67,10 @@ class ArtifactStore:
     def ensure_bucket(self) -> None:
         self._objects.ensure_bucket()
 
-    def stage_upload(
-        self, *, expires_s: int = 3600, namespace: str | None = None
-    ) -> StagedUpload:
+    def stage_upload(self, *, expires_s: int = 3600, namespace: str | None = None) -> StagedUpload:
         upload_id = new_id()
         safe_namespace = _safe_namespace(namespace)
-        key = "/".join(
-            part for part in (_STAGING_PREFIX, safe_namespace, upload_id) if part
-        )
+        key = "/".join(part for part in (_STAGING_PREFIX, safe_namespace, upload_id) if part)
         return StagedUpload(
             upload_id=upload_id,
             key=key,
@@ -84,9 +80,7 @@ class ArtifactStore:
 
     def _find_staging_key(self, upload_id: str, namespace: str | None) -> str:
         safe_namespace = _safe_namespace(namespace)
-        return "/".join(
-            part for part in (_STAGING_PREFIX, safe_namespace, upload_id) if part
-        )
+        return "/".join(part for part in (_STAGING_PREFIX, safe_namespace, upload_id) if part)
 
     def inspect_staged_media(
         self,

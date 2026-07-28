@@ -251,9 +251,7 @@ class IngestWorkflow:
                 if self._cancel_requested:
                     self._status = IngestJobStatus.CANCELLED
                     self._stage = "cancelled"
-                    await self._persist(
-                        inp, status=self._status, event_suffix="cancelled"
-                    )
+                    await self._persist(inp, status=self._status, event_suffix="cancelled")
                     return IngestWorkflowResult(status=self._status)
                 self._resume_requested = False
                 self._generation += 1

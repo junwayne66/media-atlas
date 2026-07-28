@@ -121,6 +121,4 @@ def test_source_profile_handle_is_opaque_not_path() -> None:
     assert profile.credential_handle == "profile_01HZZZZZ"
     for unsafe in ("/Users/me/profile", "file://profile", "../profile", "profile:key"):
         with pytest.raises(ValidationError):
-            SourceProfile.model_validate(
-                {**profile.model_dump(), "credential_handle": unsafe}
-            )
+            SourceProfile.model_validate({**profile.model_dump(), "credential_handle": unsafe})

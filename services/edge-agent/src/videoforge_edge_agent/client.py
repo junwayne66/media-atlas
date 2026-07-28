@@ -75,9 +75,7 @@ class ControlPlaneClient:
         resp.raise_for_status()
         return resp.json()
 
-    async def put_presigned(
-        self, put_url: str, data: bytes, *, mime_type: str
-    ) -> None:
+    async def put_presigned(self, put_url: str, data: bytes, *, mime_type: str) -> None:
         # URL 仅在本方法栈内使用，不记录日志、不回传任务结果。
         resp = await self._http.put(
             put_url,

@@ -89,8 +89,7 @@ def validate_redirect_chain(
     resolver: HostResolver = system_resolver,
 ) -> list[ValidatedNetworkTarget]:
     return [
-        validate_url_target(url, allowed_hosts=allowed_hosts, resolver=resolver)
-        for url in urls
+        validate_url_target(url, allowed_hosts=allowed_hosts, resolver=resolver) for url in urls
     ]
 
 

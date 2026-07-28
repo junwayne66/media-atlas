@@ -245,9 +245,7 @@ class DbTemporalIngestService:
         await self._start_workflow(job)
         return job
 
-    async def start_resolve(
-        self, idempotency_key: str, request: ResolveStartRequest
-    ) -> IngestJob:
+    async def start_resolve(self, idempotency_key: str, request: ResolveStartRequest) -> IngestJob:
         job, _ = self._create_job(
             idempotency_key=idempotency_key,
             job_type=IngestJobType.CONTENT_RESOLVE,
@@ -317,9 +315,7 @@ class DbTemporalIngestService:
                 )
                 source_repo.update(updated, expected_version=source.version)
                 source = updated
-            job, created = ingest_repo.create_job(
-                candidate, event_id=f"created:{candidate_id}"
-            )
+            job, created = ingest_repo.create_job(candidate, event_id=f"created:{candidate_id}")
             if created and source.artifact_ids and not request.force:
                 ingest_repo.transition(
                     job.id,
@@ -437,9 +433,7 @@ async def start_acquisition(
     idempotency_key: IdempotencyKey,
 ) -> IngestJobAccepted:
     try:
-        return _accepted(
-            await service.start_acquisition(source_asset_id, idempotency_key, body)
-        )
+        return _accepted(await service.start_acquisition(source_asset_id, idempotency_key, body))
     except NotFoundError:
         raise HTTPException(
             status_code=404, detail=f"source asset 不存在: {source_asset_id}"

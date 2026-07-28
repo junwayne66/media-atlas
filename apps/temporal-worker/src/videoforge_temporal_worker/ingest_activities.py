@@ -51,9 +51,7 @@ class IngestActivities:
 
     @activity.defn(name=PERSIST_INGEST_ACTIVITY)
     def persist_ingest_stage(self, request: IngestPersistRequest) -> None:
-        outcome = (
-            None if request.outcome is None else StageOutcome.model_validate(request.outcome)
-        )
+        outcome = None if request.outcome is None else StageOutcome.model_validate(request.outcome)
         with session_scope(self._engine) as session:
             repo = IngestRepository(session)
             result = None if outcome is None else dict(outcome.result)
@@ -112,9 +110,7 @@ class IngestActivities:
                 )
                 observed_at = data.get("observed_at")
                 if isinstance(observed_at, str):
-                    observed_at = datetime.fromisoformat(
-                        observed_at.replace("Z", "+00:00")
-                    )
+                    observed_at = datetime.fromisoformat(observed_at.replace("Z", "+00:00"))
                 source_repo.update(
                     existing.model_copy(
                         update={
@@ -155,9 +151,7 @@ class IngestActivities:
                 with session.begin_nested():
                     source_repo.create(asset)
             except DuplicateError:
-                existing = source_repo.find_existing(
-                    platform=platform, content_id=content_id
-                )
+                existing = source_repo.find_existing(platform=platform, content_id=content_id)
                 if existing is None:
                     raise
                 asset = existing

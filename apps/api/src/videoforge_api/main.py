@@ -51,9 +51,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
         engine, settings.temporal_address, settings.temporal_namespace
     )
     object_store = ObjectStore(S3Settings.from_env())
-    app.state.artifact_upload_gateway = DbArtifactUploadGateway(
-        engine, ArtifactStore(object_store)
-    )
+    app.state.artifact_upload_gateway = DbArtifactUploadGateway(engine, ArtifactStore(object_store))
     app.state.ingest_readiness_gateway = DbIngestReadinessGateway(engine, object_store)
     app.state.worker_gateway = DbWorkerGateway(engine)
     app.state.trend_gateway = DbTrendGateway(engine)

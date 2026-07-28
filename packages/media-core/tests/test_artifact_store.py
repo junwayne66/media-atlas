@@ -236,9 +236,7 @@ def test_cleanup_only_deletes_old_objects_inside_selected_namespace() -> None:
         "staging/ingest/job-1/new": now,
         "staging/other/old": now - timedelta(days=2),
     }
-    deleted = store.cleanup_staging(
-        namespace="ingest/job-1", older_than=now - timedelta(days=1)
-    )
+    deleted = store.cleanup_staging(namespace="ingest/job-1", older_than=now - timedelta(days=1))
     assert deleted == ["staging/ingest/job-1/old"]
     assert "staging/ingest/job-1/new" in objects.objects
     assert "staging/other/old" in objects.objects
@@ -253,9 +251,7 @@ def test_cleanup_ingest_orphans_keeps_known_and_other_namespaces() -> None:
         "artifacts/tenant/ingest/known/source.mp4": b"x",
         "artifacts/tenant/project-1/orphan/source.mp4": b"x",
     }
-    objects.modified = {
-        key: now - timedelta(days=2) for key in objects.objects
-    }
+    objects.modified = {key: now - timedelta(days=2) for key in objects.objects}
     deleted = store.cleanup_orphan_artifacts(
         namespace="ingest",
         known_artifact_ids={"known"},
