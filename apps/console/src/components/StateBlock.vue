@@ -57,9 +57,10 @@ const badgeLabel = computed(() => {
   align-items: flex-start;
   gap: 8px;
   padding: 24px;
-  background: var(--color-bg-elevated);
+  background: var(--color-glass);
   border: 1px solid var(--color-border-subtle);
-  border-radius: var(--radius-md);
+  border-radius: var(--radius-lg);
+  box-shadow: inset 0 0 14px rgba(0, 255, 255, 0.03);
 }
 
 .state-title {
@@ -77,10 +78,10 @@ const badgeLabel = computed(() => {
 }
 
 .state-block--error {
-  border-color: rgba(239, 68, 68, 0.3);
+  border-color: rgba(255, 51, 102, 0.35);
 }
 
 .state-block--unconfigured {
-  border-color: rgba(245, 166, 35, 0.3);
+  border-color: rgba(255, 215, 0, 0.3);
 }
 </style>

@@ -23,12 +23,14 @@ defineProps<{
 
 <style scoped>
 .card {
-  background: var(--color-bg-card);
+  background: var(--color-glass);
   border: 1px solid var(--color-border-subtle);
-  border-radius: var(--radius-lg);
+  border-radius: var(--radius-xl);
   display: flex;
   flex-direction: column;
   overflow: hidden;
+  backdrop-filter: blur(28px);
+  box-shadow: 0 4px 24px rgba(0, 204, 255, 0.05);
 }
 
 .card--padded .card-body {
@@ -44,9 +46,9 @@ defineProps<{
 }
 
 .card-title {
-  font-size: var(--font-size-lg);
+  font-size: var(--font-size-base);
   font-weight: 600;
-  color: var(--color-text-primary);
+  color: var(--color-accent-primary);
 }
 
 .card-actions {

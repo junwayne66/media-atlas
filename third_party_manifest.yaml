@@ -21,6 +21,20 @@ python:
     license: MIT
     isolation: L0
     used_by: apps/api
+  - name: argon2-cffi
+    license: MIT
+    isolation: L0
+    used_by: apps/api（本地凭据库口令派生）
+    note: >
+      使用 Argon2id RFC 9106 low-memory 参数从本地用户口令派生 wrapping key；
+      口令与派生 key 均不持久化，服务重启后凭据库默认锁定。
+  - name: pycryptodome
+    license: BSD / Public Domain
+    isolation: L0
+    used_by: apps/api（本地凭据库 AES-256-GCM 认证加密）
+    note: >
+      仅用于本地服务端 Provider/OAuth Secret 的 envelope encryption；
+      浏览器 Cookie 仍留在 macOS Keychain，Android 会话仍留在设备端。
   - name: ruff
     license: MIT
     isolation: L0

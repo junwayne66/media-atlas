@@ -29,6 +29,9 @@ void props;
   font-weight: 500;
   line-height: 1;
   white-space: nowrap;
+  font-family: var(--font-family-mono);
+  letter-spacing: 0.035em;
+  background: rgba(32, 32, 48, 0.6);
 }
 
 .status-dot {
@@ -44,22 +47,27 @@ void props;
 
 .status-success {
   color: var(--color-status-success);
+  background: rgba(0, 32, 16, 0.8);
 }
 
 .status-success .status-dot {
   background: var(--color-status-success);
+  box-shadow: var(--glow-green);
 }
 
 .status-warning {
   color: var(--color-status-warning);
+  background: rgba(48, 40, 0, 0.8);
 }
 
 .status-warning .status-dot {
   background: var(--color-status-warning);
+  box-shadow: 0 0 5px rgba(255, 215, 0, 0.5);
 }
 
 .status-error {
   color: var(--color-status-error);
+  background: rgba(48, 0, 16, 0.8);
 }
 
 .status-error .status-dot {
@@ -68,10 +76,12 @@ void props;
 
 .status-info {
   color: var(--color-status-info);
+  background: rgba(0, 32, 48, 0.8);
 }
 
 .status-info .status-dot {
   background: var(--color-status-info);
+  box-shadow: var(--glow-cyan-sm);
 }
 
 .status-neutral {

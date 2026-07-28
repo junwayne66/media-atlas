@@ -25,6 +25,13 @@ from videoforge_persistence.outbox import (
     try_claim_event,
 )
 from videoforge_persistence.repositories import ArtifactRepository, ProjectRepository
+from videoforge_persistence.settings_store import (
+    CredentialEntryRecord,
+    PlatformAccountBindingRecord,
+    ProviderConfigurationRecord,
+    SettingsRepository,
+    VaultMetadataRecord,
+)
 from videoforge_persistence.source_asset import (
     SourceAssetRepository,
     source_input_digest,
@@ -41,17 +48,22 @@ __all__ = [
     "AnalysisRunRecord",
     "AnalysisRunRepository",
     "ArtifactRepository",
-    "SourceAssetRepository",
+    "CredentialEntryRecord",
     "DuplicateError",
     "LeaseLostError",
     "NotFoundError",
     "OutboxEvent",
     "OutboxRepository",
+    "PlatformAccountBindingRecord",
     "ProjectRepository",
+    "ProviderConfigurationRecord",
+    "SettingsRepository",
+    "SourceAssetRepository",
     "TaskStateError",
     "TrendClusterRepository",
     "TrendItemSnapshotRepository",
     "VersionConflictError",
+    "VaultMetadataRecord",
     "WorkerRepository",
     "WorkerTaskRepository",
     "create_engine_from_env",

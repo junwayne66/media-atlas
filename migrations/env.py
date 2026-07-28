@@ -4,6 +4,7 @@ from logging.config import fileConfig
 from alembic import context
 from sqlalchemy import engine_from_config, pool
 
+from videoforge_persistence import settings_tables as _settings_tables  # noqa: F401
 from videoforge_persistence.tables import Base
 
 config = context.config

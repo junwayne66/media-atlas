@@ -1,0 +1,162 @@
+openapi: 3.1.0
+info:
+  title: VideoForge Secure Local Settings API
+  version: 0.1.0
+paths:
+  /v1/settings:
+    get:
+      summary: Read nonsecret settings snapshot
+      responses:
+        "200":
+          description: Snapshot; Cache-Control no-store
+  /v1/settings/vault:initialize:
+    post:
+      summary: Initialize local vault and unlock this API process
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/InitializeVaultRequest"
+      responses:
+        "200": { description: Vault status }
+        "409": { description: Already initialized or concurrent initialization }
+        "422": { description: Redacted validation error }
+  /v1/settings/vault:unlock:
+    post:
+      summary: Unlock this API process
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UnlockVaultRequest"
+      responses:
+        "200": { description: Vault status }
+        "403": { description: Wrong passphrase }
+  /v1/settings/vault:lock:
+    post:
+      summary: Lock this API process
+      responses:
+        "200": { description: Vault status }
+  /v1/settings/providers/{kind}:
+    put:
+      summary: Create/update provider metadata and credential action atomically
+      parameters:
+        - in: path
+          name: kind
+          required: true
+          schema: { $ref: "#/components/schemas/ProviderKind" }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/ProviderUpsertRequest" }
+      responses:
+        "200": { description: Nonsecret provider view }
+        "409": { description: Optimistic version conflict }
+        "423": { description: Vault locked for secret mutation }
+    delete:
+      summary: Delete provider and owned server credential
+      parameters:
+        - { in: path, name: kind, required: true, schema: { $ref: "#/components/schemas/ProviderKind" } }
+        - { in: query, name: expected_version, required: true, schema: { type: integer, minimum: 1 } }
+      responses:
+        "204": { description: Deleted }
+        "409": { description: Optimistic version conflict }
+  /v1/settings/accounts:
+    post:
+      summary: Create an unverified local platform account binding
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/AccountWriteRequest" }
+      responses:
+        "201": { description: Nonsecret account view }
+        "409": { description: Duplicate account }
+        "423": { description: Vault locked for server credential mutation }
+  /v1/settings/accounts/{account_id}:
+    put:
+      summary: Update account and credential action atomically
+      parameters:
+        - { in: path, name: account_id, required: true, schema: { type: string } }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/AccountWriteRequest" }
+      responses:
+        "200": { description: Nonsecret account view }
+        "409": { description: Optimistic version conflict }
+    delete:
+      summary: Delete binding and invalidate its credential reference
+      parameters:
+        - { in: path, name: account_id, required: true, schema: { type: string } }
+        - { in: query, name: expected_version, required: true, schema: { type: integer, minimum: 1 } }
+      responses:
+        "204": { description: Deleted }
+components:
+  schemas:
+    ProviderKind:
+      type: string
+      enum: [LLM, ASR, VLM]
+    CredentialAction:
+      type: string
+      enum: [KEEP, REPLACE, CLEAR]
+      default: KEEP
+    SecretBundle:
+      type: object
+      writeOnly: true
+      additionalProperties: false
+      properties:
+        api_key: { type: string, writeOnly: true, maxLength: 16384 }
+        access_token: { type: string, writeOnly: true, maxLength: 16384 }
+        refresh_token: { type: string, writeOnly: true, maxLength: 16384 }
+        client_secret: { type: string, writeOnly: true, maxLength: 16384 }
+    InitializeVaultRequest:
+      type: object
+      additionalProperties: false
+      required: [passphrase, confirmation]
+      properties:
+        passphrase: { type: string, writeOnly: true, minLength: 12, maxLength: 1024 }
+        confirmation: { type: string, writeOnly: true, minLength: 12, maxLength: 1024 }
+    UnlockVaultRequest:
+      type: object
+      additionalProperties: false
+      required: [passphrase]
+      properties:
+        passphrase: { type: string, writeOnly: true, minLength: 1, maxLength: 1024 }
+    ProviderUpsertRequest:
+      type: object
+      additionalProperties: false
+      required: [provider_name, enabled, expected_version, credential_action]
+      properties:
+        provider_name: { type: string, minLength: 1, maxLength: 100 }
+        model_name: { type: [string, "null"], maxLength: 200 }
+        base_url: { type: [string, "null"], format: uri, maxLength: 2048 }
+        enabled: { type: boolean }
+        options: { type: object }
+        expected_version: { type: [integer, "null"], minimum: 1 }
+        credential_action: { $ref: "#/components/schemas/CredentialAction" }
+        credential: { oneOf: [{ $ref: "#/components/schemas/SecretBundle" }, { type: "null" }] }
+    AccountWriteRequest:
+      type: object
+      additionalProperties: false
+      required:
+        [platform, display_name, external_account_id, auth_method, binding, locale,
+         enabled, expected_version, credential_action]
+      properties:
+        platform: { type: string, enum: [DOUYIN, TIKTOK] }
+        display_name: { type: string, minLength: 1, maxLength: 200 }
+        external_account_id: { type: string, minLength: 1, maxLength: 200 }
+        auth_method:
+          { type: string, enum: [OFFICIAL_API, BROWSER_AUTOMATION, ANDROID_DEVICE, MANUAL_EXPORT] }
+        binding: { type: string, enum: [SERVER_ENCRYPTED, DESKTOP, DEVICE] }
+        locale: { type: string, minLength: 2, maxLength: 20 }
+        publishing_window: { type: [string, "null"], maxLength: 200 }
+        enabled: { type: boolean }
+        expected_version: { type: [integer, "null"], minimum: 1 }
+        credential_action: { $ref: "#/components/schemas/CredentialAction" }
+        credential: { oneOf: [{ $ref: "#/components/schemas/SecretBundle" }, { type: "null" }] }
+        external_credential_ref: { type: [string, "null"], minLength: 8, maxLength: 200 }

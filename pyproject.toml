@@ -102,3 +102,6 @@ testpaths = [
     "tests/acceptance",
 ]
 asyncio_mode = "auto"
+markers = [
+    "no_db: API unit/contract test that replaces all persistence services with stubs",
+]

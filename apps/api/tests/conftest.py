@@ -10,6 +10,10 @@ from sqlalchemy import Engine, create_engine, text
 
 REPO_ROOT = Path(__file__).parents[3]
 _TRUNCATE = (
+    "credential_entries",
+    "credential_vault_metadata",
+    "provider_configurations",
+    "platform_account_bindings",
     "trend_clusters",
     "trend_item_snapshots",
     "source_assets",
@@ -47,7 +51,11 @@ def migrated_engine() -> Iterator[Engine]:
 
 
 @pytest.fixture(autouse=True)
-def _clean(migrated_engine: Engine) -> Iterator[None]:
+def _clean(request: pytest.FixtureRequest) -> Iterator[None]:
+    if request.node.get_closest_marker("no_db") is not None:
+        yield
+        return
+    migrated_engine: Engine = request.getfixturevalue("migrated_engine")
     yield
     with migrated_engine.begin() as conn:
         conn.execute(text(f"TRUNCATE {', '.join(_TRUNCATE)} CASCADE"))

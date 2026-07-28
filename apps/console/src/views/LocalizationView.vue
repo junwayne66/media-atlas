@@ -325,8 +325,8 @@ const subtitles = [
 }
 
 .sub-current {
-  background: rgba(59, 130, 246, 0.1);
-  border: 1px solid rgba(59, 130, 246, 0.3);
+  background: rgba(0, 255, 255, 0.08);
+  border: 1px solid rgba(0, 255, 255, 0.3);
 }
 
 .sub-time {

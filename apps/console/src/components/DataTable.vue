@@ -60,7 +60,7 @@ defineProps<{
   display: flex;
   align-items: center;
   height: 40px;
-  background: var(--color-bg-elevated);
+  background: rgba(0, 255, 255, 0.035);
   border-bottom: 1px solid var(--color-border-subtle);
   flex-shrink: 0;
 }
@@ -74,7 +74,7 @@ defineProps<{
 }
 
 .table-row--hover:hover {
-  background: var(--color-bg-hover);
+  background: rgba(0, 255, 255, 0.035);
 }
 
 .table-row:last-child {
@@ -93,10 +93,11 @@ defineProps<{
 }
 
 .table-cell--header {
+  font-family: var(--font-family-mono);
   font-size: var(--font-size-sm);
   font-weight: 600;
-  color: var(--color-text-tertiary);
+  color: var(--color-accent-primary);
   text-transform: uppercase;
-  letter-spacing: 0.02em;
+  letter-spacing: 0.05em;
 }
 </style>

@@ -1,4 +1,5 @@
-from fastapi import FastAPI
+from fastapi import FastAPI, Request
+from fastapi.exceptions import RequestValidationError
 from fastapi.middleware.cors import CORSMiddleware
 
 from videoforge_api.creation import DbCreationGateway
@@ -13,6 +14,8 @@ from videoforge_api.publish import DbPublishGateway
 from videoforge_api.publish import router as publish_router
 from videoforge_api.review import DbReviewGateway
 from videoforge_api.review import router as review_router
+from videoforge_api.secure_settings import DbSettingsGateway, redacted_validation_error_handler
+from videoforge_api.secure_settings import router as secure_settings_router
 from videoforge_api.settings import Settings
 from videoforge_api.sources import DbSourceGateway
 from videoforge_api.sources import router as sources_router
@@ -47,6 +50,8 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     # 集成测试可整体替换这两个 gateway 注入 challenge/限流等分支。
     app.state.publish_gateway = DbPublishGateway(engine)
     app.state.performance_gateway = DbPerformanceGateway(engine)
+    # 单进程长期实例：解锁态只存在内存；reload/重启会自然回到 LOCKED。
+    app.state.settings_gateway = DbSettingsGateway(engine)
     app.include_router(operations_router)
     app.include_router(workers_router)
     app.include_router(trends_router)
@@ -56,6 +61,16 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     app.include_router(review_router)
     app.include_router(publish_router)
     app.include_router(performance_router)
+    app.include_router(secure_settings_router)
+    app.add_exception_handler(RequestValidationError, redacted_validation_error_handler)
+
+    @app.middleware("http")
+    async def no_store_settings(request: Request, call_next):
+        response = await call_next(request)
+        if request.url.path.startswith("/v1/settings"):
+            response.headers["Cache-Control"] = "no-store"
+            response.headers["Pragma"] = "no-cache"
+        return response
 
     @app.get("/healthz")
     def healthz() -> dict[str, str]:
